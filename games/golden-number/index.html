@@ -1,0 +1,475 @@
+```html id="golden-number-index"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Golden Number</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #f7f4ea;
+      --card: #ffffff;
+      --text: #222222;
+      --muted: #666666;
+      --line: #dddddd;
+      --blue: #3b82f6;
+      --blue-dark: #2563eb;
+      --red: #ef4444;
+      --green-bg: #dcfce7;
+      --green-line: #86efac;
+      --yellow-bg: #fff7dc;
+      --yellow-line: #ead38a;
+      --gold: #f6c343;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      text-align: center;
+      padding: 24px 16px 12px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 36px;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      font-size: 16px;
+      color: var(--muted);
+    }
+
+    .game-container {
+      max-width: 1150px;
+      margin: 0 auto;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) 360px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .left-column {
+      display: grid;
+      gap: 16px;
+    }
+
+    .right-column {
+      display: grid;
+      gap: 16px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 2px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 22px;
+    }
+
+    .number-display {
+      display: grid;
+      place-items: center;
+      min-height: 260px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #fff6cf, #ffffff);
+      border: 3px solid var(--gold);
+      text-align: center;
+      padding: 24px;
+    }
+
+    .current-number {
+      font-size: 96px;
+      font-weight: 800;
+      color: #b7791f;
+      line-height: 1;
+      margin: 8px 0;
+    }
+
+    .number-label {
+      color: var(--muted);
+      font-size: 16px;
+      margin: 0;
+    }
+
+    .winner-box {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 12px;
+      background: var(--green-bg);
+      border: 1px solid var(--green-line);
+      font-weight: bold;
+      display: none;
+      line-height: 1.5;
+    }
+
+    .control-panel {
+      padding: 14px 16px;
+    }
+
+    .status-box {
+      background: var(--yellow-bg);
+      border: 1px solid var(--yellow-line);
+      padding: 10px 12px;
+      border-radius: 12px;
+      line-height: 1.45;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 13px 14px;
+      font-size: 16px;
+      cursor: pointer;
+      background: var(--blue);
+      color: white;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: var(--blue-dark);
+    }
+
+    button:disabled {
+      background: #aaaaaa;
+      cursor: not-allowed;
+    }
+
+    .reset-button {
+      width: 100%;
+      background: var(--red);
+    }
+
+    .reset-button:hover {
+      background: #dc2626;
+    }
+
+    .number-strip {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+    }
+
+    .num-cell {
+      display: grid;
+      place-items: center;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fafafa;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .num-cell.used {
+      background: #dbeafe;
+      color: #1d4ed8;
+      border-color: #93c5fd;
+    }
+
+    .num-cell.golden {
+      background: #fef3c7;
+      color: #b45309;
+      border-color: var(--gold);
+    }
+
+    .num-cell.last {
+      outline: 3px solid #2563eb;
+    }
+
+    .turn-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fafafa;
+      line-height: 1.5;
+    }
+
+    .turn-card strong {
+      color: var(--blue-dark);
+    }
+
+    .rule-list {
+      margin: 0;
+      padding-left: 20px;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .strategy-box {
+      background: #fafafa;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 900px) {
+      .game-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 30px;
+      }
+
+      .current-number {
+        font-size: 72px;
+      }
+
+      .button-row {
+        grid-template-columns: 1fr;
+      }
+
+      .number-strip {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Golden Number</h1>
+    <p>Say the number <strong>21</strong> to win.</p>
+  </header>
+
+  <main class="game-container">
+    <div class="left-column">
+      <section class="panel">
+        <h2>Game Board</h2>
+
+        <div class="number-display">
+          <div>
+            <p class="number-label">Current Number</p>
+            <div class="current-number" id="currentNumber">0</div>
+            <p class="number-label">The Golden Number is 21.</p>
+          </div>
+        </div>
+
+        <div class="winner-box" id="winnerBox"></div>
+      </section>
+
+      <section class="panel control-panel">
+        <div class="status-box" id="statusBox"></div>
+
+        <div class="button-row">
+          <button id="sayOneButton" onclick="sayNumbers(1)">Say 1 Number</button>
+          <button id="sayTwoButton" onclick="sayNumbers(2)">Say 2 Numbers</button>
+        </div>
+
+        <button class="reset-button" onclick="resetGame()">Reset Game</button>
+      </section>
+
+      <section class="panel">
+        <h2>Numbers Said</h2>
+        <div class="number-strip" id="numberStrip"></div>
+      </section>
+    </div>
+
+    <div class="right-column">
+      <section class="panel">
+        <h2>Players</h2>
+
+        <div class="turn-card">
+          <strong>Player A</strong><br>
+          Starts the game.
+        </div>
+
+        <div class="turn-card" style="margin-top:10px;">
+          <strong>Player B</strong><br>
+          Takes the next turn.
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Game Rule</h2>
+
+        <ol class="rule-list">
+          <li>The Golden Number is 21.</li>
+          <li>Players take turns counting upward, starting from 1.</li>
+          <li>On each turn, a player may say either 1 number or 2 consecutive numbers.</li>
+          <li>The player who says 21 wins the game.</li>
+        </ol>
+      </section>
+
+      <section class="panel">
+        <h2>Strategy Hint</h2>
+
+        <div class="strategy-box">
+          Try to end your turns on:
+          <br><br>
+          <strong>3, 6, 9, 12, 15, 18</strong>
+          <br><br>
+          These numbers help you control the path to 21.
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const goldenNumber = 21;
+
+    let currentNumber = 0;
+    let currentPlayer = "Player A";
+    let gameOver = false;
+    let lastNumbersSaid = [];
+
+    function switchPlayer() {
+      currentPlayer = currentPlayer === "Player A" ? "Player B" : "Player A";
+    }
+
+    function sayNumbers(amount) {
+      if (gameOver) {
+        return;
+      }
+
+      lastNumbersSaid = [];
+
+      for (let i = 0; i < amount; i++) {
+        if (currentNumber < goldenNumber) {
+          currentNumber += 1;
+          lastNumbersSaid.push(currentNumber);
+        }
+      }
+
+      if (currentNumber >= goldenNumber) {
+        endGame(currentPlayer);
+      } else {
+        switchPlayer();
+      }
+
+      updateAll();
+    }
+
+    function endGame(winner) {
+      gameOver = true;
+
+      const winnerBox = document.getElementById("winnerBox");
+      winnerBox.style.display = "block";
+      winnerBox.innerHTML = `
+        ${winner} said the Golden Number, 21.<br>
+        <strong>${winner} wins!</strong>
+      `;
+    }
+
+    function resetGame() {
+      currentNumber = 0;
+      currentPlayer = "Player A";
+      gameOver = false;
+      lastNumbersSaid = [];
+
+      const winnerBox = document.getElementById("winnerBox");
+      winnerBox.style.display = "none";
+      winnerBox.innerHTML = "";
+
+      updateAll();
+    }
+
+    function updateStatus() {
+      const statusBox = document.getElementById("statusBox");
+
+      if (gameOver) {
+        statusBox.innerHTML = `
+          <strong>Game Over</strong><br>
+          Press Reset Game to play again.
+        `;
+        return;
+      }
+
+      let lastText = "No number has been said yet.";
+
+      if (lastNumbersSaid.length > 0) {
+        lastText = `${currentPlayer === "Player A" ? "Player B" : "Player A"} said: ${lastNumbersSaid.join(", ")}`;
+      }
+
+      statusBox.innerHTML = `
+        <strong>Current Player:</strong> ${currentPlayer}<br>
+        <strong>Last Move:</strong> ${lastText}
+      `;
+    }
+
+    function updateButtons() {
+      document.getElementById("sayOneButton").disabled = gameOver;
+      document.getElementById("sayTwoButton").disabled = gameOver || currentNumber >= goldenNumber - 1;
+    }
+
+    function createNumberStrip() {
+      const numberStrip = document.getElementById("numberStrip");
+      numberStrip.innerHTML = "";
+
+      for (let i = 1; i <= goldenNumber; i++) {
+        const cell = document.createElement("div");
+        cell.className = "num-cell";
+        cell.id = `num-${i}`;
+        cell.textContent = i;
+
+        if (i === goldenNumber) {
+          cell.classList.add("golden");
+        }
+
+        numberStrip.appendChild(cell);
+      }
+    }
+
+    function updateNumberStrip() {
+      for (let i = 1; i <= goldenNumber; i++) {
+        const cell = document.getElementById(`num-${i}`);
+        cell.classList.remove("used", "last");
+
+        if (i <= currentNumber) {
+          cell.classList.add("used");
+        }
+
+        if (lastNumbersSaid.includes(i)) {
+          cell.classList.add("last");
+        }
+
+        if (i === goldenNumber) {
+          cell.classList.add("golden");
+        }
+      }
+    }
+
+    function updateAll() {
+      document.getElementById("currentNumber").textContent = currentNumber;
+      updateStatus();
+      updateButtons();
+      updateNumberStrip();
+    }
+
+    createNumberStrip();
+    resetGame();
+  </script>
+</body>
+</html>
+```
