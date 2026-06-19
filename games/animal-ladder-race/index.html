@@ -1,9 +1,10 @@
-```html
+```html id="animal-ladder-race-index"
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Animal Ladder Race</title>
 
   <style>
@@ -11,11 +12,26 @@
       box-sizing: border-box;
     }
 
+    :root {
+      --bg: #f7f4ea;
+      --card: #ffffff;
+      --text: #222222;
+      --muted: #666666;
+      --line: #dddddd;
+      --blue: #3b82f6;
+      --blue-dark: #2563eb;
+      --red: #ef4444;
+      --green-bg: #dcfce7;
+      --green-line: #86efac;
+      --yellow-bg: #fff7dc;
+      --yellow-line: #ead38a;
+    }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #f7f4ea;
-      color: #222;
+      background: var(--bg);
+      color: var(--text);
     }
 
     header {
@@ -25,33 +41,45 @@
 
     header h1 {
       margin: 0;
-      font-size: 32px;
+      font-size: 34px;
     }
 
     header p {
       margin: 8px 0 0;
       font-size: 16px;
+      color: var(--muted);
     }
 
     .game-container {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 16px;
       display: grid;
-      grid-template-columns: 2fr 1fr;
+      grid-template-columns: minmax(0, 2fr) 360px;
       gap: 20px;
+      align-items: start;
+    }
+
+    .left-column {
+      display: grid;
+      gap: 16px;
+    }
+
+    .right-column {
+      display: grid;
+      gap: 16px;
     }
 
     .panel {
-      background: white;
-      border: 2px solid #ddd;
+      background: var(--card);
+      border: 2px solid var(--line);
       border-radius: 16px;
       padding: 16px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     }
 
     .panel h2 {
-      margin-top: 0;
+      margin: 0 0 12px;
       font-size: 22px;
     }
 
@@ -60,7 +88,7 @@
     .ladder {
       position: relative;
       width: 100%;
-      padding: 20px 0;
+      padding: 8px 0 16px;
     }
 
     .track-row {
@@ -77,7 +105,7 @@
 
     .track {
       position: relative;
-      height: 46px;
+      height: 48px;
       border-radius: 12px;
       background: repeating-linear-gradient(
         to right,
@@ -87,6 +115,7 @@
         #ffffff calc(100% / 12)
       );
       border: 2px solid #c89f4f;
+      overflow: visible;
     }
 
     .finish-line {
@@ -94,8 +123,8 @@
       top: -8px;
       right: 0;
       width: 4px;
-      height: 62px;
-      background: #e63946;
+      height: 64px;
+      background: var(--red);
       border-radius: 4px;
     }
 
@@ -103,7 +132,7 @@
       position: absolute;
       top: 50%;
       transform: translate(-50%, -50%);
-      font-size: 30px;
+      font-size: 32px;
       transition: left 0.4s ease;
       z-index: 2;
     }
@@ -113,99 +142,184 @@
       grid-template-columns: repeat(13, 1fr);
       margin-left: 90px;
       font-size: 12px;
-      color: #555;
+      color: var(--muted);
       text-align: center;
     }
 
-    /* Control Area */
+    /* Coin Bar */
+
+    .coin-panel {
+      padding: 14px 16px;
+    }
+
+    .coin-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
 
     .status-box {
-      background: #fff7dc;
-      border: 1px solid #ead38a;
-      padding: 12px;
+      background: var(--yellow-bg);
+      border: 1px solid var(--yellow-line);
+      padding: 10px 12px;
       border-radius: 12px;
-      margin-bottom: 14px;
-      line-height: 1.5;
-    }
-
-    .animal-buttons {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-
-    button {
-      border: none;
-      border-radius: 12px;
-      padding: 12px;
-      font-size: 16px;
-      cursor: pointer;
-      background: #3b82f6;
-      color: white;
-      transition: 0.2s;
-    }
-
-    button:hover {
-      background: #2563eb;
-    }
-
-    button:disabled {
-      background: #aaa;
-      cursor: not-allowed;
+      line-height: 1.45;
+      font-size: 14px;
+      flex: 1;
+      min-width: 250px;
     }
 
     .reset-button {
-      width: 100%;
-      background: #ef4444;
-      margin-top: 8px;
+      background: var(--red);
+      white-space: nowrap;
     }
 
     .reset-button:hover {
       background: #dc2626;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 8px;
-      font-size: 14px;
+    .coin-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
     }
 
-    th, td {
-      border-bottom: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
+    .animal-button {
+      border: none;
+      border-radius: 14px;
+      padding: 12px 8px;
+      font-size: 16px;
+      cursor: pointer;
+      background: var(--blue);
+      color: white;
+      transition: 0.2s;
+      min-height: 62px;
     }
 
-    th {
-      background: #f2f2f2;
+    .animal-button:hover {
+      background: var(--blue-dark);
+    }
+
+    .animal-button:disabled {
+      background: #aaaaaa;
+      cursor: not-allowed;
+    }
+
+    .coin-count {
+      display: block;
+      font-size: 13px;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+
+    /* Ranking Area */
+
+    .ranking-cards {
+      display: grid;
+      gap: 10px;
+    }
+
+    .rank-card {
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      background: #fafafa;
+    }
+
+    .rank-number {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: #eeeeee;
+      font-weight: bold;
+    }
+
+    .rank-animal {
+      font-weight: bold;
+    }
+
+    .rank-owner {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .rank-position {
+      font-weight: bold;
+      color: var(--blue-dark);
     }
 
     .winner {
       margin-top: 14px;
       padding: 12px;
       border-radius: 12px;
-      background: #dcfce7;
-      border: 1px solid #86efac;
+      background: var(--green-bg);
+      border: 1px solid var(--green-line);
       font-weight: bold;
       display: none;
+      line-height: 1.5;
     }
 
-    .log {
-      max-height: 180px;
-      overflow-y: auto;
+    /* Rule Panel */
+
+    .rule-list {
+      margin: 0;
+      padding-left: 20px;
+      line-height: 1.6;
       font-size: 14px;
-      line-height: 1.5;
-      background: #f8fafc;
+    }
+
+    .team-box {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 10px 0 12px;
+    }
+
+    .team-card {
+      border: 1px solid var(--line);
       border-radius: 12px;
       padding: 10px;
-      border: 1px solid #ddd;
+      background: #fafafa;
+      font-size: 14px;
     }
 
-    @media (max-width: 850px) {
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-size: 15px;
+      cursor: pointer;
+      background: var(--blue);
+      color: white;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: var(--blue-dark);
+    }
+
+    @media (max-width: 900px) {
       .game-container {
         grid-template-columns: 1fr;
+      }
+
+      .right-column {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 650px) {
+      header h1 {
+        font-size: 28px;
       }
 
       .track-row {
@@ -215,6 +329,18 @@
       .number-line {
         margin-left: 70px;
       }
+
+      .coin-bar {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .rank-card {
+        grid-template-columns: 42px 1fr;
+      }
+
+      .rank-position {
+        grid-column: 2;
+      }
     }
   </style>
 </head>
@@ -222,70 +348,101 @@
 <body>
   <header>
     <h1>Animal Ladder Race</h1>
-    <p>Control the animal that finishes in <strong>3rd place</strong>!</p>
+    <p>Control the animal that finishes in <strong>3rd place</strong>.</p>
   </header>
 
   <main class="game-container">
-    <!-- Ladder Section -->
-    <section class="panel">
-      <h2>Ladder Track</h2>
+    <!-- Left side: ladder and coin bar -->
+    <div class="left-column">
+      <section class="panel">
+        <h2>Ladder Track</h2>
 
-      <div class="ladder" id="ladder"></div>
+        <div class="ladder" id="ladder"></div>
 
-      <div class="number-line">
-        <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span>
-        <span>5</span><span>6</span><span>7</span><span>8</span><span>9</span>
-        <span>10</span><span>11</span><span>12</span>
-      </div>
-    </section>
+        <div class="number-line">
+          <span>0</span>
+          <span>1</span>
+          <span>2</span>
+          <span>3</span>
+          <span>4</span>
+          <span>5</span>
+          <span>6</span>
+          <span>7</span>
+          <span>8</span>
+          <span>9</span>
+          <span>10</span>
+          <span>11</span>
+          <span>12</span>
+        </div>
+      </section>
 
-    <!-- Control Section -->
-    <section class="panel">
-      <h2>Coin Area</h2>
+      <section class="panel coin-panel">
+        <div class="coin-top">
+          <div class="status-box" id="statusBox"></div>
+          <button class="reset-button" onclick="resetGame()">Reset Game</button>
+        </div>
 
-      <div class="status-box" id="statusBox"></div>
+        <div class="coin-bar">
+          <button class="animal-button" onclick="placeCoin('cat')">
+            🐱 Cat
+            <span class="coin-count" id="cat-coins">Coins: 0</span>
+          </button>
 
-      <div class="animal-buttons">
-        <button onclick="placeCoin('cat')">🐱 Cat</button>
-        <button onclick="placeCoin('dog')">🐶 Dog</button>
-        <button onclick="placeCoin('tiger')">🐯 Tiger</button>
-        <button onclick="placeCoin('lion')">🦁 Lion</button>
-      </div>
+          <button class="animal-button" onclick="placeCoin('dog')">
+            🐶 Dog
+            <span class="coin-count" id="dog-coins">Coins: 0</span>
+          </button>
 
-      <h2>Coins This Round</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Animal</th>
-            <th>Coins</th>
-          </tr>
-        </thead>
-        <tbody id="coinTable"></tbody>
-      </table>
+          <button class="animal-button" onclick="placeCoin('tiger')">
+            🐯 Tiger
+            <span class="coin-count" id="tiger-coins">Coins: 0</span>
+          </button>
 
-      <h2>Current Ranking</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Rank</th>
-            <th>Animal</th>
-            <th>Position</th>
-            <th>Player</th>
-          </tr>
-        </thead>
-        <tbody id="rankingTable"></tbody>
-      </table>
+          <button class="animal-button" onclick="placeCoin('lion')">
+            🦁 Lion
+            <span class="coin-count" id="lion-coins">Coins: 0</span>
+          </button>
+        </div>
+      </section>
+    </div>
 
-      <div class="winner" id="winnerBox"></div>
+    <!-- Right side: ranking and rule -->
+    <div class="right-column">
+      <section class="panel">
+        <h2>Current Ranking</h2>
 
-      <button class="reset-button" onclick="resetGame()">Reset Game</button>
-    </section>
+        <div class="ranking-cards" id="rankingCards"></div>
 
-    <!-- Game Log -->
-    <section class="panel" style="grid-column: 1 / -1;">
-      <h2>Game Log</h2>
-      <div class="log" id="gameLog"></div>
-    </section>
+        <div class="winner" id="winnerBox"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Game Rule</h2>
+
+        <div class="team-box">
+          <div class="team-card">
+            <strong>Player A</strong><br>
+            🐱 Cat + 🦁 Lion
+          </div>
+
+          <div class="team-card">
+            <strong>Player B</strong><br>
+            🐶 Dog + 🐯 Tiger
+          </div>
+        </div>
+
+        <ol class="rule-list">
+          <li>Each round, each player gets 2 coins.</li>
+          <li>Players place coins one at a time.</li>
+          <li>The starting player alternates each round.</li>
+          <li>The animal with the most coins moves.</li>
+          <li>If tied, the animal further behind moves.</li>
+          <li>If still tied, no animal moves.</li>
+          <li>When one animal reaches 12, the game ends.</li>
+          <li>The player who owns the 3rd-place animal wins.</li>
+        </ol>
+      </section>
+    </div>
   </main>
 
   <script>
@@ -299,6 +456,7 @@
         owner: "Player A",
         position: 0
       },
+
       dog: {
         name: "Dog",
         emoji: "🐶",
@@ -306,6 +464,7 @@
         owner: "Player B",
         position: 0
       },
+
       tiger: {
         name: "Tiger",
         emoji: "🐯",
@@ -313,6 +472,7 @@
         owner: "Player B",
         position: 0
       },
+
       lion: {
         name: "Lion",
         emoji: "🦁",
@@ -326,6 +486,7 @@
     let moveNumber = 0;
     let coins = {};
     let gameOver = false;
+    let message = "New game started.";
 
     function resetCoins() {
       coins = {
@@ -339,9 +500,9 @@
     function getTurnOrder() {
       if (roundNumber % 2 === 1) {
         return ["Player A", "Player B", "Player A", "Player B"];
-      } else {
-        return ["Player B", "Player A", "Player B", "Player A"];
       }
+
+      return ["Player B", "Player A", "Player B", "Player A"];
     }
 
     function getCurrentPlayer() {
@@ -385,8 +546,10 @@
       Object.keys(animals).forEach((key) => {
         const animal = animals[key];
         const piece = document.getElementById(`${key}-piece`);
+
         const safePosition = Math.min(animal.position, finishLine);
         const percentage = (safePosition / finishLine) * 100;
+
         piece.style.left = `${percentage}%`;
       });
     }
@@ -408,63 +571,58 @@
       const statusBox = document.getElementById("statusBox");
 
       if (gameOver) {
-        statusBox.innerHTML = "Game over. Press <strong>Reset Game</strong> to play again.";
+        statusBox.innerHTML = `
+          <strong>Game over.</strong><br>
+          ${message}
+        `;
         return;
       }
 
       statusBox.innerHTML = `
         <strong>Round:</strong> ${roundNumber}<br>
         <strong>Current Player:</strong> ${getCurrentPlayer()}<br>
-        <strong>Goal:</strong> Own the 3rd-place animal when the game ends.
+        <strong>Last Action:</strong> ${message}
       `;
     }
 
-    function updateCoinTable() {
-      const coinTable = document.getElementById("coinTable");
-      coinTable.innerHTML = "";
-
-      Object.keys(animals).forEach((key) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${animals[key].emoji} ${animals[key].name}</td>
-          <td>${coins[key]}</td>
-        `;
-        coinTable.appendChild(row);
+    function updateCoinCounts() {
+      Object.keys(coins).forEach((key) => {
+        document.getElementById(`${key}-coins`).textContent = `Coins: ${coins[key]}`;
       });
     }
 
-    function updateRankingTable() {
-      const rankingTable = document.getElementById("rankingTable");
-      rankingTable.innerHTML = "";
+    function updateRankingCards() {
+      const rankingCards = document.getElementById("rankingCards");
+      rankingCards.innerHTML = "";
 
       const ranking = getRanking();
 
       ranking.forEach((animal, index) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${index + 1}</td>
-          <td>${animal.emoji} ${animal.name}</td>
-          <td>${animal.position}</td>
-          <td>${animal.owner}</td>
+        const card = document.createElement("div");
+        card.className = "rank-card";
+
+        card.innerHTML = `
+          <div class="rank-number">${index + 1}</div>
+          <div>
+            <div class="rank-animal">${animal.emoji} ${animal.name}</div>
+            <div class="rank-owner">${animal.owner}</div>
+          </div>
+          <div class="rank-position">Position ${animal.position}</div>
         `;
-        rankingTable.appendChild(row);
+
+        rankingCards.appendChild(card);
       });
     }
 
-    function addLog(message) {
-      const gameLog = document.getElementById("gameLog");
-      const line = document.createElement("div");
-      line.textContent = message;
-      gameLog.prepend(line);
-    }
-
     function placeCoin(animalKey) {
-      if (gameOver) return;
+      if (gameOver) {
+        return;
+      }
 
       const currentPlayer = getCurrentPlayer();
       coins[animalKey] += 1;
 
-      addLog(`${currentPlayer} placed 1 coin on ${animals[animalKey].name}.`);
+      message = `${currentPlayer} placed 1 coin on ${animals[animalKey].name}.`;
 
       moveNumber += 1;
 
@@ -477,7 +635,7 @@
 
     function resolveRound() {
       const maxCoins = Math.max(...Object.values(coins));
-      const tiedAnimals = Object.keys(coins).filter(key => coins[key] === maxCoins);
+      const tiedAnimals = Object.keys(coins).filter((key) => coins[key] === maxCoins);
 
       let movingAnimalKey = null;
 
@@ -488,14 +646,12 @@
       }
 
       if (movingAnimalKey === null) {
-        addLog(`Round ${roundNumber}: tied animals are also on the same position. No animal moves.`);
+        message = `Round ${roundNumber}: no animal moves because the tied animals are also on the same position.`;
       } else {
         const animal = animals[movingAnimalKey];
         animal.position += animal.steps;
 
-        addLog(
-          `Round ${roundNumber}: ${animal.name} moves ${animal.steps} steps to position ${animal.position}.`
-        );
+        message = `Round ${roundNumber}: ${animal.name} moves ${animal.steps} steps to position ${animal.position}.`;
 
         if (animal.position >= finishLine) {
           endGame(animal.name);
@@ -510,18 +666,17 @@
 
     function breakCoinTie(tiedAnimals) {
       const lowestPosition = Math.min(
-        ...tiedAnimals.map(key => animals[key].position)
+        ...tiedAnimals.map((key) => animals[key].position)
       );
 
       const furthestBehind = tiedAnimals.filter(
-        key => animals[key].position === lowestPosition
+        (key) => animals[key].position === lowestPosition
       );
 
       if (furthestBehind.length === 1) {
         return furthestBehind[0];
       }
 
-      // If tied animals are also on the same position, no animal moves.
       return null;
     }
 
@@ -532,8 +687,7 @@
       const thirdPlaceAnimal = ranking[2];
       const winner = thirdPlaceAnimal.owner;
 
-      addLog(`${finishingAnimalName} reached position 12. The game ends.`);
-      addLog(`${thirdPlaceAnimal.name} is in 3rd place. ${winner} wins!`);
+      message = `${finishingAnimalName} reached position 12. ${thirdPlaceAnimal.name} is in 3rd place. ${winner} wins!`;
 
       const winnerBox = document.getElementById("winnerBox");
       winnerBox.style.display = "block";
@@ -544,13 +698,6 @@
       `;
     }
 
-    function updateAll() {
-      updateAnimalPositions();
-      updateStatus();
-      updateCoinTable();
-      updateRankingTable();
-    }
-
     function resetGame() {
       Object.keys(animals).forEach((key) => {
         animals[key].position = 0;
@@ -559,15 +706,22 @@
       roundNumber = 1;
       moveNumber = 0;
       gameOver = false;
+      message = "New game started.";
+
       resetCoins();
 
-      document.getElementById("winnerBox").style.display = "none";
-      document.getElementById("winnerBox").innerHTML = "";
-      document.getElementById("gameLog").innerHTML = "";
-
-      addLog("New game started.");
+      const winnerBox = document.getElementById("winnerBox");
+      winnerBox.style.display = "none";
+      winnerBox.innerHTML = "";
 
       updateAll();
+    }
+
+    function updateAll() {
+      updateAnimalPositions();
+      updateStatus();
+      updateCoinCounts();
+      updateRankingCards();
     }
 
     createLadder();
@@ -577,3 +731,4 @@
 </body>
 </html>
 ```
+
