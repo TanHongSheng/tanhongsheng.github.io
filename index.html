@@ -4,17 +4,26 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Hong Sheng Tan — Math</title>
+
   <style>
     :root{
-      --text:#111; --muted:#555; --bg:#fff; --line:#e6e6e6;
-      --link:#0b57d0; --card:#fafafa;
+      --text:#111;
+      --muted:#555;
+      --bg:#fff;
+      --line:#e6e6e6;
+      --link:#0b57d0;
+      --card:#fafafa;
       --max: 900px;
     }
+
     body{
-      margin:0; background:var(--bg); color:var(--text);
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
       line-height:1.6;
     }
+
     header{
       border-bottom:1px solid var(--line);
       background:var(--bg);
@@ -22,41 +31,89 @@
       top: 0;
       z-index: 10;
     }
-    .wrap{ max-width: var(--max); margin:0 auto; padding: 0 18px; }
+
+    .wrap{
+      max-width: var(--max);
+      margin:0 auto;
+      padding: 0 18px;
+    }
+
     .nav{
-      display:flex; align-items:center; justify-content:space-between;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
       padding: 14px 0;
       gap: 16px;
       flex-wrap: wrap;
     }
-    .brand{ font-weight:700; letter-spacing:0.2px; }
+
+    .brand{
+      font-weight:700;
+      letter-spacing:0.2px;
+    }
+
     .links a{
       margin-left: 14px;
       text-decoration:none;
       color:var(--muted);
       font-weight:600;
     }
-    .links a:hover{ color: var(--text); }
-    main{ padding: 28px 0 40px; }
-    h1{ margin: 14px 0 4px; font-size: 34px; line-height:1.2; }
-    .subtitle{ color:var(--muted); margin: 0 0 18px; }
-    section{ margin: 26px 0; scroll-margin-top: 80px; }
-    h2{ font-size: 20px; margin: 0 0 10px; }
+
+    .links a:hover{
+      color: var(--text);
+    }
+
+    main{
+      padding: 28px 0 40px;
+    }
+
+    h1{
+      margin: 14px 0 4px;
+      font-size: 34px;
+      line-height:1.2;
+    }
+
+    .subtitle{
+      color:var(--muted);
+      margin: 0 0 18px;
+    }
+
+    section{
+      margin: 26px 0;
+      scroll-margin-top: 80px;
+    }
+
+    h2{
+      font-size: 20px;
+      margin: 0 0 10px;
+    }
+
     .card{
       background: var(--card);
       border: 1px solid var(--line);
       border-radius: 12px;
       padding: 14px 16px;
     }
-    ul{ margin: 8px 0 0 18px; }
-    a{ color: var(--link); }
-    a:hover{ text-decoration: underline; }
+
+    ul{
+      margin: 8px 0 0 18px;
+    }
+
+    a{
+      color: var(--link);
+    }
+
+    a:hover{
+      text-decoration: underline;
+    }
+
     footer{
       border-top: 1px solid var(--line);
       padding: 18px 0;
       color: var(--muted);
       font-size: 14px;
     }
+
     .pill{
       display:inline-block;
       border:1px solid var(--line);
@@ -67,8 +124,38 @@
       color: var(--muted);
       background: #fff;
     }
-    .small{ color: var(--muted); font-size: 14px; }
-    .meta{ color: var(--muted); font-size: 14px; margin: 6px 0 0; }
+
+    .small{
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .meta{
+      color: var(--muted);
+      font-size: 14px;
+      margin: 6px 0 0;
+    }
+
+    .game-item{
+      margin-top: 10px;
+    }
+
+    .game-button{
+      display:inline-block;
+      margin-top: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: var(--link);
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .game-button:hover{
+      text-decoration: none;
+      background: #0847ad;
+    }
   </style>
 </head>
 
@@ -77,6 +164,7 @@
     <div class="wrap">
       <div class="nav">
         <div class="brand">Hong Sheng Tan</div>
+
         <div class="links">
           <a href="#education">Education</a>
           <a href="#research">Research</a>
@@ -91,8 +179,12 @@
 
   <main class="wrap">
     <div style="display:flex; gap:18px; align-items:center; flex-wrap:wrap; margin-top: 8px;">
-      <img src="imgprofile.jpg" alt="Hong Sheng Tan"
-           style="width:140px; height:140px; object-fit:cover; border-radius:999px; border:1px solid #e6e6e6;" />
+      <img
+        src="imgprofile.jpg"
+        alt="Hong Sheng Tan"
+        style="width:140px; height:140px; object-fit:cover; border-radius:999px; border:1px solid #e6e6e6;"
+      />
+
       <div>
         <h1 style="margin:0 0 4px;">Hong Sheng Tan</h1>
         <p class="subtitle" style="margin:0;">Mathematics • Research • Teaching</p>
@@ -102,13 +194,18 @@
     <div class="card" style="margin-top: 18px;">
       <span class="pill">PDF-friendly</span>
       <span class="pill">GitHub Pages</span>
+
       <p style="margin:10px 0 0;">
-        Welcome! I am a PhD student in Mathematics at Michigan State University. My current interests include stochastic PDEs, probability, interacting particle systems, and regularity theory, especially questions related to the KPZ equation. I also enjoy teaching mathematics and designing interactive activities that help students learn through play.
+        Welcome! I am a PhD student in Mathematics at Michigan State University.
+        My current interests include stochastic PDEs, probability, interacting particle systems,
+        and regularity theory, especially questions related to the KPZ equation.
+        I also enjoy teaching mathematics and designing interactive activities that help students learn through play.
       </p>
     </div>
 
     <section id="education">
       <h2>Education</h2>
+
       <div class="card">
         <ul>
           <li>
@@ -135,28 +232,48 @@
 
     <section id="research">
       <h2>Research</h2>
+
       <div class="card">
         <p style="margin:0;">
-          My current research interests are mainly in stochastic PDEs, probability, interacting particle systems, and regularity theory. I am especially interested in questions related to the KPZ equation and its connections with microscopic stochastic models.
+          My current research interests are mainly in stochastic PDEs, probability,
+          interacting particle systems, and regularity theory.
+          I am especially interested in questions related to the KPZ equation and its connections
+          with microscopic stochastic models.
         </p>
 
-        <hr style="border:none;border-top:1px solid var(--line); margin:14px 0;">
+        <hr style="border:none; border-top:1px solid var(--line); margin:14px 0;">
 
         <p style="margin:0 0 6px;"><strong>Research timeline:</strong></p>
+
         <ul>
           <li>
-            <strong>January 2026 – Present:</strong> Working on a project related to the KPZ equation, interacting particle systems, and regularity theory.
-            <p class="meta">The project studies connections between microscopic stochastic models and singular stochastic PDEs.</p>
+            <strong>January 2026 – Present:</strong>
+            Working on a project related to the KPZ equation, interacting particle systems,
+            and regularity theory.
+            <p class="meta">
+              The project studies connections between microscopic stochastic models and singular stochastic PDEs.
+            </p>
           </li>
 
           <li style="margin-top:10px;">
-            <strong>June 2025 – January 2026:</strong> Studied the basics of stochastic PDEs.
-            <p class="meta">This period focused on building background in stochastic analysis, PDEs, and the analytic tools needed for modern SPDE theory.</p>
+            <strong>June 2025 – January 2026:</strong>
+            Studied the basics of stochastic PDEs.
+            <p class="meta">
+              This period focused on building background in stochastic analysis, PDEs,
+              and the analytic tools needed for modern SPDE theory.
+            </p>
           </li>
 
           <li style="margin-top:10px;">
-            <strong>During 2024–2025:</strong> Research Assistant at Xiamen University Malaysia, studying the Prime Number Theorem under the guidance of Professor Teo Lee Peng.
-            <p class="meta">Project: <em>Optimal Cosine Polynomials for Riemann Zeta Zero-Free Region</em> <span class="small">(https://arxiv.org/abs/2411.01385)</span></p>
+            <strong>During 2024–2025:</strong>
+            Research Assistant at Xiamen University Malaysia, studying the Prime Number Theorem
+            under the guidance of Professor Teo Lee Peng.
+            <p class="meta">
+              Project:
+              <a href="https://arxiv.org/abs/2411.01385">
+                <em>Optimal Cosine Polynomials for Riemann Zeta Zero-Free Region</em>
+              </a>
+            </p>
           </li>
         </ul>
       </div>
@@ -164,19 +281,23 @@
 
     <section id="teaching">
       <h2>Teaching</h2>
+
       <div class="card">
         <p style="margin:0;">
-          Teaching is a big part of my graduate life. Here are the courses I have taught at Michigan State University:
+          Teaching is a big part of my graduate life.
+          Here are the courses I have taught at Michigan State University:
         </p>
+
         <ul>
           <li><strong>Spring 2026:</strong> MTH 235 — Ordinary Differential Equations</li>
           <li><strong>Fall 2025:</strong> MTH 133 — Calculus II</li>
           <li><strong>Summer 2025:</strong> MTH 124 — Survey of Calculus I</li>
         </ul>
 
-        <hr style="border:none;border-top:1px solid var(--line); margin:14px 0;">
+        <hr style="border:none; border-top:1px solid var(--line); margin:14px 0;">
 
         <p style="margin:0 0 6px;"><strong>Student comments:</strong></p>
+
         <ul>
           <li>
             <a href="MTH235_student_feedback.pdf">MTH 235 — Student Feedback (PDF)</a>
@@ -190,21 +311,42 @@
 
     <section id="games">
       <h2>Teaching with Junior School Students</h2>
+
       <div class="card">
         <p style="margin:0 0 8px;">
-          I design mathematical games and interactive activities to make mathematics more playful and approachable for junior school students.
+          I design mathematical games and interactive activities to make mathematics more playful
+          and approachable for junior school students.
         </p>
+
         <ul>
-          <li><a href="Game for Set Theory-Venn Turf War.pdf">Set Theory and Operators (PDF)</a></li>
-          <li><a href="数字炸弹.docx">Game Theory: Number Bomb (in chinese)</a></li>
+          <li class="game-item">
+            <strong>Animal Ladder Race</strong><br>
+            A 2-player strategy game where four animals race on a ladder,
+            but the winner is the player who controls the 3rd-place animal.
+            <br>
+            <a class="game-button" href="games/animal-ladder-race/">Play the interactive version</a>
+          </li>
+
+          <li class="game-item">
+            <a href="Game for Set Theory-Venn Turf War.pdf">Set Theory and Operators (PDF)</a>
+          </li>
+
+          <li class="game-item">
+            <a href="数字炸弹.docx">Game Theory: Number Bomb (in Chinese)</a>
+          </li>
         </ul>
       </div>
     </section>
 
     <section id="notes">
       <h2>PDF Notes</h2>
+
       <div class="card">
-        <p style="margin:0 0 8px;">This note is a summary of the Stochastic PDEs reading course with Professor Konstantin Matetski at Michigan State University, conducted from Summer 2025 to Fall 2025.</p>
+        <p style="margin:0 0 8px;">
+          This note is a summary of the Stochastic PDEs reading course with Professor Konstantin Matetski
+          at Michigan State University, conducted from Summer 2025 to Fall 2025.
+        </p>
+
         <ul>
           <li><a href="SPDEs_Class_Note.pdf">SPDEs Class Notes (PDF)</a></li>
         </ul>
@@ -213,6 +355,7 @@
 
     <section id="contact">
       <h2>Contact</h2>
+
       <div class="card">
         <ul>
           <li>Email: <a href="mailto:tanhong@msu.edu">tanhong@msu.edu</a></li>
@@ -233,4 +376,6 @@
   </script>
 </body>
 </html>
+
+
 
