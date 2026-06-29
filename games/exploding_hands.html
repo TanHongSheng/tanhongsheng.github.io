@@ -1,0 +1,847 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Exploding Hands — Math Game</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#172033;
+      --muted:#667085;
+      --line:#d9deea;
+      --accent:#3657d9;
+      --accent-soft:#e8ecff;
+      --danger:#d93636;
+      --danger-soft:#ffeaea;
+      --ok:#178a55;
+      --ok-soft:#e8fff4;
+      --shadow:0 12px 30px rgba(23,32,51,.10);
+      --radius:20px;
+    }
+
+```
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(54,87,217,.14), transparent 32rem),
+    radial-gradient(circle at bottom right, rgba(23,138,85,.13), transparent 28rem),
+    var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+
+header{
+  max-width:1180px;
+  margin:0 auto;
+  padding:34px 18px 16px;
+}
+
+h1{
+  margin:0;
+  font-size:clamp(2rem, 5vw, 4.5rem);
+  letter-spacing:-.06em;
+  line-height:.95;
+}
+
+.subtitle{
+  margin:12px 0 0;
+  color:var(--muted);
+  max-width:760px;
+  font-size:1.05rem;
+  line-height:1.55;
+}
+
+main{
+  max-width:1180px;
+  margin:0 auto;
+  padding:14px 18px 50px;
+  display:grid;
+  grid-template-columns:minmax(0, 1.4fr) minmax(320px, .8fr);
+  gap:18px;
+}
+
+@media (max-width:900px){
+  main{grid-template-columns:1fr;}
+}
+
+.card{
+  background:rgba(255,255,255,.92);
+  border:1px solid rgba(217,222,234,.92);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+
+.game-area{
+  padding:18px;
+}
+
+.status-bar{
+  display:grid;
+  grid-template-columns:1.2fr .8fr;
+  gap:12px;
+  margin-bottom:16px;
+}
+
+@media (max-width:650px){
+  .status-bar{grid-template-columns:1fr;}
+}
+
+.status-box{
+  border:1px solid var(--line);
+  background:var(--card);
+  border-radius:16px;
+  padding:14px 16px;
+}
+
+.turn-title{
+  font-size:1.35rem;
+  font-weight:850;
+  margin:0 0 6px;
+}
+
+.small{
+  color:var(--muted);
+  font-size:.95rem;
+  line-height:1.45;
+}
+
+.phase-badge{
+  display:inline-flex;
+  padding:8px 11px;
+  border-radius:999px;
+  font-weight:800;
+  font-size:.92rem;
+  background:var(--ok-soft);
+  color:var(--ok);
+  border:1px solid rgba(23,138,85,.18);
+}
+
+.phase-badge.sudden{
+  background:var(--danger-soft);
+  color:var(--danger);
+  border-color:rgba(217,54,54,.22);
+}
+
+.board{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+
+@media (max-width:700px){
+  .board{grid-template-columns:1fr;}
+}
+
+.player-panel{
+  border:1px solid var(--line);
+  background:linear-gradient(180deg, #fff, #fbfcff);
+  border-radius:18px;
+  padding:14px;
+  transition:.18s ease;
+}
+
+.player-panel.active{
+  border-color:rgba(54,87,217,.45);
+  box-shadow:0 0 0 4px var(--accent-soft);
+}
+
+.player-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.player-name{
+  margin:0;
+  font-size:1.25rem;
+  font-weight:900;
+}
+
+.turn-count{
+  font-size:.9rem;
+  color:var(--muted);
+  font-weight:700;
+}
+
+.hands{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.hand-card{
+  min-height:185px;
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:18px;
+  padding:13px 12px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
+  user-select:none;
+  transition:transform .14s ease, border-color .14s ease, box-shadow .14s ease, background .14s ease;
+  font-family:inherit;
+}
+
+.hand-card:hover{
+  transform:translateY(-2px);
+  border-color:rgba(54,87,217,.45);
+}
+
+.hand-card.dead{
+  cursor:not-allowed;
+  background:#fafafa;
+  color:#98a2b3;
+  border-style:dashed;
+  transform:none;
+}
+
+.hand-card.selected{
+  border-color:var(--accent);
+  box-shadow:0 0 0 4px var(--accent-soft);
+  background:#fbfcff;
+}
+
+.hand-label{
+  font-weight:850;
+  font-size:.94rem;
+  color:var(--muted);
+}
+
+.power{
+  font-size:2.35rem;
+  line-height:1;
+  font-weight:950;
+  letter-spacing:-.05em;
+  margin-top:6px;
+}
+
+.hand-emoji{
+  font-size:2.1rem;
+  margin:5px 0 3px;
+}
+
+.finger-visual{
+  height:54px;
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+  gap:6px;
+  margin:6px 0 8px;
+}
+
+.finger{
+  width:16px;
+  height:42px;
+  border-radius:999px 999px 8px 8px;
+  background:#e3e7ef;
+  border:1px solid #d2d8e5;
+}
+
+.finger.on{
+  background:linear-gradient(180deg, #ffd9aa, #f4b56f);
+  border-color:#e7a25b;
+}
+
+.finger:nth-child(1){height:30px;}
+.finger:nth-child(2){height:44px;}
+.finger:nth-child(3){height:40px;}
+.finger:nth-child(4){height:34px;}
+
+.boom{
+  font-size:2.7rem;
+  line-height:1;
+  padding-bottom:5px;
+}
+
+.hint-text{
+  min-height:40px;
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:16px;
+  padding:12px 14px;
+  margin:14px 0;
+  color:var(--text);
+  line-height:1.45;
+}
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:12px;
+}
+
+@media (max-width:650px){
+  .controls{grid-template-columns:1fr;}
+}
+
+.control-box{
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fff;
+  padding:14px;
+}
+
+.control-box h3,
+.side h2,
+.side h3{
+  margin:0 0 10px;
+  font-size:1.05rem;
+  letter-spacing:-.02em;
+}
+
+.split-options{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+button{
+  appearance:none;
+  border:1px solid var(--line);
+  background:#fff;
+  color:var(--text);
+  border-radius:999px;
+  padding:10px 13px;
+  font-weight:850;
+  cursor:pointer;
+  transition:.15s ease;
+  font-family:inherit;
+}
+
+button:hover:not(:disabled){
+  transform:translateY(-1px);
+  border-color:rgba(54,87,217,.55);
+  box-shadow:0 4px 12px rgba(23,32,51,.10);
+}
+
+button.danger{
+  background:var(--danger-soft);
+  color:var(--danger);
+  border-color:rgba(217,54,54,.22);
+}
+
+button:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+.actions-row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+
+.side{
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.rules,
+.history-card,
+.strategy-card{
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:#fff;
+  padding:15px;
+}
+
+ol, ul{
+  margin:8px 0 0 1.25rem;
+  padding:0;
+  color:var(--muted);
+  line-height:1.55;
+}
+
+li{margin:5px 0;}
+
+.history{
+  max-height:260px;
+  overflow:auto;
+  padding-right:4px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.move{
+  border-left:4px solid var(--accent-soft);
+  background:#fafbff;
+  padding:9px 10px;
+  border-radius:10px;
+  color:#344054;
+  font-size:.92rem;
+  line-height:1.35;
+}
+
+.winner-banner{
+  display:none;
+  margin-bottom:14px;
+  border:1px solid rgba(23,138,85,.28);
+  background:var(--ok-soft);
+  color:#0d6b40;
+  border-radius:18px;
+  padding:15px;
+  font-weight:900;
+  font-size:1.15rem;
+}
+
+.winner-banner.show{display:block;}
+
+code{
+  background:#f2f4f7;
+  padding:2px 6px;
+  border-radius:7px;
+}
+```
+
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Exploding Hands</h1>
+    <p class="subtitle">
+      A two-player adding-and-splitting game. Attack your opponent’s hands, repair your own hands before Sudden Death, and try to make both opponent hands explode.
+    </p>
+  </header>
+
+  <main>
+    <section class="card game-area" aria-label="Playable Exploding Hands game">
+      <div id="winnerBanner" class="winner-banner"></div>
+
+```
+  <div class="status-bar">
+    <div class="status-box">
+      <p id="turnTitle" class="turn-title">Player A's turn</p>
+      <div id="turnInfo" class="small">A: 0 turns · B: 0 turns</div>
+    </div>
+    <div class="status-box">
+      <div id="phaseBadge" class="phase-badge">Build Phase</div>
+      <div id="phaseText" class="small" style="margin-top:8px;">Redistribution is allowed until both players have taken 8 turns.</div>
+    </div>
+  </div>
+
+  <div id="board" class="board"></div>
+
+  <div id="message" class="hint-text">
+    Player A begins. Click one of your alive hands, then click an opponent’s alive hand to attack.
+  </div>
+
+  <div class="controls">
+    <div class="control-box">
+      <h3>Redistribute</h3>
+      <p id="splitIntro" class="small">Choose one valid split for the current player.</p>
+      <div id="splitOptions" class="split-options"></div>
+    </div>
+
+    <div class="control-box">
+      <h3>Game Controls</h3>
+      <div class="actions-row">
+        <button id="undoBtn">Undo Move</button>
+        <button id="resetBtn" class="danger">Reset Game</button>
+      </div>
+      <p class="small" style="margin-bottom:0;">
+        Tip: Use redistribution to enter Sudden Death with two alive hands.
+      </p>
+    </div>
+  </div>
+</section>
+
+<aside class="card side">
+  <section class="rules">
+    <h2>Game Rules</h2>
+    <ol>
+      <li>Each player starts with two hands: <code>1/1</code>.</li>
+      <li>On your turn, either attack or redistribute.</li>
+      <li>To attack, use one alive hand to add its power to one opponent hand.</li>
+      <li>If a hand reaches 5 or more, it explodes and becomes <code>0</code>.</li>
+      <li>A <code>0</code>-hand cannot attack.</li>
+      <li>To redistribute, keep the same total power, but split it differently between your two hands.</li>
+      <li>Redistribution must leave both hands alive, so each hand must be between 1 and 4.</li>
+      <li>After both players have taken 8 turns, Sudden Death begins. From then on, only attacks are allowed.</li>
+      <li>The first player whose two hands are both <code>0/0</code> loses.</li>
+    </ol>
+  </section>
+
+  <section class="strategy-card">
+    <h3>Strategy Hint</h3>
+    <ul>
+      <li>Try to explode one opponent hand first.</li>
+      <li>Before Sudden Death, avoid having only one alive hand.</li>
+      <li>Good Sudden Death targets are <code>2/3</code>, <code>3/3</code>, <code>2/4</code>, and <code>3/4</code>.</li>
+    </ul>
+  </section>
+
+  <section class="history-card">
+    <h3>Move History</h3>
+    <div id="history" class="history"></div>
+  </section>
+</aside>
+```
+
+  </main>
+
+  <script>
+    const EXPLODE_AT = 5;
+    const SUDDEN_DEATH_TURNS = 8;
+
+    const initialGame = () => ({
+      hands: { A: [1, 1], B: [1, 1] },
+      turnsTaken: { A: 0, B: 0 },
+      turn: "A",
+      selected: null,
+      gameOver: false,
+      winner: null,
+      log: []
+    });
+
+    let game = initialGame();
+    let undoStack = [];
+
+    const board = document.getElementById("board");
+    const message = document.getElementById("message");
+    const turnTitle = document.getElementById("turnTitle");
+    const turnInfo = document.getElementById("turnInfo");
+    const phaseBadge = document.getElementById("phaseBadge");
+    const phaseText = document.getElementById("phaseText");
+    const splitOptions = document.getElementById("splitOptions");
+    const splitIntro = document.getElementById("splitIntro");
+    const historyBox = document.getElementById("history");
+    const winnerBanner = document.getElementById("winnerBanner");
+    const undoBtn = document.getElementById("undoBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    function otherPlayer(player){
+      return player === "A" ? "B" : "A";
+    }
+
+    function isSuddenDeath(){
+      return game.turnsTaken.A >= SUDDEN_DEATH_TURNS && game.turnsTaken.B >= SUDDEN_DEATH_TURNS;
+    }
+
+    function isAlive(value){
+      return value > 0;
+    }
+
+    function saveUndo(){
+      undoStack.push(JSON.stringify(game));
+      if(undoStack.length > 80){
+        undoStack.shift();
+      }
+    }
+
+    function setMessage(text){
+      message.innerHTML = text;
+    }
+
+    function handName(index){
+      return index === 0 ? "Left" : "Right";
+    }
+
+    function handCode(player, index){
+      return `${player}${index + 1}`;
+    }
+
+    function handVisual(value){
+      if(value === 0){
+        return `<div class="boom" aria-label="exploded hand">💥</div>`;
+      }
+
+      let fingers = "";
+      for(let i = 1; i <= 4; i++){
+        fingers += `<span class="finger ${i <= value ? "on" : ""}"></span>`;
+      }
+      return `<div class="finger-visual" aria-label="${value} fingers">${fingers}</div>`;
+    }
+
+    function playerPanel(player){
+      const active = game.turn === player && !game.gameOver;
+      const hands = game.hands[player];
+      const handCards = hands.map((value, index) => {
+        const dead = value === 0;
+        const selected = game.selected && game.selected.player === player && game.selected.index === index;
+        return `
+          <button
+            class="hand-card ${dead ? "dead" : ""} ${selected ? "selected" : ""}"
+            data-player="${player}"
+            data-index="${index}"
+            aria-label="Player ${player} ${handName(index)} hand, power ${value}"
+            ${game.gameOver ? "disabled" : ""}
+          >
+            <span class="hand-label">${handCode(player, index)} · ${handName(index)}</span>
+            <span class="power">${value}</span>
+            <span class="hand-emoji">${dead ? "✊" : "🤚"}</span>
+            ${handVisual(value)}
+          </button>
+        `;
+      }).join("");
+
+      return `
+        <section class="player-panel ${active ? "active" : ""}">
+          <div class="player-top">
+            <h2 class="player-name">Player ${player}</h2>
+            <span class="turn-count">Turns: ${game.turnsTaken[player]}/${SUDDEN_DEATH_TURNS}</span>
+          </div>
+          <div class="hands">${handCards}</div>
+        </section>
+      `;
+    }
+
+    function render(){
+      board.innerHTML = playerPanel("A") + playerPanel("B");
+
+      document.querySelectorAll(".hand-card").forEach(button => {
+        button.addEventListener("click", () => {
+          const player = button.dataset.player;
+          const index = Number(button.dataset.index);
+          handleHandClick(player, index);
+        });
+      });
+
+      renderStatus();
+      renderSplitOptions();
+      renderHistory();
+      undoBtn.disabled = undoStack.length === 0;
+    }
+
+    function renderStatus(){
+      if(game.gameOver){
+        turnTitle.textContent = `Player ${game.winner} wins!`;
+        winnerBanner.textContent = `Player ${game.winner} wins! Player ${otherPlayer(game.winner)} has no alive hands.`;
+        winnerBanner.classList.add("show");
+      }else{
+        turnTitle.textContent = `Player ${game.turn}'s turn`;
+        winnerBanner.classList.remove("show");
+      }
+
+      turnInfo.textContent = `A: ${game.turnsTaken.A} turns · B: ${game.turnsTaken.B} turns`;
+
+      if(isSuddenDeath()){
+        phaseBadge.textContent = "Sudden Death";
+        phaseBadge.classList.add("sudden");
+        phaseText.textContent = "No more redistribution. Only attacks are allowed.";
+      }else{
+        phaseBadge.textContent = "Build Phase";
+        phaseBadge.classList.remove("sudden");
+        phaseText.textContent = "Redistribution is allowed until both players have taken 8 turns.";
+      }
+    }
+
+    function validSplits(player){
+      const [left, right] = game.hands[player];
+      const total = left + right;
+      const splits = [];
+
+      for(let a = 1; a <= 4; a++){
+        for(let b = 1; b <= 4; b++){
+          const sameTotal = a + b === total;
+          const differentOrderedPosition = a !== left || b !== right;
+          if(sameTotal && differentOrderedPosition){
+            splits.push([a, b]);
+          }
+        }
+      }
+
+      return splits;
+    }
+
+    function renderSplitOptions(){
+      splitOptions.innerHTML = "";
+
+      if(game.gameOver){
+        splitIntro.textContent = "The game is over. Reset to play again.";
+        return;
+      }
+
+      if(isSuddenDeath()){
+        splitIntro.textContent = "Sudden Death has started. Redistribution is no longer allowed.";
+        return;
+      }
+
+      const splits = validSplits(game.turn);
+      const current = game.hands[game.turn].join("/");
+      splitIntro.textContent = `Current player ${game.turn}: ${current}. Choose a legal redistribution.`;
+
+      if(splits.length === 0){
+        splitOptions.innerHTML = `<span class="small">No legal redistribution is available.</span>`;
+        return;
+      }
+
+      splits.forEach(([a, b]) => {
+        const btn = document.createElement("button");
+        btn.textContent = `${a}/${b}`;
+        btn.title = `Redistribute to ${a}/${b}`;
+        btn.addEventListener("click", () => redistribute(a, b));
+        splitOptions.appendChild(btn);
+      });
+    }
+
+    function renderHistory(){
+      if(game.log.length === 0){
+        historyBox.innerHTML = `<p class="small">No moves yet.</p>`;
+        return;
+      }
+
+      historyBox.innerHTML = game.log
+        .slice()
+        .reverse()
+        .map(item => `<div class="move">${item}</div>`)
+        .join("");
+    }
+
+    function handleHandClick(player, index){
+      if(game.gameOver) return;
+
+      const current = game.turn;
+      const opponent = otherPlayer(current);
+      const value = game.hands[player][index];
+
+      if(!game.selected){
+        if(player !== current){
+          setMessage(`It is Player ${current}'s turn. First choose one of Player ${current}'s alive hands.`);
+          return;
+        }
+        if(!isAlive(value)){
+          setMessage(`That hand has exploded and cannot attack. Choose an alive hand.`);
+          return;
+        }
+        game.selected = { player, index };
+        setMessage(`Selected ${handCode(player, index)} with power ${value}. Now click one of Player ${opponent}'s alive hands to attack.`);
+        render();
+        return;
+      }
+
+      const selected = game.selected;
+
+      if(player === current){
+        if(!isAlive(value)){
+          setMessage(`That hand has exploded. Choose an alive hand or attack with the selected hand.`);
+          return;
+        }
+        game.selected = { player, index };
+        setMessage(`Changed selection to ${handCode(player, index)} with power ${value}. Now click an opponent hand to attack.`);
+        render();
+        return;
+      }
+
+      if(player !== opponent){
+        setMessage(`Click an opponent's alive hand to attack.`);
+        return;
+      }
+
+      if(!isAlive(value)){
+        setMessage(`That opponent hand has already exploded. Choose an alive opponent hand.`);
+        return;
+      }
+
+      attack(selected.index, index);
+    }
+
+    function attack(attackerIndex, targetIndex){
+      const attacker = game.turn;
+      const defender = otherPlayer(attacker);
+      const attackerValue = game.hands[attacker][attackerIndex];
+      const targetValue = game.hands[defender][targetIndex];
+      const rawValue = attackerValue + targetValue;
+      const newValue = rawValue >= EXPLODE_AT ? 0 : rawValue;
+
+      saveUndo();
+
+      game.hands[defender][targetIndex] = newValue;
+      game.selected = null;
+
+      const explosionText = newValue === 0 ? ` It reaches ${rawValue}, so it explodes.` : "";
+      game.log.push(
+        `Player ${attacker}: ${handCode(attacker, attackerIndex)} (${attackerValue}) attacks ${handCode(defender, targetIndex)} (${targetValue}).${explosionText} New state: A ${game.hands.A.join("/")} · B ${game.hands.B.join("/")}.`
+      );
+
+      endTurn(`${handCode(attacker, attackerIndex)} attacked ${handCode(defender, targetIndex)}.${explosionText}`);
+    }
+
+    function redistribute(left, right){
+      if(game.gameOver) return;
+
+      if(isSuddenDeath()){
+        setMessage("Sudden Death has started. Redistribution is no longer allowed.");
+        return;
+      }
+
+      const player = game.turn;
+      const old = game.hands[player].slice();
+      const legal = validSplits(player).some(([a, b]) => a === left && b === right);
+
+      if(!legal){
+        setMessage("That redistribution is not legal. It must keep the same total and leave both hands alive.");
+        return;
+      }
+
+      saveUndo();
+
+      game.hands[player] = [left, right];
+      game.selected = null;
+      game.log.push(
+        `Player ${player}: redistributes ${old.join("/")} → ${left}/${right}. New state: A ${game.hands.A.join("/")} · B ${game.hands.B.join("/")}.`
+      );
+
+      endTurn(`Player ${player} redistributed ${old.join("/")} → ${left}/${right}.`);
+    }
+
+    function endTurn(actionMessage){
+      const current = game.turn;
+      const opponent = otherPlayer(current);
+
+      game.turnsTaken[current] += 1;
+
+      if(game.hands[opponent][0] === 0 && game.hands[opponent][1] === 0){
+        game.gameOver = true;
+        game.winner = current;
+        setMessage(`${actionMessage} Player ${opponent} has 0/0, so Player ${current} wins!`);
+        render();
+        return;
+      }
+
+      game.turn = opponent;
+
+      if(isSuddenDeath()){
+        setMessage(`${actionMessage} Sudden Death is active now: only attacks are allowed. Player ${game.turn}'s turn.`);
+      }else{
+        setMessage(`${actionMessage} Player ${game.turn}'s turn.`);
+      }
+
+      render();
+    }
+
+    resetBtn.addEventListener("click", () => {
+      game = initialGame();
+      undoStack = [];
+      setMessage("New game started. Player A begins.");
+      render();
+    });
+
+    undoBtn.addEventListener("click", () => {
+      if(undoStack.length === 0) return;
+      game = JSON.parse(undoStack.pop());
+      game.selected = null;
+      setMessage("Last move undone.");
+      render();
+    });
+
+    render();
+  </script>
+
+</body>
+</html>
