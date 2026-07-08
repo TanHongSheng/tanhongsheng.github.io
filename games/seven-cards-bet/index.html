@@ -340,7 +340,7 @@
 
     .scoreboard{
       display:grid;
-      grid-template-columns:repeat(4, minmax(0, 1fr));
+      grid-template-columns:repeat(5, minmax(0, 1fr));
       gap:10px;
       margin-bottom:18px;
     }
@@ -631,35 +631,37 @@
 
     <section id="lobby" class="panel">
       <div class="panel-inner">
-        <div class="name-card">
-          <label for="playerName">Your name</label>
-          <input id="playerName" type="text" maxlength="24" placeholder="Example: Player A" autocomplete="off" />
-          <p class="input-help">Use two devices. Each player opens the game on their own screen, so card choices stay hidden until the round result.</p>
-        </div>
-
         <div class="lobby-grid">
           <div class="box">
-            <h2>Host a New Room</h2>
-            <p>Create a room first. The game will open the room immediately and give you an invite link to send to Player B.</p>
-            <label for="customRoomCodeInput">Room code for this game</label>
-            <input id="customRoomCodeInput" type="text" maxlength="8" placeholder="Leave blank for random code" autocomplete="off" />
-            <p class="input-help">Optional: type your own code, such as <strong>MATH7</strong>. If you leave it blank, the game creates one.</p>
-            <div class="button-row" style="margin-top:14px">
-              <button id="createRoomBtn" class="btn">Create Room</button>
+            <h2>Play on Two Devices</h2>
+            <p>Player A creates a room and sends the invite link to Player B. Each player uses their own phone, tablet, or computer, so hidden cards stay private.</p>
+
+            <div class="form-row">
+              <div>
+                <label for="playerName">Your name</label>
+                <input id="playerName" type="text" maxlength="24" placeholder="Player name" autocomplete="off" />
+              </div>
+              <div>
+                <label for="roomCodeInput">Room code</label>
+                <input id="roomCodeInput" type="text" maxlength="8" placeholder="Optional for host, required to join" autocomplete="off" />
+              </div>
             </div>
+
+            <div class="button-row">
+              <button id="createRoomBtn" class="btn">Create Room</button>
+              <button id="joinRoomBtn" class="btn secondary">Join Room</button>
+            </div>
+
+            <div id="lobbyMessage" class="note hidden"></div>
           </div>
 
           <div class="box">
-            <h2>Join a Room</h2>
-            <p>Open your friend’s invite link, or type the room code here. Then click Join Room.</p>
-            <label for="roomCodeInput">Room code</label>
-            <input id="roomCodeInput" type="text" maxlength="8" placeholder="Example: A7K2Q" autocomplete="off" />
-            <div class="button-row" style="margin-top:14px">
-              <button id="joinRoomBtn" class="btn secondary">Join Room</button>
-            </div>
+            <h3>Quick Player Guide</h3>
+            <p><strong>Host:</strong> enter your name. You may type a room code, or leave it blank and let the game create one. Then click <strong>Create Room</strong>.</p>
+            <p><strong>Second player:</strong> open the invite link, enter your name, and click <strong>Join Room</strong>.</p>
+            <p>After both players join, Player A chooses who attacks first. The other player attacks in the second half.</p>
           </div>
         </div>
-        <div id="lobbyMessage" class="note hidden"></div>
       </div>
     </section>
 
@@ -669,6 +671,7 @@
           <span>Room <span id="roomCodeLabel">-----</span></span>
           <span id="youAreLabel" class="pill strong">You are Player ?</span>
           <span id="phaseLabel" class="pill">Waiting</span>
+          <span id="playersLabel" class="pill">A: - · B: -</span>
         </div>
         <div class="button-row">
           <button id="copyLinkBtn" class="btn secondary">Copy Invite Link</button>
@@ -683,8 +686,12 @@
             <div id="roundStat" class="value">-</div>
           </div>
           <div class="stat">
-            <div class="label">Current Attacker</div>
+            <div class="label">Attacker</div>
             <div id="attackerStat" class="value">-</div>
+          </div>
+          <div class="stat">
+            <div class="label">Defender</div>
+            <div id="defenderStat" class="value">-</div>
           </div>
           <div class="stat">
             <div class="label">Player A Score</div>
@@ -722,7 +729,7 @@
     <section class="rules">
       <h2>Game Rules</h2>
       <ol>
-        <li>A full match has two halves. In the first half, Player A is the Attacker and Player B is the Defender. In the second half, they switch roles.</li>
+        <li>A full match has two attack halves. After both players join, Player A chooses who attacks first. In the second half, the players switch roles.</li>
         <li>At the start of each half, both players have seven cards: <strong>1, 2, 3, 4, 5, 6, 7</strong>. Each card can be used only once in that half.</li>
         <li>Each half has seven rounds. In each round, the Attacker secretly chooses one unused card and chooses a public bet from <strong>1 to 7 points</strong>.</li>
         <li>The Defender sees only the bet amount. Then the Defender secretly chooses one unused card.</li>
@@ -761,7 +768,7 @@
       lobby: document.getElementById("lobby"),
       game: document.getElementById("game"),
       playerName: document.getElementById("playerName"),
-      customRoomCodeInput: document.getElementById("customRoomCodeInput"),
+      customRoomCodeInput: document.getElementById("roomCodeInput"),
       roomCodeInput: document.getElementById("roomCodeInput"),
       createRoomBtn: document.getElementById("createRoomBtn"),
       joinRoomBtn: document.getElementById("joinRoomBtn"),
@@ -769,10 +776,12 @@
       roomCodeLabel: document.getElementById("roomCodeLabel"),
       youAreLabel: document.getElementById("youAreLabel"),
       phaseLabel: document.getElementById("phaseLabel"),
+      playersLabel: document.getElementById("playersLabel"),
       copyLinkBtn: document.getElementById("copyLinkBtn"),
       leaveBtn: document.getElementById("leaveBtn"),
       roundStat: document.getElementById("roundStat"),
       attackerStat: document.getElementById("attackerStat"),
+      defenderStat: document.getElementById("defenderStat"),
       scoreAStat: document.getElementById("scoreAStat"),
       scoreBStat: document.getElementById("scoreBStat"),
       playerAName: document.getElementById("playerAName"),
@@ -904,15 +913,16 @@
       }
 
       const room = {
-        version: 3,
+        version: 4,
         createdAt: Date.now(),
         updatedAt: Date.now(),
         status: "active",
         phase: "waiting",
         attackTurn: 1,
         round: 1,
-        currentAttacker: "A",
-        currentDefender: "B",
+        firstAttacker: null,
+        currentAttacker: null,
+        currentDefender: null,
         players: {
           A: { name, joinedAt: Date.now() }
         },
@@ -948,7 +958,7 @@
       if(!room.players?.B){
         await update(roomRef(code), {
           "players/B": { name, joinedAt: Date.now() },
-          phase: room.phase === "waiting" ? "attacker_select" : room.phase,
+          phase: room.phase === "waiting" ? "choose_first_attacker" : room.phase,
           updatedAt: Date.now()
         });
         localStorage.setItem(playerKey(code), "B");
@@ -1012,6 +1022,7 @@
     function phaseText(phase){
       const map = {
         waiting: "Waiting",
+        choose_first_attacker: "Choose first attacker",
         attacker_select: "Attacker chooses",
         defender_select: "Defender chooses",
         result: "Round result",
@@ -1046,7 +1057,9 @@
       els.youAreLabel.textContent = `You are Player ${playerId} · ${roleOf(playerId)}`;
       els.phaseLabel.textContent = phaseText(currentRoom.phase);
       els.roundStat.textContent = currentRoom.phase === "finished" ? "Game over" : `${currentRoom.round || 1} / 7`;
-      els.attackerStat.textContent = playerName(currentRoom.currentAttacker);
+      els.attackerStat.textContent = currentRoom.currentAttacker ? playerName(currentRoom.currentAttacker) : "Not chosen";
+      els.defenderStat.textContent = currentRoom.currentDefender ? playerName(currentRoom.currentDefender) : "Not chosen";
+      els.playersLabel.textContent = `A: ${playerName("A")} · B: ${playerName("B")}`;
       els.scoreAStat.textContent = currentRoom.scores?.A ?? 0;
       els.scoreBStat.textContent = currentRoom.scores?.B ?? 0;
       els.playerAName.textContent = currentRoom.players?.A?.name || "Player A";
@@ -1065,7 +1078,7 @@
 
       if(phase === "waiting"){
         els.stageTitle.textContent = "Waiting for Player B";
-        els.stageHelp.textContent = "Send the invite link to Player B. When Player B joins, the first round starts automatically.";
+        els.stageHelp.textContent = "Send the invite link to Player B. After Player B joins, Player A will choose who attacks first.";
         const box = document.createElement("div");
         box.className = "choice-section";
         box.innerHTML = `
@@ -1074,6 +1087,18 @@
           <div class="link-box">${inviteLink(roomCode)}</div>
         `;
         els.actionArea.appendChild(box);
+        return;
+      }
+
+      if(phase === "choose_first_attacker"){
+        els.stageTitle.textContent = "Choose the first Attacker";
+        if(playerId === "A"){
+          els.stageHelp.textContent = "Both players have joined. Player A chooses who will attack first.";
+          renderFirstAttackerControls();
+        }else{
+          els.stageHelp.textContent = "Waiting for Player A to choose who attacks first.";
+          renderWaitingBox("Waiting for Player A", "After Player A chooses, the first round will begin.");
+        }
         return;
       }
 
@@ -1122,6 +1147,46 @@
         els.stageHelp.textContent = currentRoom.errorMessage || "Start a new room to play again.";
         renderResetControls();
       }
+    }
+
+
+    function renderFirstAttackerControls(){
+      const box = document.createElement("div");
+      box.className = "choice-section";
+      box.innerHTML = `<h3>Who attacks first?</h3><p class="stage-help">The other player will attack in the second half.</p>`;
+
+      const row = document.createElement("div");
+      row.className = "button-row";
+
+      const btnA = document.createElement("button");
+      btnA.className = "btn";
+      btnA.textContent = `${playerName("A")} attacks first`;
+      btnA.addEventListener("click", () => chooseFirstAttacker("A"));
+      row.appendChild(btnA);
+
+      const btnB = document.createElement("button");
+      btnB.className = "btn secondary";
+      btnB.textContent = `${playerName("B")} attacks first`;
+      btnB.addEventListener("click", () => chooseFirstAttacker("B"));
+      row.appendChild(btnB);
+
+      box.appendChild(row);
+      els.actionArea.appendChild(box);
+    }
+
+    async function chooseFirstAttacker(pid){
+      if(playerId !== "A" || currentRoom.phase !== "choose_first_attacker") return;
+      if(!currentRoom.players?.A || !currentRoom.players?.B){
+        return showNote(els.gameMessage, "Wait until both players have joined.", "warn");
+      }
+      const defender = pid === "A" ? "B" : "A";
+      await update(roomRef(roomCode), {
+        firstAttacker: pid,
+        currentAttacker: pid,
+        currentDefender: defender,
+        phase: "attacker_select",
+        updatedAt: Date.now()
+      });
     }
 
     function renderWaitingBox(title, text){
@@ -1348,8 +1413,8 @@
       }else if(currentRoom.attackTurn === 1){
         updates.attackTurn = 2;
         updates.round = 1;
-        updates.currentAttacker = "B";
-        updates.currentDefender = "A";
+        updates.currentAttacker = currentRoom.currentDefender;
+        updates.currentDefender = currentRoom.currentAttacker;
         updates.usedCards = { A: {}, B: {} };
         updates.phase = "attacker_select";
       }else{
@@ -1442,4 +1507,5 @@
   </script>
 </body>
 </html>
+
 
