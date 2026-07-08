@@ -1,0 +1,1429 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Seven Card Bet Online</title>
+  <style>
+    :root{
+      --bg:#f6f3ee;
+      --panel:#fffaf1;
+      --panel2:#ffffff;
+      --ink:#241a12;
+      --muted:#6b5e52;
+      --line:#e8dccc;
+      --accent:#b66b2e;
+      --accent2:#7c4d2a;
+      --good:#277245;
+      --bad:#a93636;
+      --draw:#6a5f56;
+      --warning:#9c6a13;
+      --shadow:0 18px 45px rgba(55, 33, 12, .12);
+      --radius:24px;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family: ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(255,214,157,.45), transparent 34rem),
+        radial-gradient(circle at bottom right, rgba(164,103,49,.18), transparent 34rem),
+        var(--bg);
+      min-height:100vh;
+    }
+
+    header{
+      padding:30px 18px 8px;
+      text-align:center;
+    }
+
+    h1{
+      margin:0;
+      font-size:clamp(2rem, 5vw, 4.3rem);
+      letter-spacing:-.055em;
+      line-height:.95;
+    }
+
+    .subtitle{
+      margin:12px auto 0;
+      color:var(--muted);
+      max-width:820px;
+      font-size:clamp(1rem, 2vw, 1.15rem);
+      line-height:1.45;
+    }
+
+    .wrap{
+      width:min(1240px, calc(100% - 28px));
+      margin:20px auto 46px;
+    }
+
+    .panel{
+      background:rgba(255,250,241,.94);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .panel-inner{ padding:22px; }
+
+    .hidden{ display:none !important; }
+
+    .config-warning{
+      margin:0 0 16px;
+      border:1px solid rgba(156,106,19,.35);
+      background:#fff4d8;
+      color:#4f3509;
+      border-radius:20px;
+      padding:16px 18px;
+      line-height:1.45;
+    }
+
+    .config-warning strong{ display:block; margin-bottom:4px; }
+
+    .lobby-grid{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:18px;
+    }
+
+    .box{
+      background:rgba(255,255,255,.72);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:18px;
+    }
+
+    .box h2,
+    .box h3{
+      margin:0 0 10px;
+      letter-spacing:-.035em;
+    }
+
+    .box p{
+      margin:0 0 14px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    label{
+      display:block;
+      color:var(--muted);
+      font-size:.86rem;
+      font-weight:850;
+      margin:0 0 7px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+
+    input{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:15px;
+      padding:12px 13px;
+      font:inherit;
+      color:var(--ink);
+      background:#fff;
+      outline:none;
+    }
+
+    input:focus{
+      border-color:rgba(182,107,46,.7);
+      box-shadow:0 0 0 4px rgba(182,107,46,.12);
+    }
+
+    .form-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin:0 0 12px;
+    }
+
+    .button-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+    }
+
+    button{
+      font:inherit;
+      border:0;
+      cursor:pointer;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      border-radius:16px;
+      padding:12px 16px;
+      background:var(--accent);
+      color:white;
+      font-weight:900;
+      box-shadow:0 10px 20px rgba(126,76,33,.18);
+      transition:.15s transform, .15s box-shadow, .15s opacity;
+      min-height:46px;
+    }
+
+    .btn:hover:not(:disabled){
+      transform:translateY(-2px);
+      box-shadow:0 14px 24px rgba(126,76,33,.23);
+    }
+
+    .btn.secondary{
+      color:var(--ink);
+      background:#fff;
+      border:1px solid var(--line);
+      box-shadow:none;
+    }
+
+    .btn.ghost{
+      color:var(--accent2);
+      background:transparent;
+      border:1px solid rgba(124,77,42,.28);
+      box-shadow:none;
+    }
+
+    .btn.danger{ background:#9a3939; }
+
+    .btn:disabled{
+      opacity:.5;
+      cursor:not-allowed;
+      transform:none;
+    }
+
+    .note{
+      margin-top:12px;
+      padding:12px 13px;
+      border-radius:14px;
+      background:#fff;
+      border:1px solid var(--line);
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .note.good{ border-color:rgba(39,114,69,.3); color:#1e5735; background:#effaf2; }
+    .note.bad{ border-color:rgba(169,54,54,.3); color:#7a2727; background:#fff0f0; }
+    .note.warn{ border-color:rgba(156,106,19,.3); color:#6b490d; background:#fff7e5; }
+
+    .room-bar{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      padding:15px 18px;
+      border-bottom:1px solid var(--line);
+      background:rgba(255,255,255,.55);
+    }
+
+    .room-title{
+      display:flex;
+      flex-wrap:wrap;
+      gap:9px;
+      align-items:center;
+      font-weight:950;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      padding:7px 10px;
+      background:white;
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-size:.88rem;
+      font-weight:850;
+    }
+
+    .pill.strong{
+      color:white;
+      background:var(--accent2);
+      border-color:var(--accent2);
+    }
+
+    .scoreboard{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+      gap:10px;
+      margin-bottom:18px;
+    }
+
+    .stat{
+      background:white;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:13px 14px;
+      min-height:82px;
+    }
+
+    .stat .label{
+      color:var(--muted);
+      font-size:.79rem;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.075em;
+    }
+
+    .stat .value{
+      margin-top:8px;
+      font-size:1.35rem;
+      font-weight:950;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .play-layout{
+      display:grid;
+      grid-template-columns:220px minmax(0, 1fr) 220px;
+      gap:16px;
+      align-items:start;
+    }
+
+    .used-panel{
+      background:rgba(255,255,255,.7);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:15px;
+      min-height:280px;
+    }
+
+    .used-panel h3{
+      margin:0 0 4px;
+      font-size:1.08rem;
+      letter-spacing:-.02em;
+    }
+
+    .used-panel .role-label{
+      margin:0 0 12px;
+      color:var(--muted);
+      font-size:.92rem;
+      font-weight:750;
+    }
+
+    .side-cards{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:9px;
+    }
+
+    .mini-card,
+    .play-card,
+    .bet-btn{
+      position:relative;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:16px;
+      border:1px solid #d9c5ae;
+      background:linear-gradient(180deg, #fff, #fff7ea);
+      color:var(--ink);
+      font-weight:950;
+      box-shadow:0 7px 16px rgba(66,39,14,.08);
+      user-select:none;
+    }
+
+    .mini-card{
+      height:56px;
+      font-size:1.1rem;
+    }
+
+    .mini-card.used{
+      opacity:.52;
+      background:#f5eee5;
+    }
+
+    .mini-card.used::before,
+    .mini-card.used::after{
+      content:"";
+      position:absolute;
+      width:78%;
+      height:4px;
+      background:rgba(169,54,54,.78);
+      border-radius:99px;
+      left:11%;
+      top:50%;
+    }
+
+    .mini-card.used::before{ transform:rotate(42deg); }
+    .mini-card.used::after{ transform:rotate(-42deg); }
+
+    .table{
+      background:rgba(255,255,255,.76);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:20px;
+      min-height:426px;
+    }
+
+    .stage-title{
+      margin:0 0 8px;
+      font-size:1.55rem;
+      letter-spacing:-.04em;
+    }
+
+    .stage-help{
+      margin:0 0 16px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .choice-section{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:16px;
+      margin:12px 0;
+    }
+
+    .choice-section h3{
+      margin:0 0 10px;
+      letter-spacing:-.02em;
+    }
+
+    .cards-row,
+    .bets-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .play-card{
+      width:58px;
+      height:74px;
+      font-size:1.45rem;
+      cursor:pointer;
+      transition:.15s transform, .15s box-shadow, .15s border-color, .15s opacity;
+    }
+
+    .bet-btn{
+      width:62px;
+      height:54px;
+      font-size:1.1rem;
+      cursor:pointer;
+      transition:.15s transform, .15s box-shadow, .15s border-color, .15s opacity;
+    }
+
+    .play-card:hover:not(:disabled),
+    .bet-btn:hover:not(:disabled){
+      transform:translateY(-2px);
+      box-shadow:0 12px 21px rgba(66,39,14,.13);
+    }
+
+    .play-card.selected,
+    .bet-btn.selected{
+      border-color:var(--accent);
+      box-shadow:0 0 0 4px rgba(182,107,46,.18), 0 13px 24px rgba(66,39,14,.14);
+      background:linear-gradient(180deg, #fff7e6, #ffd99f);
+    }
+
+    .play-card:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+
+    .big-result{
+      display:grid;
+      grid-template-columns:1fr auto 1fr;
+      gap:14px;
+      align-items:center;
+      margin:15px 0;
+    }
+
+    .reveal-card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:16px;
+      text-align:center;
+    }
+
+    .reveal-card .who{
+      color:var(--muted);
+      font-size:.86rem;
+      text-transform:uppercase;
+      letter-spacing:.07em;
+      font-weight:900;
+    }
+
+    .reveal-card .num{
+      font-size:3.4rem;
+      line-height:1;
+      margin-top:8px;
+      font-weight:1000;
+      letter-spacing:-.06em;
+    }
+
+    .versus{
+      color:var(--muted);
+      font-weight:1000;
+    }
+
+    .rules{
+      margin-top:18px;
+      background:rgba(255,250,241,.92);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:24px;
+    }
+
+    .rules h2{ margin:0 0 10px; letter-spacing:-.04em; }
+    .rules ol{ margin:10px 0 0 1.25rem; padding:0; line-height:1.62; color:#3b2c21; }
+    .rules li{ padding-left:4px; }
+    .rules .small{ color:var(--muted); margin-top:12px; line-height:1.45; }
+
+    code{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:9px;
+      padding:2px 6px;
+      font-size:.95em;
+    }
+
+    .setup-code{
+      display:block;
+      white-space:pre-wrap;
+      overflow:auto;
+      background:#21170f;
+      color:#fff2df;
+      padding:14px;
+      border-radius:14px;
+      font-size:.9rem;
+      line-height:1.45;
+      margin:12px 0 0;
+    }
+
+    @media (max-width:980px){
+      .lobby-grid{ grid-template-columns:1fr; }
+      .play-layout{ grid-template-columns:1fr; }
+      .used-panel{ min-height:0; }
+      .side-cards{ grid-template-columns:repeat(7, minmax(38px, 1fr)); }
+      .scoreboard{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width:620px){
+      .form-row{ grid-template-columns:1fr; }
+      .scoreboard{ grid-template-columns:1fr; }
+      .big-result{ grid-template-columns:1fr; }
+      .versus{ text-align:center; }
+      .side-cards{ grid-template-columns:repeat(4, minmax(38px, 1fr)); }
+      .panel-inner{ padding:16px; }
+      .table{ padding:16px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Seven Card Bet</h1>
+    <p class="subtitle">Two-device online version: create a room, share the link, choose hidden cards, and reveal together.</p>
+  </header>
+
+  <main class="wrap">
+    <section id="configWarning" class="config-warning hidden">
+      <strong>Firebase setup needed before online play works.</strong>
+      This file is ready, but you still need to paste your Firebase web app config into the code. After that, upload this HTML file to GitHub Pages.
+    </section>
+
+    <section id="lobby" class="panel">
+      <div class="panel-inner">
+        <div class="lobby-grid">
+          <div class="box">
+            <h2>Start or Join a Room</h2>
+            <p>Use this game with points only. Each player should open the same room link on a different device.</p>
+
+            <div class="form-row">
+              <div>
+                <label for="playerName">Your name</label>
+                <input id="playerName" type="text" maxlength="24" placeholder="Player name" autocomplete="off" />
+              </div>
+              <div>
+                <label for="roomCodeInput">Room code</label>
+                <input id="roomCodeInput" type="text" maxlength="8" placeholder="Example: A7K2Q" autocomplete="off" />
+              </div>
+            </div>
+
+            <div class="button-row">
+              <button id="createRoomBtn" class="btn">Create Room</button>
+              <button id="joinRoomBtn" class="btn secondary">Join Room</button>
+            </div>
+
+            <div id="lobbyMessage" class="note hidden"></div>
+          </div>
+
+          <div class="box">
+            <h3>How the online version works</h3>
+            <p>GitHub Pages shows the game page. Firebase stores a tiny room state, such as the round number, used cards, public bet, and reveal result.</p>
+            <p>The chosen cards are not written directly at first. The page stores a hidden commitment first, then reveals the card after both players lock in.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="game" class="panel hidden">
+      <div class="room-bar">
+        <div class="room-title">
+          <span>Room <span id="roomCodeLabel">-----</span></span>
+          <span id="youAreLabel" class="pill strong">You are Player ?</span>
+          <span id="phaseLabel" class="pill">Waiting</span>
+        </div>
+        <div class="button-row">
+          <button id="copyLinkBtn" class="btn secondary">Copy Invite Link</button>
+          <button id="leaveBtn" class="btn ghost">Leave Room</button>
+        </div>
+      </div>
+
+      <div class="panel-inner">
+        <div class="scoreboard">
+          <div class="stat">
+            <div class="label">Round</div>
+            <div id="roundStat" class="value">-</div>
+          </div>
+          <div class="stat">
+            <div class="label">Current Attacker</div>
+            <div id="attackerStat" class="value">-</div>
+          </div>
+          <div class="stat">
+            <div class="label">Player A Score</div>
+            <div id="scoreAStat" class="value">0</div>
+          </div>
+          <div class="stat">
+            <div class="label">Player B Score</div>
+            <div id="scoreBStat" class="value">0</div>
+          </div>
+        </div>
+
+        <div class="play-layout">
+          <aside class="used-panel">
+            <h3 id="playerAName">Player A</h3>
+            <p id="playerARole" class="role-label">Role: -</p>
+            <div id="usedCardsA" class="side-cards"></div>
+          </aside>
+
+          <section class="table">
+            <h2 id="stageTitle" class="stage-title">Waiting</h2>
+            <p id="stageHelp" class="stage-help">Create or join a room to begin.</p>
+            <div id="gameMessage" class="note hidden"></div>
+            <div id="actionArea"></div>
+          </section>
+
+          <aside class="used-panel">
+            <h3 id="playerBName">Player B</h3>
+            <p id="playerBRole" class="role-label">Role: -</p>
+            <div id="usedCardsB" class="side-cards"></div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="rules">
+      <h2>Game Rules</h2>
+      <ol>
+        <li>Two players play two attack turns. Player A attacks first; Player B attacks second.</li>
+        <li>Each player has cards <strong>1, 2, 3, 4, 5, 6, 7</strong>. A used card cannot be used again during the current attack turn.</li>
+        <li>In each round, the Attacker secretly chooses one unused card and announces a bet amount from <strong>1 to 7 points</strong>.</li>
+        <li>The Defender sees the bet amount, then secretly chooses one unused card.</li>
+        <li>Both cards are revealed. Larger card wins the round.</li>
+        <li>If the Attacker wins, the Attacker gains the bet amount. If the Attacker loses, the Attacker loses the bet amount. If tied, the Attacker gains 0.</li>
+        <li>After 7 rounds, the players switch roles and reset their cards. After the second attack turn, the higher score wins.</li>
+      </ol>
+      <p class="small">Classroom note: use points or tokens only. This version is designed as a probability and strategy game, not real-money play.</p>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import { getDatabase, ref, get, set, update, onValue, off, remove } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
+
+    /**********************************************************************
+     * STEP 1: Paste your Firebase web app config here.
+     *
+     * In Firebase Console:
+     * Project settings -> General -> Your apps -> Web app -> SDK setup
+     **********************************************************************/
+    const firebaseConfig = {
+    apiKey: "AIzaSyCsof6m2GWiplBGxmIzHEPgqD3Ce-4QNOI",
+    authDomain: "seven-card-bet.firebaseapp.com",
+    projectId: "seven-card-bet",
+    storageBucket: "seven-card-bet.firebasestorage.app",
+    messagingSenderId: "415908194633",
+    appId: "1:415908194633:web:be0bcd567c5ec38a2e1298"
+  };
+
+
+    const CARDS = [1,2,3,4,5,6,7];
+    const BETS = [1,2,3,4,5,6,7];
+
+    const els = {
+      configWarning: document.getElementById("configWarning"),
+      lobby: document.getElementById("lobby"),
+      game: document.getElementById("game"),
+      playerName: document.getElementById("playerName"),
+      roomCodeInput: document.getElementById("roomCodeInput"),
+      createRoomBtn: document.getElementById("createRoomBtn"),
+      joinRoomBtn: document.getElementById("joinRoomBtn"),
+      lobbyMessage: document.getElementById("lobbyMessage"),
+      roomCodeLabel: document.getElementById("roomCodeLabel"),
+      youAreLabel: document.getElementById("youAreLabel"),
+      phaseLabel: document.getElementById("phaseLabel"),
+      copyLinkBtn: document.getElementById("copyLinkBtn"),
+      leaveBtn: document.getElementById("leaveBtn"),
+      roundStat: document.getElementById("roundStat"),
+      attackerStat: document.getElementById("attackerStat"),
+      scoreAStat: document.getElementById("scoreAStat"),
+      scoreBStat: document.getElementById("scoreBStat"),
+      playerAName: document.getElementById("playerAName"),
+      playerBName: document.getElementById("playerBName"),
+      playerARole: document.getElementById("playerARole"),
+      playerBRole: document.getElementById("playerBRole"),
+      usedCardsA: document.getElementById("usedCardsA"),
+      usedCardsB: document.getElementById("usedCardsB"),
+      stageTitle: document.getElementById("stageTitle"),
+      stageHelp: document.getElementById("stageHelp"),
+      gameMessage: document.getElementById("gameMessage"),
+      actionArea: document.getElementById("actionArea")
+    };
+
+    let app = null;
+    let db = null;
+    let roomCode = null;
+    let playerId = null;
+    let currentRoom = null;
+    let selectedCard = null;
+    let selectedBet = null;
+    let activeRoomRef = null;
+    let evaluatingRoundKey = "";
+
+    function configLooksReady(){
+      return firebaseConfig.apiKey &&
+        !firebaseConfig.apiKey.includes("PASTE_") &&
+        firebaseConfig.databaseURL &&
+        firebaseConfig.databaseURL.startsWith("https://") &&
+        !firebaseConfig.databaseURL.includes("PASTE_");
+    }
+
+    function safeName(value, fallback){
+      const name = String(value || "").trim().replace(/[<>]/g, "").slice(0, 24);
+      return name || fallback;
+    }
+
+    function showNote(el, message, type=""){
+      el.textContent = message;
+      el.className = `note ${type}`.trim();
+      el.classList.remove("hidden");
+    }
+
+    function hideNote(el){
+      el.classList.add("hidden");
+      el.textContent = "";
+    }
+
+    function makeRoomCode(){
+      const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let code = "";
+      const bytes = new Uint8Array(5);
+      crypto.getRandomValues(bytes);
+      for(const b of bytes){ code += alphabet[b % alphabet.length]; }
+      return code;
+    }
+
+    function roomPath(code){ return `rooms/${code}`; }
+    function roomRef(code){ return ref(db, roomPath(code)); }
+    function playerKey(code){ return `seven-card-bet-player-${code}`; }
+    function nameKey(){ return "seven-card-bet-player-name"; }
+    function choiceKey(code, pid, attackTurn, round){
+      return `seven-card-bet-choice-${code}-${pid}-T${attackTurn}-R${round}`;
+    }
+
+    function inviteLink(code){
+      const url = new URL(window.location.href);
+      url.searchParams.set("room", code);
+      return url.toString();
+    }
+
+    function setUrlRoom(code){
+      const url = new URL(window.location.href);
+      url.searchParams.set("room", code);
+      window.history.replaceState({}, "", url.toString());
+    }
+
+    function clearUrlRoom(){
+      const url = new URL(window.location.href);
+      url.searchParams.delete("room");
+      window.history.replaceState({}, "", url.toString());
+    }
+
+    function initFirebase(){
+      if(!configLooksReady()){
+        els.configWarning.classList.remove("hidden");
+        showNote(els.lobbyMessage, "Before online play works, paste your Firebase config into this HTML file. The setup steps are written below in the guide.", "warn");
+        return false;
+      }
+      app = initializeApp(firebaseConfig);
+      db = getDatabase(app);
+      return true;
+    }
+
+    async function sha256(text){
+      const data = new TextEncoder().encode(text);
+      const buffer = await crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function randomNonce(){
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    function saveLocalChoice(card, nonce){
+      if(!currentRoom || !roomCode || !playerId) return;
+      const key = choiceKey(roomCode, playerId, currentRoom.attackTurn, currentRoom.round);
+      localStorage.setItem(key, JSON.stringify({ card, nonce }));
+    }
+
+    function readLocalChoice(){
+      if(!currentRoom || !roomCode || !playerId) return null;
+      const key = choiceKey(roomCode, playerId, currentRoom.attackTurn, currentRoom.round);
+      try{
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : null;
+      }catch{
+        return null;
+      }
+    }
+
+    async function createRoom(){
+      if(!db) return showNote(els.lobbyMessage, "Please set up Firebase first, then reload this page.", "warn");
+      hideNote(els.lobbyMessage);
+      const name = safeName(els.playerName.value, "Player A");
+      localStorage.setItem(nameKey(), name);
+
+      let code = makeRoomCode();
+      for(let attempts = 0; attempts < 8; attempts++){
+        const snap = await get(roomRef(code));
+        if(!snap.exists()) break;
+        code = makeRoomCode();
+      }
+
+      const room = {
+        version: 1,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        status: "active",
+        phase: "waiting",
+        attackTurn: 1,
+        round: 1,
+        currentAttacker: "A",
+        currentDefender: "B",
+        players: {
+          A: { name, joinedAt: Date.now() }
+        },
+        scores: { A: 0, B: 0 },
+        usedCards: { A: {}, B: {} },
+        current: {}
+      };
+
+      await set(roomRef(code), room);
+      localStorage.setItem(playerKey(code), "A");
+      joinLocalRoom(code, "A");
+      showNote(els.gameMessage, "Room created. Send the invite link to Player B.", "good");
+    }
+
+    async function joinRoom(){
+      if(!db) return showNote(els.lobbyMessage, "Please set up Firebase first, then reload this page.", "warn");
+      hideNote(els.lobbyMessage);
+      const code = String(els.roomCodeInput.value || "").trim().toUpperCase();
+      if(!code) return showNote(els.lobbyMessage, "Enter a room code, or open an invite link.", "warn");
+
+      const snap = await get(roomRef(code));
+      if(!snap.exists()) return showNote(els.lobbyMessage, "Room not found. Check the code again.", "bad");
+
+      const room = snap.val();
+      const stored = localStorage.getItem(playerKey(code));
+      const name = safeName(els.playerName.value, stored === "A" ? "Player A" : "Player B");
+      localStorage.setItem(nameKey(), name);
+
+      if(stored && room.players && room.players[stored]){
+        joinLocalRoom(code, stored);
+        return;
+      }
+
+      if(!room.players?.B){
+        await update(roomRef(code), {
+          "players/B": { name, joinedAt: Date.now() },
+          phase: room.phase === "waiting" ? "attacker_select" : room.phase,
+          updatedAt: Date.now()
+        });
+        localStorage.setItem(playerKey(code), "B");
+        joinLocalRoom(code, "B");
+        return;
+      }
+
+      showNote(els.lobbyMessage, "This room already has two players. Use the same device/browser as before to reconnect.", "bad");
+    }
+
+    function joinLocalRoom(code, pid){
+      roomCode = code;
+      playerId = pid;
+      selectedCard = null;
+      selectedBet = null;
+      setUrlRoom(code);
+      els.roomCodeInput.value = code;
+      els.lobby.classList.add("hidden");
+      els.game.classList.remove("hidden");
+      els.roomCodeLabel.textContent = code;
+
+      if(activeRoomRef) off(activeRoomRef);
+      activeRoomRef = roomRef(code);
+      onValue(activeRoomRef, snap => {
+        if(!snap.exists()){
+          currentRoom = null;
+          showNote(els.gameMessage, "This room was removed.", "bad");
+          return;
+        }
+        currentRoom = snap.val();
+        render();
+        maybeEvaluateRound();
+      });
+    }
+
+    function leaveRoom(){
+      if(activeRoomRef) off(activeRoomRef);
+      activeRoomRef = null;
+      roomCode = null;
+      playerId = null;
+      currentRoom = null;
+      selectedCard = null;
+      selectedBet = null;
+      clearUrlRoom();
+      els.game.classList.add("hidden");
+      els.lobby.classList.remove("hidden");
+      hideNote(els.gameMessage);
+    }
+
+    function playerName(pid){
+      return currentRoom?.players?.[pid]?.name || `Player ${pid}`;
+    }
+
+    function roleOf(pid){
+      if(!currentRoom) return "-";
+      if(currentRoom.currentAttacker === pid) return "Attacker";
+      if(currentRoom.currentDefender === pid) return "Defender";
+      return "-";
+    }
+
+    function phaseText(phase){
+      const map = {
+        waiting: "Waiting",
+        attacker_select: "Attacker chooses",
+        defender_select: "Defender chooses",
+        reveal: "Reveal",
+        result: "Round result",
+        finished: "Finished",
+        error: "Error"
+      };
+      return map[phase] || phase || "-";
+    }
+
+    function usedObject(pid){
+      return currentRoom?.usedCards?.[pid] || {};
+    }
+
+    function renderUsedCards(container, used){
+      container.innerHTML = "";
+      for(const card of CARDS){
+        const div = document.createElement("div");
+        div.className = `mini-card ${used?.[card] ? "used" : ""}`;
+        div.textContent = card;
+        container.appendChild(div);
+      }
+    }
+
+    function hasPlayerUsed(pid, card){
+      return Boolean(currentRoom?.usedCards?.[pid]?.[card]);
+    }
+
+    function render(){
+      if(!currentRoom) return;
+      hideNote(els.gameMessage);
+      els.roomCodeLabel.textContent = roomCode || "-----";
+      els.youAreLabel.textContent = `You are Player ${playerId} · ${roleOf(playerId)}`;
+      els.phaseLabel.textContent = phaseText(currentRoom.phase);
+      els.roundStat.textContent = currentRoom.phase === "finished" ? "Game over" : `${currentRoom.round || 1} / 7`;
+      els.attackerStat.textContent = playerName(currentRoom.currentAttacker);
+      els.scoreAStat.textContent = currentRoom.scores?.A ?? 0;
+      els.scoreBStat.textContent = currentRoom.scores?.B ?? 0;
+      els.playerAName.textContent = currentRoom.players?.A?.name || "Player A";
+      els.playerBName.textContent = currentRoom.players?.B?.name || "Player B";
+      els.playerARole.textContent = `Role: ${roleOf("A")}`;
+      els.playerBRole.textContent = `Role: ${roleOf("B")}`;
+      renderUsedCards(els.usedCardsA, usedObject("A"));
+      renderUsedCards(els.usedCardsB, usedObject("B"));
+      renderStage();
+    }
+
+    function renderStage(){
+      els.actionArea.innerHTML = "";
+      const phase = currentRoom.phase;
+      const me = playerId;
+      const myRole = roleOf(me);
+
+      if(phase === "waiting"){
+        els.stageTitle.textContent = "Waiting for Player B";
+        els.stageHelp.textContent = "Copy the invite link and send it to the second player. The game starts when Player B joins.";
+        const box = document.createElement("div");
+        box.className = "choice-section";
+        box.innerHTML = `<h3>Invite link</h3><p class="stage-help">${inviteLink(roomCode)}</p>`;
+        els.actionArea.appendChild(box);
+        return;
+      }
+
+      if(phase === "attacker_select"){
+        const attackerName = playerName(currentRoom.currentAttacker);
+        els.stageTitle.textContent = `Round ${currentRoom.round}: Attacker's move`;
+        if(myRole === "Attacker"){
+          els.stageHelp.textContent = "Choose one unused card secretly, choose a public bet amount, then lock your move.";
+          renderAttackerControls();
+        }else{
+          els.stageHelp.textContent = `${attackerName} is choosing a hidden card and a public bet. Your screen will update after the move is locked.`;
+          renderWaitingBox("Waiting for Attacker", "The Attacker's card stays hidden. You will only see the bet amount before choosing your card.");
+        }
+        return;
+      }
+
+      if(phase === "defender_select"){
+        const bet = currentRoom.current?.bet;
+        els.stageTitle.textContent = `Defender's move · Bet ${bet} point${bet === 1 ? "" : "s"}`;
+        if(myRole === "Defender"){
+          els.stageHelp.textContent = "The Attacker has locked a hidden card. Choose one unused card to defend against the public bet.";
+          renderDefenderControls();
+        }else{
+          els.stageHelp.textContent = `You locked your hidden card and bet ${bet}. Waiting for the Defender to choose.`;
+          renderWaitingBox("Move locked", "Your card is hidden until the reveal step.");
+        }
+        return;
+      }
+
+      if(phase === "reveal"){
+        els.stageTitle.textContent = "Reveal step";
+        els.stageHelp.textContent = "Both players have locked their hidden cards. Reveal your card so the round can be scored.";
+        renderRevealControls();
+        return;
+      }
+
+      if(phase === "result"){
+        els.stageTitle.textContent = "Round result";
+        els.stageHelp.textContent = "The used cards are now crossed out. Continue to the next round when both players are ready.";
+        renderResultControls();
+        return;
+      }
+
+      if(phase === "finished"){
+        els.stageTitle.textContent = "Game finished";
+        els.stageHelp.textContent = "Both players have attacked once. Compare the final scores.";
+        renderFinishedControls();
+        return;
+      }
+
+      if(phase === "error"){
+        els.stageTitle.textContent = "Something went wrong";
+        els.stageHelp.textContent = currentRoom.errorMessage || "One reveal did not match its hidden commitment. Start a new room to play again.";
+        renderResetControls();
+      }
+    }
+
+    function renderWaitingBox(title, text){
+      const box = document.createElement("div");
+      box.className = "choice-section";
+      box.innerHTML = `<h3>${title}</h3><p class="stage-help">${text}</p>`;
+      els.actionArea.appendChild(box);
+    }
+
+    function renderCardChooser(pid){
+      const row = document.createElement("div");
+      row.className = "cards-row";
+      for(const card of CARDS){
+        const btn = document.createElement("button");
+        btn.className = `play-card ${selectedCard === card ? "selected" : ""}`;
+        btn.textContent = card;
+        btn.disabled = hasPlayerUsed(pid, card);
+        btn.addEventListener("click", () => {
+          selectedCard = card;
+          renderStage();
+        });
+        row.appendChild(btn);
+      }
+      return row;
+    }
+
+    function renderBetChooser(){
+      const row = document.createElement("div");
+      row.className = "bets-row";
+      for(const bet of BETS){
+        const btn = document.createElement("button");
+        btn.className = `bet-btn ${selectedBet === bet ? "selected" : ""}`;
+        btn.textContent = bet;
+        btn.addEventListener("click", () => {
+          selectedBet = bet;
+          renderStage();
+        });
+        row.appendChild(btn);
+      }
+      return row;
+    }
+
+    function renderAttackerControls(){
+      const box = document.createElement("div");
+      box.className = "choice-section";
+      const cardTitle = document.createElement("h3");
+      cardTitle.textContent = "Choose your hidden card";
+      box.appendChild(cardTitle);
+      box.appendChild(renderCardChooser(playerId));
+
+      const betBox = document.createElement("div");
+      betBox.className = "choice-section";
+      betBox.innerHTML = "<h3>Choose your public bet</h3>";
+      betBox.appendChild(renderBetChooser());
+
+      const lockRow = document.createElement("div");
+      lockRow.className = "button-row";
+      const lockBtn = document.createElement("button");
+      lockBtn.className = "btn";
+      lockBtn.textContent = "Lock Attacker Move";
+      lockBtn.disabled = !selectedCard || !selectedBet;
+      lockBtn.addEventListener("click", lockAttackerMove);
+      lockRow.appendChild(lockBtn);
+
+      els.actionArea.appendChild(box);
+      els.actionArea.appendChild(betBox);
+      els.actionArea.appendChild(lockRow);
+    }
+
+    function renderDefenderControls(){
+      const box = document.createElement("div");
+      box.className = "choice-section";
+      box.innerHTML = `<h3>Choose your hidden card</h3>`;
+      box.appendChild(renderCardChooser(playerId));
+
+      const lockRow = document.createElement("div");
+      lockRow.className = "button-row";
+      const lockBtn = document.createElement("button");
+      lockBtn.className = "btn";
+      lockBtn.textContent = "Lock Defender Move";
+      lockBtn.disabled = !selectedCard;
+      lockBtn.addEventListener("click", lockDefenderMove);
+      lockRow.appendChild(lockBtn);
+
+      els.actionArea.appendChild(box);
+      els.actionArea.appendChild(lockRow);
+    }
+
+    async function lockAttackerMove(){
+      if(roleOf(playerId) !== "Attacker" || currentRoom.phase !== "attacker_select") return;
+      if(!selectedCard || !selectedBet) return showNote(els.gameMessage, "Choose both a card and a bet first.", "warn");
+      if(hasPlayerUsed(playerId, selectedCard)) return showNote(els.gameMessage, "That card has already been used.", "bad");
+
+      const nonce = randomNonce();
+      const commitment = await sha256(`${selectedCard}|${nonce}`);
+      saveLocalChoice(selectedCard, nonce);
+
+      await update(roomRef(roomCode), {
+        phase: "defender_select",
+        updatedAt: Date.now(),
+        current: {
+          bet: selectedBet,
+          attackCommit: commitment,
+          defenderCommit: null,
+          attackReveal: null,
+          defenderReveal: null,
+          result: null
+        }
+      });
+      selectedCard = null;
+      selectedBet = null;
+    }
+
+    async function lockDefenderMove(){
+      if(roleOf(playerId) !== "Defender" || currentRoom.phase !== "defender_select") return;
+      if(!selectedCard) return showNote(els.gameMessage, "Choose a card first.", "warn");
+      if(hasPlayerUsed(playerId, selectedCard)) return showNote(els.gameMessage, "That card has already been used.", "bad");
+
+      const nonce = randomNonce();
+      const commitment = await sha256(`${selectedCard}|${nonce}`);
+      saveLocalChoice(selectedCard, nonce);
+
+      await update(roomRef(roomCode), {
+        phase: "reveal",
+        updatedAt: Date.now(),
+        "current/defenderCommit": commitment,
+        "current/defenderReveal": null
+      });
+      selectedCard = null;
+    }
+
+    function renderRevealControls(){
+      const revealField = roleOf(playerId) === "Attacker" ? "attackReveal" : "defenderReveal";
+      const hasRevealed = Boolean(currentRoom.current?.[revealField]);
+      const choice = readLocalChoice();
+
+      const box = document.createElement("div");
+      box.className = "choice-section";
+
+      if(hasRevealed){
+        box.innerHTML = `<h3>Your card is revealed</h3><p class="stage-help">Waiting for the other player, or calculating the result.</p>`;
+      }else if(choice){
+        box.innerHTML = `<h3>Reveal your card</h3><p class="stage-help">Your browser will reveal the card you locked earlier. Card: <strong>${choice.card}</strong></p>`;
+        const btn = document.createElement("button");
+        btn.className = "btn";
+        btn.textContent = "Reveal My Card";
+        btn.addEventListener("click", revealMyCard);
+        box.appendChild(btn);
+      }else{
+        box.innerHTML = `<h3>Local choice not found</h3><p class="stage-help">This can happen if you changed browser or cleared storage after locking your move. Start a new room if the reveal cannot continue.</p>`;
+      }
+      els.actionArea.appendChild(box);
+
+      if(currentRoom.current?.attackReveal || currentRoom.current?.defenderReveal){
+        const status = document.createElement("div");
+        status.className = "note good";
+        const a = currentRoom.current?.attackReveal ? "revealed" : "not revealed yet";
+        const d = currentRoom.current?.defenderReveal ? "revealed" : "not revealed yet";
+        status.textContent = `Attacker: ${a}. Defender: ${d}.`;
+        els.actionArea.appendChild(status);
+      }
+    }
+
+    async function revealMyCard(){
+      if(currentRoom.phase !== "reveal") return;
+      const choice = readLocalChoice();
+      if(!choice) return showNote(els.gameMessage, "Your saved card was not found on this device.", "bad");
+
+      const revealField = roleOf(playerId) === "Attacker" ? "current/attackReveal" : "current/defenderReveal";
+      await update(roomRef(roomCode), {
+        [revealField]: { card: Number(choice.card), nonce: String(choice.nonce) },
+        updatedAt: Date.now()
+      });
+    }
+
+    async function maybeEvaluateRound(){
+      if(!currentRoom || currentRoom.phase !== "reveal") return;
+      const current = currentRoom.current || {};
+      if(!current.attackReveal || !current.defenderReveal) return;
+      const key = `${roomCode}-T${currentRoom.attackTurn}-R${currentRoom.round}`;
+      if(evaluatingRoundKey === key) return;
+      evaluatingRoundKey = key;
+
+      const attackHash = await sha256(`${current.attackReveal.card}|${current.attackReveal.nonce}`);
+      const defendHash = await sha256(`${current.defenderReveal.card}|${current.defenderReveal.nonce}`);
+
+      if(attackHash !== current.attackCommit || defendHash !== current.defenderCommit){
+        await update(roomRef(roomCode), {
+          phase: "error",
+          errorMessage: "A revealed card did not match the hidden commitment. The round cannot be trusted.",
+          updatedAt: Date.now()
+        });
+        return;
+      }
+
+      const attackCard = Number(current.attackReveal.card);
+      const defendCard = Number(current.defenderReveal.card);
+      const bet = Number(current.bet);
+      const attacker = currentRoom.currentAttacker;
+      const defender = currentRoom.currentDefender;
+      let delta = 0;
+      let winner = "Tie";
+      if(attackCard > defendCard){
+        delta = bet;
+        winner = "Attacker";
+      }else if(attackCard < defendCard){
+        delta = -bet;
+        winner = "Defender";
+      }
+
+      const newScores = {
+        A: Number(currentRoom.scores?.A || 0),
+        B: Number(currentRoom.scores?.B || 0)
+      };
+      newScores[attacker] += delta;
+
+      const newUsedCards = {
+        A: { ...(currentRoom.usedCards?.A || {}) },
+        B: { ...(currentRoom.usedCards?.B || {}) }
+      };
+      newUsedCards[attacker][attackCard] = true;
+      newUsedCards[defender][defendCard] = true;
+
+      const result = {
+        attackCard,
+        defendCard,
+        bet,
+        delta,
+        winner,
+        attacker,
+        defender,
+        scoredAt: Date.now()
+      };
+
+      await update(roomRef(roomCode), {
+        phase: "result",
+        scores: newScores,
+        usedCards: newUsedCards,
+        "current/result": result,
+        updatedAt: Date.now()
+      });
+    }
+
+    function renderResultControls(){
+      const r = currentRoom.current?.result;
+      if(!r){
+        renderWaitingBox("Calculating result", "The result will appear soon.");
+        return;
+      }
+
+      const attackerName = playerName(r.attacker);
+      const defenderName = playerName(r.defender);
+      const deltaText = r.delta > 0 ? `+${r.delta}` : String(r.delta);
+      const resultText = r.winner === "Tie"
+        ? `Tie. ${attackerName} gains 0 points.`
+        : r.winner === "Attacker"
+          ? `${attackerName} wins the round and gains ${r.bet} points.`
+          : `${defenderName} wins the round, so ${attackerName} loses ${r.bet} points.`;
+
+      const box = document.createElement("div");
+      box.className = "choice-section";
+      box.innerHTML = `
+        <h3>${resultText}</h3>
+        <div class="big-result">
+          <div class="reveal-card">
+            <div class="who">Attacker · ${attackerName}</div>
+            <div class="num">${r.attackCard}</div>
+          </div>
+          <div class="versus">VS</div>
+          <div class="reveal-card">
+            <div class="who">Defender · ${defenderName}</div>
+            <div class="num">${r.defendCard}</div>
+          </div>
+        </div>
+        <p class="stage-help">Bet: ${r.bet} points. Score change for Attacker: <strong>${deltaText}</strong>.</p>
+      `;
+      els.actionArea.appendChild(box);
+
+      const row = document.createElement("div");
+      row.className = "button-row";
+      const nextBtn = document.createElement("button");
+      nextBtn.className = "btn";
+      nextBtn.textContent = currentRoom.round >= 7
+        ? (currentRoom.attackTurn === 1 ? "Switch Roles" : "Finish Game")
+        : "Next Round";
+      nextBtn.addEventListener("click", nextStep);
+      row.appendChild(nextBtn);
+      els.actionArea.appendChild(row);
+    }
+
+    async function nextStep(){
+      if(currentRoom.phase !== "result") return;
+      const updates = { updatedAt: Date.now(), current: {} };
+      evaluatingRoundKey = "";
+
+      if(currentRoom.round < 7){
+        updates.round = currentRoom.round + 1;
+        updates.phase = "attacker_select";
+      }else if(currentRoom.attackTurn === 1){
+        updates.attackTurn = 2;
+        updates.round = 1;
+        updates.currentAttacker = "B";
+        updates.currentDefender = "A";
+        updates.usedCards = { A: {}, B: {} };
+        updates.phase = "attacker_select";
+      }else{
+        updates.phase = "finished";
+      }
+
+      await update(roomRef(roomCode), updates);
+    }
+
+    function renderFinishedControls(){
+      const scoreA = Number(currentRoom.scores?.A || 0);
+      const scoreB = Number(currentRoom.scores?.B || 0);
+      let text = "The game is a draw.";
+      if(scoreA > scoreB) text = `${playerName("A")} wins by ${scoreA - scoreB} point${scoreA - scoreB === 1 ? "" : "s"}.`;
+      if(scoreB > scoreA) text = `${playerName("B")} wins by ${scoreB - scoreA} point${scoreB - scoreA === 1 ? "" : "s"}.`;
+
+      const box = document.createElement("div");
+      box.className = "choice-section";
+      box.innerHTML = `
+        <h3>${text}</h3>
+        <p class="stage-help">Final score: ${playerName("A")} ${scoreA}, ${playerName("B")} ${scoreB}.</p>
+      `;
+      els.actionArea.appendChild(box);
+      renderResetControls();
+    }
+
+    function renderResetControls(){
+      const row = document.createElement("div");
+      row.className = "button-row";
+      const newBtn = document.createElement("button");
+      newBtn.className = "btn secondary";
+      newBtn.textContent = "Back to Lobby";
+      newBtn.addEventListener("click", leaveRoom);
+      row.appendChild(newBtn);
+
+      if(playerId === "A" && roomCode){
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "btn danger";
+        deleteBtn.textContent = "Delete Room";
+        deleteBtn.addEventListener("click", async () => {
+          await remove(roomRef(roomCode));
+          leaveRoom();
+        });
+        row.appendChild(deleteBtn);
+      }
+      els.actionArea.appendChild(row);
+    }
+
+    async function copyInvite(){
+      if(!roomCode) return;
+      const link = inviteLink(roomCode);
+      try{
+        await navigator.clipboard.writeText(link);
+        showNote(els.gameMessage, "Invite link copied. Send it to Player B.", "good");
+      }catch{
+        showNote(els.gameMessage, link, "warn");
+      }
+    }
+
+    function loadInitialRoomFromUrl(){
+      const params = new URLSearchParams(window.location.search);
+      const code = String(params.get("room") || "").trim().toUpperCase();
+      if(code){
+        els.roomCodeInput.value = code;
+        showNote(els.lobbyMessage, "Room code found in the link. Enter your name and click Join Room.", "good");
+      }
+    }
+
+    function setupEvents(){
+      els.createRoomBtn.addEventListener("click", createRoom);
+      els.joinRoomBtn.addEventListener("click", joinRoom);
+      els.copyLinkBtn.addEventListener("click", copyInvite);
+      els.leaveBtn.addEventListener("click", leaveRoom);
+      els.roomCodeInput.addEventListener("input", () => {
+        els.roomCodeInput.value = els.roomCodeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+      });
+      els.playerName.value = localStorage.getItem(nameKey()) || "";
+    }
+
+    setupEvents();
+    initFirebase();
+    loadInitialRoomFromUrl();
+  </script>
+</body>
+</html>
