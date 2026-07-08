@@ -658,7 +658,7 @@
           <div class="box">
             <h3>Quick Player Guide</h3>
             <p><strong>Host:</strong> enter your name. You may type a room code, or leave it blank and let the game create one. Then click <strong>Create Room</strong>.</p>
-            <p><strong>Second player:</strong> open the invite link, enter your name, and click <strong>Join Room</strong>.</p>
+            <p><strong>Second player:</strong> open the invite link, enter your name, and click <strong>Join Room</strong>. You may test on the same computer using two different tabs.</p>
             <p>After both players join, Player A chooses who attacks first. The other player attacks in the second half.</p>
           </div>
         </div>
@@ -844,25 +844,28 @@
 
     function roomPath(code){ return `rooms/${code}`; }
     function roomRef(code){ return ref(db, roomPath(code)); }
-    function playerKey(code){ return `seven-card-bet-player-${code}`; }
+    function seatKey(code){ return `seven-card-bet-seat-${code}`; }
     function nameKey(){ return "seven-card-bet-player-name"; }
     function themeKey(){ return "seven-card-bet-theme"; }
 
     function inviteLink(code){
       const url = new URL(window.location.href);
       url.searchParams.set("room", code);
+      url.searchParams.set("join", "B");
       return url.toString();
     }
 
     function setUrlRoom(code){
       const url = new URL(window.location.href);
       url.searchParams.set("room", code);
+      url.searchParams.delete("join");
       window.history.replaceState({}, "", url.toString());
     }
 
     function clearUrlRoom(){
       const url = new URL(window.location.href);
       url.searchParams.delete("room");
+      url.searchParams.delete("join");
       window.history.replaceState({}, "", url.toString());
     }
 
@@ -913,7 +916,7 @@
       }
 
       const room = {
-        version: 4,
+        version: 5,
         createdAt: Date.now(),
         updatedAt: Date.now(),
         status: "active",
@@ -932,7 +935,7 @@
       };
 
       await set(roomRef(code), room);
-      localStorage.setItem(playerKey(code), "A");
+      sessionStorage.setItem(seatKey(code), "A");
       joinLocalRoom(code, "A");
     }
 
@@ -946,12 +949,18 @@
       if(!snap.exists()) return showNote(els.lobbyMessage, "Room not found. Check the code again.", "bad");
 
       const room = snap.val();
-      const stored = localStorage.getItem(playerKey(code));
-      const name = safeName(els.playerName.value, stored === "A" ? "Player A" : "Player B");
+      const params = new URLSearchParams(window.location.search);
+      const inviteRequestsPlayerB = params.get("join") === "B";
+      const tabSeat = inviteRequestsPlayerB ? null : sessionStorage.getItem(seatKey(code));
+      const fallbackName = tabSeat === "A" ? "Player A" : "Player B";
+      const name = safeName(els.playerName.value, fallbackName);
       localStorage.setItem(nameKey(), name);
 
-      if(stored && room.players && room.players[stored]){
-        joinLocalRoom(code, stored);
+      // Important: the player seat is stored in sessionStorage, not localStorage.
+      // This lets two tabs on the same computer act as two different players.
+      // An invite link contains join=B, so the second player will not accidentally rejoin as Player A.
+      if(tabSeat && room.players && room.players[tabSeat]){
+        joinLocalRoom(code, tabSeat);
         return;
       }
 
@@ -961,12 +970,12 @@
           phase: room.phase === "waiting" ? "choose_first_attacker" : room.phase,
           updatedAt: Date.now()
         });
-        localStorage.setItem(playerKey(code), "B");
+        sessionStorage.setItem(seatKey(code), "B");
         joinLocalRoom(code, "B");
         return;
       }
 
-      showNote(els.lobbyMessage, "This room already has two players. Use the same device/browser as before to reconnect.", "bad");
+      showNote(els.lobbyMessage, "This room already has two players. Open a new room, or rejoin from the original tab/device.", "bad");
     }
 
     function joinLocalRoom(code, pid){
@@ -1014,9 +1023,12 @@
 
     function roleOf(pid){
       if(!currentRoom) return "-";
+      if(!currentRoom.players?.[pid]) return "Not joined";
       if(currentRoom.currentAttacker === pid) return "Attacker";
       if(currentRoom.currentDefender === pid) return "Defender";
-      return "-";
+      if(currentRoom.phase === "waiting") return pid === "A" ? "Host" : "Not joined";
+      if(currentRoom.phase === "choose_first_attacker") return "Joined";
+      return "Joined";
     }
 
     function phaseText(phase){
@@ -1059,11 +1071,11 @@
       els.roundStat.textContent = currentRoom.phase === "finished" ? "Game over" : `${currentRoom.round || 1} / 7`;
       els.attackerStat.textContent = currentRoom.currentAttacker ? playerName(currentRoom.currentAttacker) : "Not chosen";
       els.defenderStat.textContent = currentRoom.currentDefender ? playerName(currentRoom.currentDefender) : "Not chosen";
-      els.playersLabel.textContent = `A: ${playerName("A")} · B: ${playerName("B")}`;
+      els.playersLabel.textContent = `A: ${playerName("A")} · B: ${currentRoom.players?.B ? playerName("B") : "waiting"}`;
       els.scoreAStat.textContent = currentRoom.scores?.A ?? 0;
       els.scoreBStat.textContent = currentRoom.scores?.B ?? 0;
       els.playerAName.textContent = currentRoom.players?.A?.name || "Player A";
-      els.playerBName.textContent = currentRoom.players?.B?.name || "Player B";
+      els.playerBName.textContent = currentRoom.players?.B?.name || "Waiting for Player B";
       els.playerARole.textContent = `Role: ${roleOf("A")}`;
       els.playerBRole.textContent = `Role: ${roleOf("B")}`;
       renderUsedCards(els.usedCardsA, usedObject("A"));
@@ -1078,7 +1090,7 @@
 
       if(phase === "waiting"){
         els.stageTitle.textContent = "Waiting for Player B";
-        els.stageHelp.textContent = "Send the invite link to Player B. After Player B joins, Player A will choose who attacks first.";
+        els.stageHelp.textContent = "Send the invite link to Player B. After Player B joins, this screen will change to let Player A choose the first Attacker.";
         const box = document.createElement("div");
         box.className = "choice-section";
         box.innerHTML = `
@@ -1479,7 +1491,8 @@
       const code = sanitizeRoomCode(params.get("room"));
       if(code){
         els.roomCodeInput.value = code;
-        showNote(els.lobbyMessage, "Invite link detected. Enter your name and click Join Room.", "good");
+        const wantsB = params.get("join") === "B";
+        showNote(els.lobbyMessage, wantsB ? "Invite link detected. Enter your name, then click Join Room to become Player B." : "Room code found. Enter your name, then click Join Room.", "good");
       }
     }
 
@@ -1507,5 +1520,3 @@
   </script>
 </body>
 </html>
-
-
