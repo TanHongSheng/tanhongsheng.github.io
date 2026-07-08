@@ -524,21 +524,21 @@
 <body>
   <header>
     <h1>Seven Card Bet</h1>
-    <p class="subtitle">Two-device online version: create a room, share the link, choose hidden cards, and reveal together.</p>
+    <p class="subtitle">A two-player bluffing game. Create a private room, share the link, and play on two devices.</p>
   </header>
 
   <main class="wrap">
     <section id="configWarning" class="config-warning hidden">
-      <strong>Firebase setup needed before online play works.</strong>
-      This file is ready, but you still need to paste your Firebase web app config into the code. After that, upload this HTML file to GitHub Pages.
+      <strong>Setup problem for the website owner.</strong>
+      The online room cannot start because the Firebase configuration inside this HTML file is incomplete. Players should not need to understand Firebase; once the owner finishes setup, this warning disappears.
     </section>
 
     <section id="lobby" class="panel">
       <div class="panel-inner">
         <div class="lobby-grid">
           <div class="box">
-            <h2>Start or Join a Room</h2>
-            <p>Use this game with points only. Each player should open the same room link on a different device.</p>
+            <h2>Play on Two Devices</h2>
+            <p>Player A creates a room and sends the invite link to Player B. Each player uses their own phone, tablet, or computer, so hidden cards stay private.</p>
 
             <div class="form-row">
               <div>
@@ -560,9 +560,10 @@
           </div>
 
           <div class="box">
-            <h3>How the online version works</h3>
-            <p>GitHub Pages shows the game page. Firebase stores a tiny room state, such as the round number, used cards, public bet, and reveal result.</p>
-            <p>The chosen cards are not written directly at first. The page stores a hidden commitment first, then reveals the card after both players lock in.</p>
+            <h3>Quick Player Guide</h3>
+            <p><strong>Player A:</strong> enter your name and click <strong>Create Room</strong>. Copy the invite link and send it to Player B.</p>
+            <p><strong>Player B:</strong> open the invite link, enter your name, and click <strong>Join Room</strong>.</p>
+            <p>During a round, choose your card secretly on your own device. The card is revealed only after both players lock their choices.</p>
           </div>
         </div>
       </div>
@@ -650,14 +651,16 @@
      * Project settings -> General -> Your apps -> Web app -> SDK setup
      **********************************************************************/
     const firebaseConfig = {
-    apiKey: "AIzaSyCsof6m2GWiplBGxmIzHEPgqD3Ce-4QNOI",
-    authDomain: "seven-card-bet.firebaseapp.com",
-    databaseURL:https://seven-card-bet-default-rtdb.asia-southeast1.firebasedatabase.app/
-    projectId: "seven-card-bet",
-    storageBucket: "seven-card-bet.firebasestorage.app",
-    messagingSenderId: "415908194633",
-    appId: "1:415908194633:web:be0bcd567c5ec38a2e1298"
-  };
+      // Paste your real apiKey from Firebase here.
+      // It should look like: 
+      apiKey: "AIzaSyCsof6m2GWiplBGxmIzHEPgqD3Ce-4QNOI",
+      authDomain: "seven-card-bet.firebaseapp.com",
+      databaseURL: "https://seven-card-bet-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "seven-card-bet",
+      storageBucket: "seven-card-bet.firebasestorage.app",
+      messagingSenderId: "415908194633",
+      appId: "1:415908194633:web:be0bcd567c5ec38a2e1298"
+    };
 
 
     const CARDS = [1,2,3,4,5,6,7];
@@ -765,12 +768,28 @@
     function initFirebase(){
       if(!configLooksReady()){
         els.configWarning.classList.remove("hidden");
-        showNote(els.lobbyMessage, "Before online play works, paste your Firebase config into this HTML file. The setup steps are written below in the guide.", "warn");
+        showNote(els.lobbyMessage, "This online game is not ready yet. The website owner still needs to finish the Firebase setup.", "warn");
         return false;
       }
-      app = initializeApp(firebaseConfig);
-      db = getDatabase(app);
-      return true;
+      try{
+        app = initializeApp(firebaseConfig);
+        db = getDatabase(app);
+        return true;
+      }catch(error){
+        console.error(error);
+        els.configWarning.classList.remove("hidden");
+        showNote(els.lobbyMessage, `Firebase could not start: ${error.message}`, "bad");
+        return false;
+      }
+    }
+
+    async function copyText(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        return true;
+      }catch{
+        return false;
+      }
     }
 
     async function sha256(text){
@@ -803,73 +822,101 @@
     }
 
     async function createRoom(){
-      if(!db) return showNote(els.lobbyMessage, "Please set up Firebase first, then reload this page.", "warn");
+      if(!db) return showNote(els.lobbyMessage, "This online game is not ready yet. The website owner still needs to finish Firebase setup.", "warn");
       hideNote(els.lobbyMessage);
-      const name = safeName(els.playerName.value, "Player A");
-      localStorage.setItem(nameKey(), name);
+      els.createRoomBtn.disabled = true;
+      els.createRoomBtn.textContent = "Creating...";
 
-      let code = makeRoomCode();
-      for(let attempts = 0; attempts < 8; attempts++){
-        const snap = await get(roomRef(code));
-        if(!snap.exists()) break;
-        code = makeRoomCode();
+      try{
+        const name = safeName(els.playerName.value, "Player A");
+        localStorage.setItem(nameKey(), name);
+
+        let code = makeRoomCode();
+        for(let attempts = 0; attempts < 8; attempts++){
+          const snap = await get(roomRef(code));
+          if(!snap.exists()) break;
+          code = makeRoomCode();
+        }
+
+        const room = {
+          version: 1,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+          status: "active",
+          phase: "waiting",
+          attackTurn: 1,
+          round: 1,
+          currentAttacker: "A",
+          currentDefender: "B",
+          players: {
+            A: { name, joinedAt: Date.now() }
+          },
+          scores: { A: 0, B: 0 },
+          usedCards: { A: {}, B: {} },
+          current: {}
+        };
+
+        await set(roomRef(code), room);
+        localStorage.setItem(playerKey(code), "A");
+        joinLocalRoom(code, "A");
+
+        const link = inviteLink(code);
+        const copied = await copyText(link);
+        showNote(
+          els.gameMessage,
+          copied ? "Room created. Invite link copied — send it to Player B." : `Room created. Copy this invite link and send it to Player B: ${link}`,
+          "good"
+        );
+      }catch(error){
+        console.error(error);
+        showNote(els.lobbyMessage, `Could not create room: ${error.message}`, "bad");
+      }finally{
+        els.createRoomBtn.disabled = false;
+        els.createRoomBtn.textContent = "Create Room";
       }
-
-      const room = {
-        version: 1,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        status: "active",
-        phase: "waiting",
-        attackTurn: 1,
-        round: 1,
-        currentAttacker: "A",
-        currentDefender: "B",
-        players: {
-          A: { name, joinedAt: Date.now() }
-        },
-        scores: { A: 0, B: 0 },
-        usedCards: { A: {}, B: {} },
-        current: {}
-      };
-
-      await set(roomRef(code), room);
-      localStorage.setItem(playerKey(code), "A");
-      joinLocalRoom(code, "A");
-      showNote(els.gameMessage, "Room created. Send the invite link to Player B.", "good");
     }
 
     async function joinRoom(){
-      if(!db) return showNote(els.lobbyMessage, "Please set up Firebase first, then reload this page.", "warn");
+      if(!db) return showNote(els.lobbyMessage, "This online game is not ready yet. The website owner still needs to finish Firebase setup.", "warn");
       hideNote(els.lobbyMessage);
       const code = String(els.roomCodeInput.value || "").trim().toUpperCase();
       if(!code) return showNote(els.lobbyMessage, "Enter a room code, or open an invite link.", "warn");
 
-      const snap = await get(roomRef(code));
-      if(!snap.exists()) return showNote(els.lobbyMessage, "Room not found. Check the code again.", "bad");
+      els.joinRoomBtn.disabled = true;
+      els.joinRoomBtn.textContent = "Joining...";
+      try{
+        const snap = await get(roomRef(code));
+        if(!snap.exists()) return showNote(els.lobbyMessage, "Room not found. Check the code again.", "bad");
 
-      const room = snap.val();
-      const stored = localStorage.getItem(playerKey(code));
-      const name = safeName(els.playerName.value, stored === "A" ? "Player A" : "Player B");
-      localStorage.setItem(nameKey(), name);
+        const room = snap.val();
+        const stored = localStorage.getItem(playerKey(code));
+        const name = safeName(els.playerName.value, stored === "A" ? "Player A" : "Player B");
+        localStorage.setItem(nameKey(), name);
 
-      if(stored && room.players && room.players[stored]){
-        joinLocalRoom(code, stored);
-        return;
+        if(stored && room.players && room.players[stored]){
+          joinLocalRoom(code, stored);
+          return;
+        }
+
+        if(!room.players?.B){
+          await update(roomRef(code), {
+            "players/B": { name, joinedAt: Date.now() },
+            phase: room.phase === "waiting" ? "attacker_select" : room.phase,
+            updatedAt: Date.now()
+          });
+          localStorage.setItem(playerKey(code), "B");
+          joinLocalRoom(code, "B");
+          return;
+        }
+
+        showNote(els.lobbyMessage, "This room already has two players. Use the same device/browser as before to reconnect.", "bad");
+      }catch(error){
+        console.error(error);
+        showNote(els.lobbyMessage, `Could not join room: ${error.message}`, "bad");
+      }finally{
+        els.joinRoomBtn.disabled = false;
+        els.joinRoomBtn.textContent = "Join Room";
       }
-
-      if(!room.players?.B){
-        await update(roomRef(code), {
-          "players/B": { name, joinedAt: Date.now() },
-          phase: room.phase === "waiting" ? "attacker_select" : room.phase,
-          updatedAt: Date.now()
-        });
-        localStorage.setItem(playerKey(code), "B");
-        joinLocalRoom(code, "B");
-        return;
-      }
-
-      showNote(els.lobbyMessage, "This room already has two players. Use the same device/browser as before to reconnect.", "bad");
     }
 
     function joinLocalRoom(code, pid){
@@ -894,6 +941,9 @@
         currentRoom = snap.val();
         render();
         maybeEvaluateRound();
+      }, error => {
+        console.error(error);
+        showNote(els.gameMessage, `Could not read room: ${error.message}`, "bad");
       });
     }
 
@@ -980,10 +1030,37 @@
 
       if(phase === "waiting"){
         els.stageTitle.textContent = "Waiting for Player B";
-        els.stageHelp.textContent = "Copy the invite link and send it to the second player. The game starts when Player B joins.";
+        els.stageHelp.textContent = "Send the invite link to Player B. The game starts automatically when Player B joins.";
+
         const box = document.createElement("div");
         box.className = "choice-section";
-        box.innerHTML = `<h3>Invite link</h3><p class="stage-help">${inviteLink(roomCode)}</p>`;
+
+        const title = document.createElement("h3");
+        title.textContent = "Invite Player B";
+        box.appendChild(title);
+
+        const codeLine = document.createElement("p");
+        codeLine.className = "stage-help";
+        codeLine.innerHTML = `Room code: <strong>${roomCode}</strong>`;
+        box.appendChild(codeLine);
+
+        const linkInput = document.createElement("input");
+        linkInput.value = inviteLink(roomCode);
+        linkInput.readOnly = true;
+        linkInput.addEventListener("click", () => linkInput.select());
+        box.appendChild(linkInput);
+
+        const row = document.createElement("div");
+        row.className = "button-row";
+        row.style.marginTop = "12px";
+
+        const copyBtn = document.createElement("button");
+        copyBtn.className = "btn";
+        copyBtn.textContent = "Copy Invite Link";
+        copyBtn.addEventListener("click", copyInvite);
+        row.appendChild(copyBtn);
+
+        box.appendChild(row);
         els.actionArea.appendChild(box);
         return;
       }
@@ -1394,11 +1471,11 @@
     async function copyInvite(){
       if(!roomCode) return;
       const link = inviteLink(roomCode);
-      try{
-        await navigator.clipboard.writeText(link);
+      const copied = await copyText(link);
+      if(copied){
         showNote(els.gameMessage, "Invite link copied. Send it to Player B.", "good");
-      }catch{
-        showNote(els.gameMessage, link, "warn");
+      }else{
+        showNote(els.gameMessage, `Copy this invite link: ${link}`, "warn");
       }
     }
 
@@ -1407,7 +1484,7 @@
       const code = String(params.get("room") || "").trim().toUpperCase();
       if(code){
         els.roomCodeInput.value = code;
-        showNote(els.lobbyMessage, "Room code found in the link. Enter your name and click Join Room.", "good");
+        showNote(els.lobbyMessage, "Invite link detected. Enter your name and click Join Room.", "good");
       }
     }
 
