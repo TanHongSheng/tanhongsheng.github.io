@@ -6,20 +6,56 @@
   <title>Seven Card Bet Online</title>
   <style>
     :root{
-      --bg:#f6f3ee;
-      --panel:#fffaf1;
+      --bg:#fff8d9;
+      --panel:#fffbe8;
       --panel2:#ffffff;
       --ink:#241a12;
       --muted:#6b5e52;
-      --line:#e8dccc;
-      --accent:#b66b2e;
-      --accent2:#7c4d2a;
+      --line:#eadcaa;
+      --accent:#c58a00;
+      --accent2:#765800;
       --good:#277245;
       --bad:#a93636;
       --draw:#6a5f56;
       --warning:#9c6a13;
       --shadow:0 18px 45px rgba(55, 33, 12, .12);
       --radius:24px;
+    }
+
+    body[data-theme="white"]{
+      --bg:#f6f7f9;
+      --panel:#ffffff;
+      --panel2:#ffffff;
+      --ink:#171717;
+      --muted:#666b73;
+      --line:#e0e3e8;
+      --accent:#555f70;
+      --accent2:#2e3540;
+      --shadow:0 18px 45px rgba(30, 33, 38, .10);
+    }
+
+    body[data-theme="blue"]{
+      --bg:#eef7ff;
+      --panel:#f8fcff;
+      --panel2:#ffffff;
+      --ink:#102335;
+      --muted:#53697e;
+      --line:#cddff4;
+      --accent:#2b73b6;
+      --accent2:#214f7a;
+      --shadow:0 18px 45px rgba(22, 70, 116, .12);
+    }
+
+    body[data-theme="yellow"]{
+      --bg:#fff8d9;
+      --panel:#fffbe8;
+      --panel2:#ffffff;
+      --ink:#241a12;
+      --muted:#6b5e52;
+      --line:#eadcaa;
+      --accent:#c58a00;
+      --accent2:#765800;
+      --shadow:0 18px 45px rgba(55, 33, 12, .12);
     }
 
     *{ box-sizing:border-box; }
@@ -29,14 +65,14 @@
       font-family: ui-rounded, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color:var(--ink);
       background:
-        radial-gradient(circle at top left, rgba(255,214,157,.45), transparent 34rem),
-        radial-gradient(circle at bottom right, rgba(164,103,49,.18), transparent 34rem),
+        radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 22%, transparent), transparent 34rem),
+        radial-gradient(circle at bottom right, color-mix(in srgb, var(--accent2) 13%, transparent), transparent 34rem),
         var(--bg);
       min-height:100vh;
     }
 
     header{
-      padding:30px 18px 8px;
+      padding:30px 18px 10px;
       text-align:center;
     }
 
@@ -55,17 +91,54 @@
       line-height:1.45;
     }
 
+    .theme-picker{
+      display:inline-flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+      justify-content:center;
+      margin:16px auto 0;
+      padding:8px;
+      background:rgba(255,255,255,.65);
+      border:1px solid var(--line);
+      border-radius:999px;
+    }
+
+    .theme-picker span{
+      color:var(--muted);
+      font-weight:850;
+      font-size:.9rem;
+      margin:0 2px 0 6px;
+    }
+
+    .theme-btn{
+      min-height:34px;
+      padding:7px 12px;
+      border-radius:999px;
+      background:white;
+      border:1px solid var(--line);
+      color:var(--ink);
+      font-weight:850;
+    }
+
+    .theme-btn.selected{
+      background:var(--accent2);
+      color:white;
+      border-color:var(--accent2);
+    }
+
     .wrap{
       width:min(1240px, calc(100% - 28px));
-      margin:20px auto 46px;
+      margin:18px auto 46px;
     }
 
     .panel{
-      background:rgba(255,250,241,.94);
+      background:rgba(255,255,255,.52);
       border:1px solid var(--line);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
       overflow:hidden;
+      backdrop-filter: blur(4px);
     }
 
     .panel-inner{ padding:22px; }
@@ -86,12 +159,13 @@
 
     .lobby-grid{
       display:grid;
-      grid-template-columns:1.1fr .9fr;
+      grid-template-columns:1fr 1fr;
       gap:18px;
+      align-items:stretch;
     }
 
     .box{
-      background:rgba(255,255,255,.72);
+      background:rgba(255,255,255,.74);
       border:1px solid var(--line);
       border-radius:20px;
       padding:18px;
@@ -107,6 +181,14 @@
       margin:0 0 14px;
       color:var(--muted);
       line-height:1.5;
+    }
+
+    .name-card{
+      margin:0 0 18px;
+      background:rgba(255,255,255,.84);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:18px;
     }
 
     label{
@@ -131,8 +213,15 @@
     }
 
     input:focus{
-      border-color:rgba(182,107,46,.7);
-      box-shadow:0 0 0 4px rgba(182,107,46,.12);
+      border-color:color-mix(in srgb, var(--accent) 70%, white);
+      box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 14%, transparent);
+    }
+
+    .input-help{
+      margin:7px 0 0;
+      color:var(--muted);
+      line-height:1.4;
+      font-size:.93rem;
     }
 
     .form-row{
@@ -165,14 +254,14 @@
       background:var(--accent);
       color:white;
       font-weight:900;
-      box-shadow:0 10px 20px rgba(126,76,33,.18);
+      box-shadow:0 10px 20px color-mix(in srgb, var(--accent) 24%, transparent);
       transition:.15s transform, .15s box-shadow, .15s opacity;
       min-height:46px;
     }
 
     .btn:hover:not(:disabled){
       transform:translateY(-2px);
-      box-shadow:0 14px 24px rgba(126,76,33,.23);
+      box-shadow:0 14px 24px color-mix(in srgb, var(--accent) 30%, transparent);
     }
 
     .btn.secondary{
@@ -185,7 +274,7 @@
     .btn.ghost{
       color:var(--accent2);
       background:transparent;
-      border:1px solid rgba(124,77,42,.28);
+      border:1px solid color-mix(in srgb, var(--accent2) 28%, transparent);
       box-shadow:none;
     }
 
@@ -219,7 +308,7 @@
       align-items:center;
       padding:15px 18px;
       border-bottom:1px solid var(--line);
-      background:rgba(255,255,255,.55);
+      background:rgba(255,255,255,.62);
     }
 
     .room-title{
@@ -289,7 +378,7 @@
     }
 
     .used-panel{
-      background:rgba(255,255,255,.7);
+      background:rgba(255,255,255,.74);
       border:1px solid var(--line);
       border-radius:20px;
       padding:15px;
@@ -323,8 +412,8 @@
       align-items:center;
       justify-content:center;
       border-radius:16px;
-      border:1px solid #d9c5ae;
-      background:linear-gradient(180deg, #fff, #fff7ea);
+      border:1px solid color-mix(in srgb, var(--line) 85%, #8c6d4f);
+      background:linear-gradient(180deg, #fff, color-mix(in srgb, var(--panel) 86%, white));
       color:var(--ink);
       font-weight:950;
       box-shadow:0 7px 16px rgba(66,39,14,.08);
@@ -357,7 +446,7 @@
     .mini-card.used::after{ transform:rotate(-42deg); }
 
     .table{
-      background:rgba(255,255,255,.76);
+      background:rgba(255,255,255,.80);
       border:1px solid var(--line);
       border-radius:22px;
       padding:20px;
@@ -421,8 +510,8 @@
     .play-card.selected,
     .bet-btn.selected{
       border-color:var(--accent);
-      box-shadow:0 0 0 4px rgba(182,107,46,.18), 0 13px 24px rgba(66,39,14,.14);
-      background:linear-gradient(180deg, #fff7e6, #ffd99f);
+      box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent), 0 13px 24px rgba(66,39,14,.14);
+      background:linear-gradient(180deg, #fff, color-mix(in srgb, var(--accent) 32%, white));
     }
 
     .play-card:disabled{
@@ -467,9 +556,20 @@
       font-weight:1000;
     }
 
+    .link-box{
+      border:1px dashed color-mix(in srgb, var(--accent2) 36%, var(--line));
+      background:color-mix(in srgb, var(--panel) 50%, white);
+      border-radius:14px;
+      padding:12px;
+      word-break:break-all;
+      color:var(--accent2);
+      font-weight:800;
+      line-height:1.45;
+    }
+
     .rules{
       margin-top:18px;
-      background:rgba(255,250,241,.92);
+      background:rgba(255,255,255,.62);
       border:1px solid var(--line);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
@@ -478,6 +578,8 @@
 
     .rules h2{ margin:0 0 10px; letter-spacing:-.04em; }
     .rules ol{ margin:10px 0 0 1.25rem; padding:0; line-height:1.62; color:#3b2c21; }
+    body[data-theme="white"] .rules ol,
+    body[data-theme="blue"] .rules ol{ color:var(--ink); }
     .rules li{ padding-left:4px; }
     .rules .small{ color:var(--muted); margin-top:12px; line-height:1.45; }
 
@@ -487,19 +589,6 @@
       border-radius:9px;
       padding:2px 6px;
       font-size:.95em;
-    }
-
-    .setup-code{
-      display:block;
-      white-space:pre-wrap;
-      overflow:auto;
-      background:#21170f;
-      color:#fff2df;
-      padding:14px;
-      border-radius:14px;
-      font-size:.9rem;
-      line-height:1.45;
-      margin:12px 0 0;
     }
 
     @media (max-width:980px){
@@ -518,54 +607,59 @@
       .side-cards{ grid-template-columns:repeat(4, minmax(38px, 1fr)); }
       .panel-inner{ padding:16px; }
       .table{ padding:16px; }
+      .theme-picker{ border-radius:20px; }
     }
   </style>
 </head>
-<body>
+<body data-theme="yellow">
   <header>
     <h1>Seven Card Bet</h1>
-    <p class="subtitle">A two-player bluffing game. Create a private room, share the link, and play on two devices.</p>
+    <p class="subtitle">A two-player bluffing game. Create a room, share the link, and play on two devices.</p>
+    <div class="theme-picker" aria-label="Choose background color">
+      <span>Background</span>
+      <button class="theme-btn" data-theme-choice="white" type="button">White</button>
+      <button class="theme-btn" data-theme-choice="blue" type="button">Blue</button>
+      <button class="theme-btn" data-theme-choice="yellow" type="button">Yellow</button>
+    </div>
   </header>
 
   <main class="wrap">
     <section id="configWarning" class="config-warning hidden">
-      <strong>Setup problem for the website owner.</strong>
-      The online room cannot start because the Firebase configuration inside this HTML file is incomplete. Players should not need to understand Firebase; once the owner finishes setup, this warning disappears.
+      <strong>Online setup is not complete.</strong>
+      The room system cannot start yet because the Firebase configuration inside this HTML file is incomplete.
     </section>
 
     <section id="lobby" class="panel">
       <div class="panel-inner">
+        <div class="name-card">
+          <label for="playerName">Your name</label>
+          <input id="playerName" type="text" maxlength="24" placeholder="Example: Player A" autocomplete="off" />
+          <p class="input-help">Use two devices. Each player opens the game on their own screen, so card choices stay hidden until the round result.</p>
+        </div>
+
         <div class="lobby-grid">
           <div class="box">
-            <h2>Play on Two Devices</h2>
-            <p>Player A creates a room and sends the invite link to Player B. Each player uses their own phone, tablet, or computer, so hidden cards stay private.</p>
-
-            <div class="form-row">
-              <div>
-                <label for="playerName">Your name</label>
-                <input id="playerName" type="text" maxlength="24" placeholder="Player name" autocomplete="off" />
-              </div>
-              <div>
-                <label for="roomCodeInput">Room code</label>
-                <input id="roomCodeInput" type="text" maxlength="8" placeholder="Example: A7K2Q" autocomplete="off" />
-              </div>
-            </div>
-
-            <div class="button-row">
+            <h2>Host a New Room</h2>
+            <p>Create a room first. The game will open the room immediately and give you an invite link to send to Player B.</p>
+            <label for="customRoomCodeInput">Room code for this game</label>
+            <input id="customRoomCodeInput" type="text" maxlength="8" placeholder="Leave blank for random code" autocomplete="off" />
+            <p class="input-help">Optional: type your own code, such as <strong>MATH7</strong>. If you leave it blank, the game creates one.</p>
+            <div class="button-row" style="margin-top:14px">
               <button id="createRoomBtn" class="btn">Create Room</button>
-              <button id="joinRoomBtn" class="btn secondary">Join Room</button>
             </div>
-
-            <div id="lobbyMessage" class="note hidden"></div>
           </div>
 
           <div class="box">
-            <h3>Quick Player Guide</h3>
-            <p><strong>Player A:</strong> enter your name and click <strong>Create Room</strong>. Copy the invite link and send it to Player B.</p>
-            <p><strong>Player B:</strong> open the invite link, enter your name, and click <strong>Join Room</strong>.</p>
-            <p>During a round, choose your card secretly on your own device. The card is revealed only after both players lock their choices.</p>
+            <h2>Join a Room</h2>
+            <p>Open your friend’s invite link, or type the room code here. Then click Join Room.</p>
+            <label for="roomCodeInput">Room code</label>
+            <input id="roomCodeInput" type="text" maxlength="8" placeholder="Example: A7K2Q" autocomplete="off" />
+            <div class="button-row" style="margin-top:14px">
+              <button id="joinRoomBtn" class="btn secondary">Join Room</button>
+            </div>
           </div>
         </div>
+        <div id="lobbyMessage" class="note hidden"></div>
       </div>
     </section>
 
@@ -628,13 +722,13 @@
     <section class="rules">
       <h2>Game Rules</h2>
       <ol>
-        <li>Two players play two attack turns. Player A attacks first; Player B attacks second.</li>
-        <li>Each player has cards <strong>1, 2, 3, 4, 5, 6, 7</strong>. A used card cannot be used again during the current attack turn.</li>
-        <li>In each round, the Attacker secretly chooses one unused card and announces a bet amount from <strong>1 to 7 points</strong>.</li>
-        <li>The Defender sees the bet amount, then secretly chooses one unused card.</li>
-        <li>Both cards are revealed. Larger card wins the round.</li>
-        <li>If the Attacker wins, the Attacker gains the bet amount. If the Attacker loses, the Attacker loses the bet amount. If tied, the Attacker gains 0.</li>
-        <li>After 7 rounds, the players switch roles and reset their cards. After the second attack turn, the higher score wins.</li>
+        <li>A full match has two halves. In the first half, Player A is the Attacker and Player B is the Defender. In the second half, they switch roles.</li>
+        <li>At the start of each half, both players have seven cards: <strong>1, 2, 3, 4, 5, 6, 7</strong>. Each card can be used only once in that half.</li>
+        <li>Each half has seven rounds. In each round, the Attacker secretly chooses one unused card and chooses a public bet from <strong>1 to 7 points</strong>.</li>
+        <li>The Defender sees only the bet amount. Then the Defender secretly chooses one unused card.</li>
+        <li>As soon as the Defender locks the card, both cards are revealed and compared. The larger card wins the round. Equal cards are a tie.</li>
+        <li>If the Attacker wins, the Attacker gains the bet amount. If the Defender wins, the Attacker loses the bet amount. If the round is tied, the Attacker gains 0.</li>
+        <li>After both players have taken one half as Attacker, compare the two final scores. The higher score wins the match.</li>
       </ol>
       <p class="small">Classroom note: use points or tokens only. This version is designed as a probability and strategy game, not real-money play.</p>
     </section>
@@ -645,14 +739,10 @@
     import { getDatabase, ref, get, set, update, onValue, off, remove } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
 
     /**********************************************************************
-     * STEP 1: Paste your Firebase web app config here.
-     *
-     * In Firebase Console:
-     * Project settings -> General -> Your apps -> Web app -> SDK setup
+     * Paste your Firebase web app config here.
+     * Keep the quotation marks and commas exactly like this.
      **********************************************************************/
     const firebaseConfig = {
-      // Paste your real apiKey from Firebase here.
-      // It should look like: 
       apiKey: "AIzaSyCsof6m2GWiplBGxmIzHEPgqD3Ce-4QNOI",
       authDomain: "seven-card-bet.firebaseapp.com",
       databaseURL: "https://seven-card-bet-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -662,15 +752,16 @@
       appId: "1:415908194633:web:be0bcd567c5ec38a2e1298"
     };
 
-
     const CARDS = [1,2,3,4,5,6,7];
     const BETS = [1,2,3,4,5,6,7];
+    const VALID_THEMES = ["white", "blue", "yellow"];
 
     const els = {
       configWarning: document.getElementById("configWarning"),
       lobby: document.getElementById("lobby"),
       game: document.getElementById("game"),
       playerName: document.getElementById("playerName"),
+      customRoomCodeInput: document.getElementById("customRoomCodeInput"),
       roomCodeInput: document.getElementById("roomCodeInput"),
       createRoomBtn: document.getElementById("createRoomBtn"),
       joinRoomBtn: document.getElementById("joinRoomBtn"),
@@ -704,7 +795,6 @@
     let selectedCard = null;
     let selectedBet = null;
     let activeRoomRef = null;
-    let evaluatingRoundKey = "";
 
     function configLooksReady(){
       return firebaseConfig.apiKey &&
@@ -717,6 +807,10 @@
     function safeName(value, fallback){
       const name = String(value || "").trim().replace(/[<>]/g, "").slice(0, 24);
       return name || fallback;
+    }
+
+    function sanitizeRoomCode(value){
+      return String(value || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
     }
 
     function showNote(el, message, type=""){
@@ -743,9 +837,7 @@
     function roomRef(code){ return ref(db, roomPath(code)); }
     function playerKey(code){ return `seven-card-bet-player-${code}`; }
     function nameKey(){ return "seven-card-bet-player-name"; }
-    function choiceKey(code, pid, attackTurn, round){
-      return `seven-card-bet-choice-${code}-${pid}-T${attackTurn}-R${round}`;
-    }
+    function themeKey(){ return "seven-card-bet-theme"; }
 
     function inviteLink(code){
       const url = new URL(window.location.href);
@@ -768,155 +860,103 @@
     function initFirebase(){
       if(!configLooksReady()){
         els.configWarning.classList.remove("hidden");
-        showNote(els.lobbyMessage, "This online game is not ready yet. The website owner still needs to finish the Firebase setup.", "warn");
+        showNote(els.lobbyMessage, "Online setup is not complete yet. The website owner needs to paste the Firebase API key into the HTML file.", "warn");
         return false;
       }
-      try{
-        app = initializeApp(firebaseConfig);
-        db = getDatabase(app);
-        return true;
-      }catch(error){
-        console.error(error);
-        els.configWarning.classList.remove("hidden");
-        showNote(els.lobbyMessage, `Firebase could not start: ${error.message}`, "bad");
-        return false;
-      }
+      app = initializeApp(firebaseConfig);
+      db = getDatabase(app);
+      return true;
     }
 
-    async function copyText(text){
-      try{
-        await navigator.clipboard.writeText(text);
-        return true;
-      }catch{
-        return false;
-      }
-    }
-
-    async function sha256(text){
-      const data = new TextEncoder().encode(text);
-      const buffer = await crypto.subtle.digest("SHA-256", data);
-      return Array.from(new Uint8Array(buffer)).map(b => b.toString(16).padStart(2, "0")).join("");
-    }
-
-    function randomNonce(){
-      const bytes = new Uint8Array(16);
-      crypto.getRandomValues(bytes);
-      return Array.from(bytes).map(b => b.toString(16).padStart(2, "0")).join("");
-    }
-
-    function saveLocalChoice(card, nonce){
-      if(!currentRoom || !roomCode || !playerId) return;
-      const key = choiceKey(roomCode, playerId, currentRoom.attackTurn, currentRoom.round);
-      localStorage.setItem(key, JSON.stringify({ card, nonce }));
-    }
-
-    function readLocalChoice(){
-      if(!currentRoom || !roomCode || !playerId) return null;
-      const key = choiceKey(roomCode, playerId, currentRoom.attackTurn, currentRoom.round);
-      try{
-        const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : null;
-      }catch{
-        return null;
-      }
+    function applyTheme(theme){
+      const finalTheme = VALID_THEMES.includes(theme) ? theme : "yellow";
+      document.body.dataset.theme = finalTheme;
+      localStorage.setItem(themeKey(), finalTheme);
+      document.querySelectorAll("[data-theme-choice]").forEach(btn => {
+        btn.classList.toggle("selected", btn.dataset.themeChoice === finalTheme);
+      });
     }
 
     async function createRoom(){
-      if(!db) return showNote(els.lobbyMessage, "This online game is not ready yet. The website owner still needs to finish Firebase setup.", "warn");
+      if(!db) return showNote(els.lobbyMessage, "Online setup is not complete yet.", "warn");
       hideNote(els.lobbyMessage);
-      els.createRoomBtn.disabled = true;
-      els.createRoomBtn.textContent = "Creating...";
+      const name = safeName(els.playerName.value, "Player A");
+      localStorage.setItem(nameKey(), name);
 
-      try{
-        const name = safeName(els.playerName.value, "Player A");
-        localStorage.setItem(nameKey(), name);
-
-        let code = makeRoomCode();
-        for(let attempts = 0; attempts < 8; attempts++){
-          const snap = await get(roomRef(code));
-          if(!snap.exists()) break;
-          code = makeRoomCode();
-        }
-
-        const room = {
-          version: 1,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-          status: "active",
-          phase: "waiting",
-          attackTurn: 1,
-          round: 1,
-          currentAttacker: "A",
-          currentDefender: "B",
-          players: {
-            A: { name, joinedAt: Date.now() }
-          },
-          scores: { A: 0, B: 0 },
-          usedCards: { A: {}, B: {} },
-          current: {}
-        };
-
-        await set(roomRef(code), room);
-        localStorage.setItem(playerKey(code), "A");
-        joinLocalRoom(code, "A");
-
-        const link = inviteLink(code);
-        const copied = await copyText(link);
-        showNote(
-          els.gameMessage,
-          copied ? "Room created. Invite link copied — send it to Player B." : `Room created. Copy this invite link and send it to Player B: ${link}`,
-          "good"
-        );
-      }catch(error){
-        console.error(error);
-        showNote(els.lobbyMessage, `Could not create room: ${error.message}`, "bad");
-      }finally{
-        els.createRoomBtn.disabled = false;
-        els.createRoomBtn.textContent = "Create Room";
+      let code = sanitizeRoomCode(els.customRoomCodeInput.value);
+      if(code && code.length < 3){
+        return showNote(els.lobbyMessage, "Use at least 3 characters for a custom room code, or leave it blank.", "warn");
       }
+
+      if(code){
+        const existing = await get(roomRef(code));
+        if(existing.exists()) return showNote(els.lobbyMessage, "That room code already exists. Choose another code or leave it blank.", "bad");
+      }else{
+        for(let attempts = 0; attempts < 10; attempts++){
+          const candidate = makeRoomCode();
+          const snap = await get(roomRef(candidate));
+          if(!snap.exists()){
+            code = candidate;
+            break;
+          }
+        }
+        if(!code) return showNote(els.lobbyMessage, "Could not create a room code. Please try again.", "bad");
+      }
+
+      const room = {
+        version: 3,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        status: "active",
+        phase: "waiting",
+        attackTurn: 1,
+        round: 1,
+        currentAttacker: "A",
+        currentDefender: "B",
+        players: {
+          A: { name, joinedAt: Date.now() }
+        },
+        scores: { A: 0, B: 0 },
+        usedCards: { A: {}, B: {} },
+        current: {}
+      };
+
+      await set(roomRef(code), room);
+      localStorage.setItem(playerKey(code), "A");
+      joinLocalRoom(code, "A");
     }
 
     async function joinRoom(){
-      if(!db) return showNote(els.lobbyMessage, "This online game is not ready yet. The website owner still needs to finish Firebase setup.", "warn");
+      if(!db) return showNote(els.lobbyMessage, "Online setup is not complete yet.", "warn");
       hideNote(els.lobbyMessage);
-      const code = String(els.roomCodeInput.value || "").trim().toUpperCase();
-      if(!code) return showNote(els.lobbyMessage, "Enter a room code, or open an invite link.", "warn");
+      const code = sanitizeRoomCode(els.roomCodeInput.value);
+      if(!code) return showNote(els.lobbyMessage, "Enter the room code from your friend, or open the invite link.", "warn");
 
-      els.joinRoomBtn.disabled = true;
-      els.joinRoomBtn.textContent = "Joining...";
-      try{
-        const snap = await get(roomRef(code));
-        if(!snap.exists()) return showNote(els.lobbyMessage, "Room not found. Check the code again.", "bad");
+      const snap = await get(roomRef(code));
+      if(!snap.exists()) return showNote(els.lobbyMessage, "Room not found. Check the code again.", "bad");
 
-        const room = snap.val();
-        const stored = localStorage.getItem(playerKey(code));
-        const name = safeName(els.playerName.value, stored === "A" ? "Player A" : "Player B");
-        localStorage.setItem(nameKey(), name);
+      const room = snap.val();
+      const stored = localStorage.getItem(playerKey(code));
+      const name = safeName(els.playerName.value, stored === "A" ? "Player A" : "Player B");
+      localStorage.setItem(nameKey(), name);
 
-        if(stored && room.players && room.players[stored]){
-          joinLocalRoom(code, stored);
-          return;
-        }
-
-        if(!room.players?.B){
-          await update(roomRef(code), {
-            "players/B": { name, joinedAt: Date.now() },
-            phase: room.phase === "waiting" ? "attacker_select" : room.phase,
-            updatedAt: Date.now()
-          });
-          localStorage.setItem(playerKey(code), "B");
-          joinLocalRoom(code, "B");
-          return;
-        }
-
-        showNote(els.lobbyMessage, "This room already has two players. Use the same device/browser as before to reconnect.", "bad");
-      }catch(error){
-        console.error(error);
-        showNote(els.lobbyMessage, `Could not join room: ${error.message}`, "bad");
-      }finally{
-        els.joinRoomBtn.disabled = false;
-        els.joinRoomBtn.textContent = "Join Room";
+      if(stored && room.players && room.players[stored]){
+        joinLocalRoom(code, stored);
+        return;
       }
+
+      if(!room.players?.B){
+        await update(roomRef(code), {
+          "players/B": { name, joinedAt: Date.now() },
+          phase: room.phase === "waiting" ? "attacker_select" : room.phase,
+          updatedAt: Date.now()
+        });
+        localStorage.setItem(playerKey(code), "B");
+        joinLocalRoom(code, "B");
+        return;
+      }
+
+      showNote(els.lobbyMessage, "This room already has two players. Use the same device/browser as before to reconnect.", "bad");
     }
 
     function joinLocalRoom(code, pid){
@@ -926,6 +966,7 @@
       selectedBet = null;
       setUrlRoom(code);
       els.roomCodeInput.value = code;
+      els.customRoomCodeInput.value = code;
       els.lobby.classList.add("hidden");
       els.game.classList.remove("hidden");
       els.roomCodeLabel.textContent = code;
@@ -940,10 +981,6 @@
         }
         currentRoom = snap.val();
         render();
-        maybeEvaluateRound();
-      }, error => {
-        console.error(error);
-        showNote(els.gameMessage, `Could not read room: ${error.message}`, "bad");
       });
     }
 
@@ -977,7 +1014,6 @@
         waiting: "Waiting",
         attacker_select: "Attacker chooses",
         defender_select: "Defender chooses",
-        reveal: "Reveal",
         result: "Round result",
         finished: "Finished",
         error: "Error"
@@ -1025,42 +1061,18 @@
     function renderStage(){
       els.actionArea.innerHTML = "";
       const phase = currentRoom.phase;
-      const me = playerId;
-      const myRole = roleOf(me);
+      const myRole = roleOf(playerId);
 
       if(phase === "waiting"){
         els.stageTitle.textContent = "Waiting for Player B";
-        els.stageHelp.textContent = "Send the invite link to Player B. The game starts automatically when Player B joins.";
-
+        els.stageHelp.textContent = "Send the invite link to Player B. When Player B joins, the first round starts automatically.";
         const box = document.createElement("div");
         box.className = "choice-section";
-
-        const title = document.createElement("h3");
-        title.textContent = "Invite Player B";
-        box.appendChild(title);
-
-        const codeLine = document.createElement("p");
-        codeLine.className = "stage-help";
-        codeLine.innerHTML = `Room code: <strong>${roomCode}</strong>`;
-        box.appendChild(codeLine);
-
-        const linkInput = document.createElement("input");
-        linkInput.value = inviteLink(roomCode);
-        linkInput.readOnly = true;
-        linkInput.addEventListener("click", () => linkInput.select());
-        box.appendChild(linkInput);
-
-        const row = document.createElement("div");
-        row.className = "button-row";
-        row.style.marginTop = "12px";
-
-        const copyBtn = document.createElement("button");
-        copyBtn.className = "btn";
-        copyBtn.textContent = "Copy Invite Link";
-        copyBtn.addEventListener("click", copyInvite);
-        row.appendChild(copyBtn);
-
-        box.appendChild(row);
+        box.innerHTML = `
+          <h3>Invite link</h3>
+          <p class="stage-help">Share this link with Player B:</p>
+          <div class="link-box">${inviteLink(roomCode)}</div>
+        `;
         els.actionArea.appendChild(box);
         return;
       }
@@ -1073,7 +1085,7 @@
           renderAttackerControls();
         }else{
           els.stageHelp.textContent = `${attackerName} is choosing a hidden card and a public bet. Your screen will update after the move is locked.`;
-          renderWaitingBox("Waiting for Attacker", "The Attacker's card stays hidden. You will only see the bet amount before choosing your card.");
+          renderWaitingBox("Waiting for Attacker", "The Attacker's card is hidden. You will only see the bet amount before choosing your card.");
         }
         return;
       }
@@ -1082,25 +1094,18 @@
         const bet = currentRoom.current?.bet;
         els.stageTitle.textContent = `Defender's move · Bet ${bet} point${bet === 1 ? "" : "s"}`;
         if(myRole === "Defender"){
-          els.stageHelp.textContent = "The Attacker has locked a hidden card. Choose one unused card to defend against the public bet.";
+          els.stageHelp.textContent = "The Attacker has locked a hidden card. Choose one unused card. Both cards reveal immediately after you lock.";
           renderDefenderControls();
         }else{
           els.stageHelp.textContent = `You locked your hidden card and bet ${bet}. Waiting for the Defender to choose.`;
-          renderWaitingBox("Move locked", "Your card is hidden until the reveal step.");
+          renderWaitingBox("Move locked", "When the Defender locks a card, both cards reveal and the round is scored automatically.");
         }
-        return;
-      }
-
-      if(phase === "reveal"){
-        els.stageTitle.textContent = "Reveal step";
-        els.stageHelp.textContent = "Both players have locked their hidden cards. Reveal your card so the round can be scored.";
-        renderRevealControls();
         return;
       }
 
       if(phase === "result"){
         els.stageTitle.textContent = "Round result";
-        els.stageHelp.textContent = "The used cards are now crossed out. Continue to the next round when both players are ready.";
+        els.stageHelp.textContent = "Both cards have been revealed. Used cards are crossed out on both screens.";
         renderResultControls();
         return;
       }
@@ -1114,7 +1119,7 @@
 
       if(phase === "error"){
         els.stageTitle.textContent = "Something went wrong";
-        els.stageHelp.textContent = currentRoom.errorMessage || "One reveal did not match its hidden commitment. Start a new room to play again.";
+        els.stageHelp.textContent = currentRoom.errorMessage || "Start a new room to play again.";
         renderResetControls();
       }
     }
@@ -1196,7 +1201,7 @@
       lockRow.className = "button-row";
       const lockBtn = document.createElement("button");
       lockBtn.className = "btn";
-      lockBtn.textContent = "Lock Defender Move";
+      lockBtn.textContent = "Lock Defender Move and Reveal";
       lockBtn.disabled = !selectedCard;
       lockBtn.addEventListener("click", lockDefenderMove);
       lockRow.appendChild(lockBtn);
@@ -1210,19 +1215,13 @@
       if(!selectedCard || !selectedBet) return showNote(els.gameMessage, "Choose both a card and a bet first.", "warn");
       if(hasPlayerUsed(playerId, selectedCard)) return showNote(els.gameMessage, "That card has already been used.", "bad");
 
-      const nonce = randomNonce();
-      const commitment = await sha256(`${selectedCard}|${nonce}`);
-      saveLocalChoice(selectedCard, nonce);
-
       await update(roomRef(roomCode), {
         phase: "defender_select",
         updatedAt: Date.now(),
         current: {
           bet: selectedBet,
-          attackCommit: commitment,
-          defenderCommit: null,
-          attackReveal: null,
-          defenderReveal: null,
+          attackCard: selectedCard,
+          defendCard: null,
           result: null
         }
       });
@@ -1235,88 +1234,16 @@
       if(!selectedCard) return showNote(els.gameMessage, "Choose a card first.", "warn");
       if(hasPlayerUsed(playerId, selectedCard)) return showNote(els.gameMessage, "That card has already been used.", "bad");
 
-      const nonce = randomNonce();
-      const commitment = await sha256(`${selectedCard}|${nonce}`);
-      saveLocalChoice(selectedCard, nonce);
-
-      await update(roomRef(roomCode), {
-        phase: "reveal",
-        updatedAt: Date.now(),
-        "current/defenderCommit": commitment,
-        "current/defenderReveal": null
-      });
-      selectedCard = null;
-    }
-
-    function renderRevealControls(){
-      const revealField = roleOf(playerId) === "Attacker" ? "attackReveal" : "defenderReveal";
-      const hasRevealed = Boolean(currentRoom.current?.[revealField]);
-      const choice = readLocalChoice();
-
-      const box = document.createElement("div");
-      box.className = "choice-section";
-
-      if(hasRevealed){
-        box.innerHTML = `<h3>Your card is revealed</h3><p class="stage-help">Waiting for the other player, or calculating the result.</p>`;
-      }else if(choice){
-        box.innerHTML = `<h3>Reveal your card</h3><p class="stage-help">Your browser will reveal the card you locked earlier. Card: <strong>${choice.card}</strong></p>`;
-        const btn = document.createElement("button");
-        btn.className = "btn";
-        btn.textContent = "Reveal My Card";
-        btn.addEventListener("click", revealMyCard);
-        box.appendChild(btn);
-      }else{
-        box.innerHTML = `<h3>Local choice not found</h3><p class="stage-help">This can happen if you changed browser or cleared storage after locking your move. Start a new room if the reveal cannot continue.</p>`;
-      }
-      els.actionArea.appendChild(box);
-
-      if(currentRoom.current?.attackReveal || currentRoom.current?.defenderReveal){
-        const status = document.createElement("div");
-        status.className = "note good";
-        const a = currentRoom.current?.attackReveal ? "revealed" : "not revealed yet";
-        const d = currentRoom.current?.defenderReveal ? "revealed" : "not revealed yet";
-        status.textContent = `Attacker: ${a}. Defender: ${d}.`;
-        els.actionArea.appendChild(status);
-      }
-    }
-
-    async function revealMyCard(){
-      if(currentRoom.phase !== "reveal") return;
-      const choice = readLocalChoice();
-      if(!choice) return showNote(els.gameMessage, "Your saved card was not found on this device.", "bad");
-
-      const revealField = roleOf(playerId) === "Attacker" ? "current/attackReveal" : "current/defenderReveal";
-      await update(roomRef(roomCode), {
-        [revealField]: { card: Number(choice.card), nonce: String(choice.nonce) },
-        updatedAt: Date.now()
-      });
-    }
-
-    async function maybeEvaluateRound(){
-      if(!currentRoom || currentRoom.phase !== "reveal") return;
-      const current = currentRoom.current || {};
-      if(!current.attackReveal || !current.defenderReveal) return;
-      const key = `${roomCode}-T${currentRoom.attackTurn}-R${currentRoom.round}`;
-      if(evaluatingRoundKey === key) return;
-      evaluatingRoundKey = key;
-
-      const attackHash = await sha256(`${current.attackReveal.card}|${current.attackReveal.nonce}`);
-      const defendHash = await sha256(`${current.defenderReveal.card}|${current.defenderReveal.nonce}`);
-
-      if(attackHash !== current.attackCommit || defendHash !== current.defenderCommit){
-        await update(roomRef(roomCode), {
-          phase: "error",
-          errorMessage: "A revealed card did not match the hidden commitment. The round cannot be trusted.",
-          updatedAt: Date.now()
-        });
-        return;
-      }
-
-      const attackCard = Number(current.attackReveal.card);
-      const defendCard = Number(current.defenderReveal.card);
-      const bet = Number(current.bet);
+      const attackCard = Number(currentRoom.current?.attackCard);
+      const defendCard = Number(selectedCard);
+      const bet = Number(currentRoom.current?.bet);
       const attacker = currentRoom.currentAttacker;
       const defender = currentRoom.currentDefender;
+
+      if(!attackCard || !bet){
+        return showNote(els.gameMessage, "The attacker move was not found. Please start a new room.", "bad");
+      }
+
       let delta = 0;
       let winner = "Tie";
       if(attackCard > defendCard){
@@ -1355,9 +1282,11 @@
         phase: "result",
         scores: newScores,
         usedCards: newUsedCards,
+        "current/defendCard": defendCard,
         "current/result": result,
         updatedAt: Date.now()
       });
+      selectedCard = null;
     }
 
     function renderResultControls(){
@@ -1409,8 +1338,9 @@
 
     async function nextStep(){
       if(currentRoom.phase !== "result") return;
+      selectedCard = null;
+      selectedBet = null;
       const updates = { updatedAt: Date.now(), current: {} };
-      evaluatingRoundKey = "";
 
       if(currentRoom.round < 7){
         updates.round = currentRoom.round + 1;
@@ -1471,17 +1401,17 @@
     async function copyInvite(){
       if(!roomCode) return;
       const link = inviteLink(roomCode);
-      const copied = await copyText(link);
-      if(copied){
+      try{
+        await navigator.clipboard.writeText(link);
         showNote(els.gameMessage, "Invite link copied. Send it to Player B.", "good");
-      }else{
-        showNote(els.gameMessage, `Copy this invite link: ${link}`, "warn");
+      }catch{
+        showNote(els.gameMessage, link, "warn");
       }
     }
 
     function loadInitialRoomFromUrl(){
       const params = new URLSearchParams(window.location.search);
-      const code = String(params.get("room") || "").trim().toUpperCase();
+      const code = sanitizeRoomCode(params.get("room"));
       if(code){
         els.roomCodeInput.value = code;
         showNote(els.lobbyMessage, "Invite link detected. Enter your name and click Join Room.", "good");
@@ -1494,9 +1424,16 @@
       els.copyLinkBtn.addEventListener("click", copyInvite);
       els.leaveBtn.addEventListener("click", leaveRoom);
       els.roomCodeInput.addEventListener("input", () => {
-        els.roomCodeInput.value = els.roomCodeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+        els.roomCodeInput.value = sanitizeRoomCode(els.roomCodeInput.value);
+      });
+      els.customRoomCodeInput.addEventListener("input", () => {
+        els.customRoomCodeInput.value = sanitizeRoomCode(els.customRoomCodeInput.value);
+      });
+      document.querySelectorAll("[data-theme-choice]").forEach(btn => {
+        btn.addEventListener("click", () => applyTheme(btn.dataset.themeChoice));
       });
       els.playerName.value = localStorage.getItem(nameKey()) || "";
+      applyTheme(localStorage.getItem(themeKey()) || "yellow");
     }
 
     setupEvents();
