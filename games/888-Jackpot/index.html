@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#120b2f" />
+  <title>888 Jackpot</title>
+  <style>
+    :root {
+      --bg: #0d0820;
+      --panel: rgba(28, 18, 63, 0.92);
+      --panel-2: rgba(41, 26, 87, 0.92);
+      --line: rgba(255,255,255,0.13);
+      --text: #fbf8ff;
+      --muted: #bfb5d8;
+      --gold: #ffd15c;
+      --gold-2: #ff9f43;
+      --pink: #ff6bbb;
+      --blue: #62c8ff;
+      --green: #7ee787;
+      --danger: #ff7a90;
+      --shadow: 0 20px 55px rgba(0,0,0,0.35);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(121, 76, 255, 0.26), transparent 34%),
+        radial-gradient(circle at 95% 20%, rgba(255, 107, 187, 0.18), transparent 29%),
+        linear-gradient(145deg, #090615 0%, #120b2f 48%, #0b1730 100%);
+      overflow-x: hidden;
+    }
+
+    button, input { font: inherit; }
+
+    button:focus-visible {
+      outline: 3px solid rgba(255, 209, 92, 0.95);
+      outline-offset: 3px;
+    }
+
+    .app {
+      width: min(1240px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 24px 0 38px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 3.8rem);
+      line-height: 0.95;
+      letter-spacing: -0.055em;
+    }
+
+    .brand h1 span {
+      color: var(--gold);
+      text-shadow: 0 0 24px rgba(255, 209, 92, 0.38);
+    }
+
+    .brand p {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      cursor: pointer;
+      transition: transform .16s ease, background .16s ease, border-color .16s ease;
+    }
+
+    .btn:hover { transform: translateY(-1px); background: rgba(255,255,255,0.13); }
+    .btn.primary {
+      background: linear-gradient(135deg, var(--gold), var(--gold-2));
+      color: #251500;
+      border-color: transparent;
+      font-weight: 850;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .game-panel, .rules-panel {
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--panel), rgba(20, 13, 46, 0.94));
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      backdrop-filter: blur(12px);
+    }
+
+    .game-panel { padding: clamp(15px, 2.5vw, 24px); }
+    .rules-panel { padding: 22px; position: sticky; top: 14px; }
+
+    .scoreboard {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 14px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+
+    .player-score {
+      padding: 16px;
+      background: rgba(255,255,255,0.055);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      min-width: 0;
+      transition: border-color .2s ease, background .2s ease, transform .2s ease;
+    }
+
+    .player-score.active {
+      border-color: var(--gold);
+      background: rgba(255, 209, 92, 0.105);
+      transform: translateY(-2px);
+    }
+
+    .player-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 11px;
+    }
+
+    .player-name {
+      font-weight: 850;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .score-number { font-size: 1.55rem; font-weight: 900; }
+
+    .progress {
+      height: 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.09);
+      overflow: hidden;
+    }
+
+    .progress > div {
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      transition: width .35s ease;
+    }
+
+    #progressA { background: linear-gradient(90deg, #47b8ff, #8a7dff); }
+    #progressB { background: linear-gradient(90deg, #ff6bbb, #ff9f43); }
+
+    .score-caption {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: .77rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .center-badge {
+      align-self: center;
+      text-align: center;
+      min-width: 90px;
+    }
+
+    .target-eight {
+      font-size: 2.45rem;
+      font-weight: 950;
+      line-height: 1;
+      color: var(--gold);
+      text-shadow: 0 0 20px rgba(255,209,92,.35);
+    }
+
+    .center-badge small { color: var(--muted); font-weight: 700; }
+
+    .round-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      margin-bottom: 14px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(255,255,255,0.045);
+      color: var(--muted);
+      font-size: .91rem;
+    }
+
+    .round-status strong { color: var(--text); }
+
+    .pile-zone {
+      min-height: 250px;
+      padding: clamp(18px, 3vw, 28px);
+      border: 1px solid rgba(255, 209, 92, 0.22);
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 50% 20%, rgba(255,209,92,.10), transparent 43%),
+        linear-gradient(180deg, rgba(255,255,255,.045), rgba(0,0,0,.11));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pile-zone::before {
+      content: "888";
+      position: absolute;
+      font-size: clamp(7rem, 20vw, 13rem);
+      font-weight: 950;
+      letter-spacing: -.12em;
+      color: rgba(255,255,255,0.023);
+      transform: translateX(-.07em);
+      pointer-events: none;
+    }
+
+    .pile-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(90px, 1fr));
+      gap: 10px;
+      width: min(520px, 100%);
+      position: relative;
+      z-index: 1;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 11px 9px;
+      background: rgba(11,7,27,.58);
+    }
+
+    .metric-label { color: var(--muted); font-size: .73rem; text-transform: uppercase; letter-spacing: .09em; }
+    .metric-value { margin-top: 3px; font-size: 1.65rem; font-weight: 920; }
+    #sumValue { color: var(--gold); }
+
+    .pile-cards {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 18px;
+      min-height: 70px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .empty-pile {
+      color: var(--muted);
+      border: 1px dashed rgba(255,255,255,.18);
+      border-radius: 13px;
+      padding: 13px 18px;
+      font-size: .88rem;
+    }
+
+    .played-card, .card-btn {
+      width: 54px;
+      height: 70px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      font-weight: 950;
+      font-size: 1.45rem;
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+    }
+
+    .played-card {
+      color: #251500;
+      background: linear-gradient(145deg, #fff9dc, #ffd15c);
+      border: 2px solid rgba(255,255,255,.8);
+      animation: dealIn .22s ease both;
+    }
+
+    @keyframes dealIn {
+      from { opacity: 0; transform: translateY(10px) scale(.92) rotate(-2deg); }
+      to { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+    }
+
+    .turn-message {
+      min-height: 27px;
+      margin: 15px 0 5px;
+      text-align: center;
+      font-weight: 800;
+      color: var(--gold);
+    }
+
+    .hands {
+      display: grid;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .hand-panel {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(255,255,255,.04);
+      transition: border-color .2s ease, background .2s ease;
+    }
+
+    .hand-panel.active {
+      border-color: var(--gold);
+      background: rgba(255,209,92,.085);
+    }
+
+    .hand-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .hand-title strong { font-size: .95rem; }
+    .turn-pill {
+      display: none;
+      color: #211300;
+      background: var(--gold);
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: .72rem;
+      font-weight: 900;
+    }
+    .hand-panel.active .turn-pill { display: inline-flex; }
+
+    .cards-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      min-height: 66px;
+    }
+
+    .card-btn {
+      border: 2px solid rgba(255,255,255,.72);
+      color: #111;
+      cursor: pointer;
+      transition: transform .14s ease, filter .14s ease, box-shadow .14s ease;
+    }
+
+    .hand-a .card-btn { background: linear-gradient(145deg, #dff5ff, #62c8ff); }
+    .hand-b .card-btn { background: linear-gradient(145deg, #ffe2f2, #ff75bd); }
+
+    .card-btn:hover:not(:disabled) {
+      transform: translateY(-5px) rotate(-1deg);
+      filter: brightness(1.06);
+      box-shadow: 0 15px 25px rgba(0,0,0,.32);
+    }
+
+    .card-btn:disabled {
+      cursor: not-allowed;
+      opacity: .45;
+      filter: grayscale(.2);
+      box-shadow: none;
+    }
+
+    .rules-panel h2 { margin: 0 0 8px; font-size: 1.18rem; }
+    .rules-panel .goal {
+      color: var(--gold);
+      font-weight: 850;
+      margin-bottom: 16px;
+    }
+
+    .rules-list {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: .91rem;
+    }
+
+    .rules-list li + li { margin-top: 8px; }
+    .rules-list strong { color: var(--text); }
+
+    .tip {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 15px;
+      background: rgba(255,209,92,.09);
+      border: 1px solid rgba(255,209,92,.19);
+      color: #f5e8bd;
+      font-size: .86rem;
+      line-height: 1.45;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      background: rgba(4,2,12,.72);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+    }
+
+    .modal-backdrop.open { display: grid; }
+
+    .modal {
+      width: min(460px, 100%);
+      border: 1px solid rgba(255,255,255,.17);
+      border-radius: 24px;
+      padding: 26px;
+      text-align: center;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(255,209,92,.19), transparent 45%),
+        linear-gradient(180deg, #281953, #160e35);
+      box-shadow: 0 30px 80px rgba(0,0,0,.55);
+      animation: popIn .2s ease both;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(12px) scale(.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-icon { font-size: 3rem; }
+    .modal h2 { margin: 8px 0; font-size: 1.65rem; }
+    .modal p { margin: 8px auto 20px; color: var(--muted); line-height: 1.5; }
+    .modal .btn { min-width: 150px; }
+
+    .confetti {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 101;
+      overflow: hidden;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      top: -20px;
+      width: 9px;
+      height: 15px;
+      border-radius: 2px;
+      animation: fall 1.5s linear forwards;
+    }
+
+    @keyframes fall {
+      to { transform: translate3d(var(--drift), 105vh, 0) rotate(650deg); opacity: .2; }
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .rules-panel { position: static; }
+    }
+
+    @media (max-width: 640px) {
+      .app { width: min(100% - 18px, 1240px); padding-top: 14px; }
+      .topbar { align-items: flex-start; }
+      .brand p { max-width: 250px; }
+      .btn { padding: 9px 13px; }
+      .scoreboard { grid-template-columns: 1fr 1fr; }
+      .center-badge { grid-column: 1 / -1; grid-row: 1; display: flex; justify-content: center; gap: 8px; align-items: baseline; }
+      .player-score:first-child { grid-column: 1; grid-row: 2; }
+      .player-score:last-child { grid-column: 2; grid-row: 2; }
+      .pile-metrics { grid-template-columns: repeat(3, 1fr); }
+      .metric-value { font-size: 1.35rem; }
+      .played-card, .card-btn { width: 48px; height: 64px; }
+      .round-status { align-items: flex-start; flex-direction: column; gap: 4px; }
+    }
+
+    @media (max-width: 420px) {
+      .brand h1 { font-size: 2.15rem; }
+      .brand p { display: none; }
+      .top-actions .btn:first-child { display: none; }
+      .game-panel { padding: 11px; }
+      .player-score { padding: 12px; }
+      .score-number { font-size: 1.25rem; }
+      .pile-zone { min-height: 225px; padding: 15px 10px; }
+      .metric { padding: 9px 5px; }
+      .metric-label { font-size: .63rem; }
+      .played-card, .card-btn { width: 44px; height: 59px; font-size: 1.25rem; }
+      .cards-row { gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <h1><span>888</span> Jackpot</h1>
+        <p>Build the pile. Discover the secret target. Take the jackpot.</p>
+      </div>
+      <div class="top-actions">
+        <button class="btn" id="rulesBtn" type="button">How to Play</button>
+        <button class="btn" id="newGameBtn" type="button">New Game</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="game-panel" aria-label="888 Jackpot game board">
+        <div class="scoreboard">
+          <article class="player-score" id="scorePanelA">
+            <div class="player-row">
+              <span class="player-name">Player A</span>
+              <span class="score-number" id="scoreA">0</span>
+            </div>
+            <div class="progress" aria-label="Player A score progress"><div id="progressA"></div></div>
+            <div class="score-caption"><span id="starterA">—</span><span>Goal: 16</span></div>
+          </article>
+
+          <div class="center-badge" aria-label="Secret target is 7, 8, or 9">
+            <div class="target-eight">×?</div>
+            <small>7 · 8 · 9</small>
+          </div>
+
+          <article class="player-score" id="scorePanelB">
+            <div class="player-row">
+              <span class="player-name">Player B</span>
+              <span class="score-number" id="scoreB">0</span>
+            </div>
+            <div class="progress" aria-label="Player B score progress"><div id="progressB"></div></div>
+            <div class="score-caption"><span id="starterB">—</span><span>Goal: 16</span></div>
+          </article>
+        </div>
+
+        <div class="round-status">
+          <span>Round <strong id="roundNumber">1</strong> · Starter: <strong id="roundStarter">Player A</strong></span>
+          <span>Cards remaining: <strong id="cardsRemaining">10</strong></span>
+        </div>
+
+        <section class="pile-zone" aria-label="Public card pile">
+          <div class="pile-metrics">
+            <div class="metric">
+              <div class="metric-label">Pile Sum</div>
+              <div class="metric-value" id="sumValue">0</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Secret Target</div>
+              <div class="metric-value" id="nextMultiple">?</div>
+            </div>
+            <div class="metric">
+              <div class="metric-label">Jackpot</div>
+              <div class="metric-value"><span id="jackpotValue">0</span> pt</div>
+            </div>
+          </div>
+
+          <div class="pile-cards" id="pileCards">
+            <div class="empty-pile">The pile is empty.</div>
+          </div>
+        </section>
+
+        <div class="turn-message" id="turnMessage" role="status" aria-live="polite">Player A, choose a card.</div>
+
+        <div class="hands">
+          <section class="hand-panel hand-a" id="handPanelA">
+            <div class="hand-title">
+              <strong>Player A's Hand</strong>
+              <span class="turn-pill">YOUR TURN</span>
+            </div>
+            <div class="cards-row" id="handA"></div>
+          </section>
+
+          <section class="hand-panel hand-b" id="handPanelB">
+            <div class="hand-title">
+              <strong>Player B's Hand</strong>
+              <span class="turn-pill">YOUR TURN</span>
+            </div>
+            <div class="cards-row" id="handB"></div>
+          </section>
+        </div>
+      </section>
+
+      <aside class="rules-panel" id="rulesPanel">
+        <h2>How to Play</h2>
+        <div class="goal">First player to 16 points wins.</div>
+        <ol class="rules-list">
+          <li>Cards <strong>1–10</strong> are shuffled and split openly: five cards per player.</li>
+          <li>At the start of each round, the game secretly chooses <strong>7, 8, or 9</strong> as the target.</li>
+          <li>Players take turns adding one card to the public pile.</li>
+          <li>If the new pile sum is a multiple of the secret target, that player wins points equal to the number of cards in the pile.</li>
+          <li>The target is revealed only when a player hits the jackpot. The first card can score normally.</li>
+          <li>After a jackpot, collect all ten cards, reshuffle, choose a new secret target, and begin a new round.</li>
+          <li>If all ten cards are played without a jackpot, nobody scores and the target remains hidden.</li>
+          <li>The starting player switches every round.</li>
+        </ol>
+        <div class="tip"><strong>Read the possibilities:</strong> every pile sum may be safe for one target but dangerous for another. Decide whether to chase a likely jackpot or steer the pile away from several targets at once.</div>
+      </aside>
+    </div>
+  </main>
+
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-icon" id="modalIcon">🎉</div>
+      <h2 id="modalTitle">Jackpot!</h2>
+      <p id="modalText"></p>
+      <button class="btn primary" id="modalButton" type="button">Next Round</button>
+    </div>
+  </div>
+
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const WIN_SCORE = 16;
+      const TARGET_OPTIONS = [7, 8, 9];
+
+      const state = {
+        scores: [0, 0],
+        hands: [[], []],
+        pile: [],
+        sum: 0,
+        round: 1,
+        startingPlayer: 0,
+        currentPlayer: 0,
+        roundLocked: false,
+        gameOver: false,
+        target: 8
+      };
+
+      const el = {
+        scoreA: document.getElementById('scoreA'),
+        scoreB: document.getElementById('scoreB'),
+        progressA: document.getElementById('progressA'),
+        progressB: document.getElementById('progressB'),
+        scorePanelA: document.getElementById('scorePanelA'),
+        scorePanelB: document.getElementById('scorePanelB'),
+        starterA: document.getElementById('starterA'),
+        starterB: document.getElementById('starterB'),
+        roundNumber: document.getElementById('roundNumber'),
+        roundStarter: document.getElementById('roundStarter'),
+        cardsRemaining: document.getElementById('cardsRemaining'),
+        sumValue: document.getElementById('sumValue'),
+        nextMultiple: document.getElementById('nextMultiple'),
+        jackpotValue: document.getElementById('jackpotValue'),
+        pileCards: document.getElementById('pileCards'),
+        turnMessage: document.getElementById('turnMessage'),
+        handA: document.getElementById('handA'),
+        handB: document.getElementById('handB'),
+        handPanelA: document.getElementById('handPanelA'),
+        handPanelB: document.getElementById('handPanelB'),
+        modalBackdrop: document.getElementById('modalBackdrop'),
+        modalIcon: document.getElementById('modalIcon'),
+        modalTitle: document.getElementById('modalTitle'),
+        modalText: document.getElementById('modalText'),
+        modalButton: document.getElementById('modalButton'),
+        newGameBtn: document.getElementById('newGameBtn'),
+        rulesBtn: document.getElementById('rulesBtn'),
+        rulesPanel: document.getElementById('rulesPanel'),
+        confetti: document.getElementById('confetti')
+      };
+
+      function shuffle(array) {
+        const copy = [...array];
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [copy[i], copy[j]] = [copy[j], copy[i]];
+        }
+        return copy;
+      }
+
+      function playerName(index) {
+        return index === 0 ? 'Player A' : 'Player B';
+      }
+
+      function dealRound() {
+        const deck = shuffle([1,2,3,4,5,6,7,8,9,10]);
+        state.hands[0] = deck.slice(0, 5).sort((a,b) => a-b);
+        state.hands[1] = deck.slice(5).sort((a,b) => a-b);
+        state.pile = [];
+        state.sum = 0;
+        state.target = TARGET_OPTIONS[Math.floor(Math.random() * TARGET_OPTIONS.length)];
+        state.currentPlayer = state.startingPlayer;
+        state.roundLocked = false;
+        render();
+      }
+
+      function playCard(playerIndex, cardValue) {
+        if (state.roundLocked || state.gameOver || playerIndex !== state.currentPlayer) return;
+
+        const cardIndex = state.hands[playerIndex].indexOf(cardValue);
+        if (cardIndex < 0) return;
+
+        state.hands[playerIndex].splice(cardIndex, 1);
+        state.pile.push({ value: cardValue, player: playerIndex });
+        state.sum += cardValue;
+
+        const isJackpot = state.sum > 0 && state.sum % state.target === 0;
+        const cardsLeft = state.hands[0].length + state.hands[1].length;
+
+        if (isJackpot) {
+          const points = state.pile.length;
+          state.scores[playerIndex] += points;
+          state.roundLocked = true;
+          render();
+
+          if (state.scores[playerIndex] >= WIN_SCORE) {
+            state.gameOver = true;
+            showResult({
+              icon: '🏆',
+              title: `${playerName(playerIndex)} Wins!`,
+              text: `The secret target was ${state.target}. ${playerName(playerIndex)} hit ${state.sum}, collected ${points} point${points === 1 ? '' : 's'}, and reached ${state.scores[playerIndex]} points.`,
+              button: 'Play Again',
+              celebration: true
+            });
+          } else {
+            showResult({
+              icon: '✨',
+              title: `${points}-Point Jackpot!`,
+              text: `The secret target was ${state.target}. ${playerName(playerIndex)} made ${state.sum} = ${state.sum / state.target} × ${state.target} and collected ${points} point${points === 1 ? '' : 's'}.`,
+              button: 'Next Round',
+              celebration: true
+            });
+          }
+          return;
+        }
+
+        if (cardsLeft === 0) {
+          state.roundLocked = true;
+          render();
+          showResult({
+            icon: '🔄',
+            title: 'No Jackpot',
+            text: 'All ten cards were played without hitting the secret target. Nobody scores, and the target remains hidden.',
+            button: 'Next Round',
+            celebration: false
+          });
+          return;
+        }
+
+        state.currentPlayer = 1 - state.currentPlayer;
+        render();
+      }
+
+      function startNextRound() {
+        if (state.gameOver) {
+          resetGame();
+          return;
+        }
+        state.round += 1;
+        state.startingPlayer = 1 - state.startingPlayer;
+        hideModal();
+        dealRound();
+      }
+
+      function resetGame() {
+        state.scores = [0, 0];
+        state.round = 1;
+        state.startingPlayer = 0;
+        state.currentPlayer = 0;
+        state.gameOver = false;
+        state.roundLocked = false;
+        hideModal();
+        dealRound();
+      }
+
+      function renderHand(playerIndex, container) {
+        container.innerHTML = '';
+        state.hands[playerIndex].forEach(card => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'card-btn';
+          button.textContent = card;
+          button.setAttribute('aria-label', `${playerName(playerIndex)} plays card ${card}`);
+          button.disabled = state.roundLocked || state.gameOver || state.currentPlayer !== playerIndex;
+          button.addEventListener('click', () => playCard(playerIndex, card));
+          container.appendChild(button);
+        });
+
+        if (state.hands[playerIndex].length === 0) {
+          const empty = document.createElement('span');
+          empty.className = 'empty-pile';
+          empty.textContent = 'No cards left';
+          container.appendChild(empty);
+        }
+      }
+
+      function renderPile() {
+        el.pileCards.innerHTML = '';
+        if (state.pile.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'empty-pile';
+          empty.textContent = 'The pile is empty.';
+          el.pileCards.appendChild(empty);
+          return;
+        }
+
+        state.pile.forEach((card, index) => {
+          const cardEl = document.createElement('div');
+          cardEl.className = 'played-card';
+          cardEl.textContent = card.value;
+          cardEl.title = `${playerName(card.player)} played ${card.value}`;
+          cardEl.style.animationDelay = `${Math.max(0, index - state.pile.length + 1) * 30}ms`;
+          el.pileCards.appendChild(cardEl);
+        });
+      }
+
+      function render() {
+        el.scoreA.textContent = state.scores[0];
+        el.scoreB.textContent = state.scores[1];
+        el.progressA.style.width = `${Math.min(100, (state.scores[0] / WIN_SCORE) * 100)}%`;
+        el.progressB.style.width = `${Math.min(100, (state.scores[1] / WIN_SCORE) * 100)}%`;
+
+        el.roundNumber.textContent = state.round;
+        el.roundStarter.textContent = playerName(state.startingPlayer);
+        el.cardsRemaining.textContent = state.hands[0].length + state.hands[1].length;
+        el.sumValue.textContent = state.sum;
+        el.jackpotValue.textContent = state.pile.length;
+        el.nextMultiple.textContent = '?';
+
+        el.starterA.textContent = state.startingPlayer === 0 ? 'Starts this round' : 'Second this round';
+        el.starterB.textContent = state.startingPlayer === 1 ? 'Starts this round' : 'Second this round';
+
+        const aActive = !state.roundLocked && !state.gameOver && state.currentPlayer === 0;
+        const bActive = !state.roundLocked && !state.gameOver && state.currentPlayer === 1;
+        el.scorePanelA.classList.toggle('active', aActive);
+        el.scorePanelB.classList.toggle('active', bActive);
+        el.handPanelA.classList.toggle('active', aActive);
+        el.handPanelB.classList.toggle('active', bActive);
+
+        if (state.gameOver) {
+          el.turnMessage.textContent = 'Game over.';
+        } else if (state.roundLocked) {
+          el.turnMessage.textContent = 'Round complete.';
+        } else {
+          el.turnMessage.textContent = `${playerName(state.currentPlayer)}, choose a card.`;
+        }
+
+        renderPile();
+        renderHand(0, el.handA);
+        renderHand(1, el.handB);
+      }
+
+      function showResult({ icon, title, text, button, celebration }) {
+        el.modalIcon.textContent = icon;
+        el.modalTitle.textContent = title;
+        el.modalText.textContent = text;
+        el.modalButton.textContent = button;
+        el.modalBackdrop.classList.add('open');
+        if (celebration) launchConfetti();
+      }
+
+      function hideModal() {
+        el.modalBackdrop.classList.remove('open');
+      }
+
+      function launchConfetti() {
+        el.confetti.innerHTML = '';
+        const colors = ['#ffd15c', '#ff6bbb', '#62c8ff', '#7ee787', '#ffffff'];
+        for (let i = 0; i < 55; i++) {
+          const piece = document.createElement('span');
+          piece.className = 'confetti-piece';
+          piece.style.left = `${Math.random() * 100}%`;
+          piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+          piece.style.animationDelay = `${Math.random() * .25}s`;
+          piece.style.animationDuration = `${1.05 + Math.random() * .8}s`;
+          piece.style.setProperty('--drift', `${(Math.random() - .5) * 220}px`);
+          el.confetti.appendChild(piece);
+        }
+        window.setTimeout(() => { el.confetti.innerHTML = ''; }, 2200);
+      }
+
+      el.modalButton.addEventListener('click', startNextRound);
+
+      el.newGameBtn.addEventListener('click', () => {
+        const shouldReset = state.scores[0] === 0 && state.scores[1] === 0
+          ? true
+          : window.confirm('Start a new game and reset both scores?');
+        if (shouldReset) resetGame();
+      });
+
+      el.rulesBtn.addEventListener('click', () => {
+        el.rulesPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && el.modalBackdrop.classList.contains('open') && !state.roundLocked) {
+          hideModal();
+        }
+      });
+
+      resetGame();
+    })();
+  </script>
+</body>
+</html>
