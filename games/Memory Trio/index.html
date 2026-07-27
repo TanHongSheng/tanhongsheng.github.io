@@ -1,0 +1,1131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#5b44d6">
+  <title>Memory Trio</title>
+  <style>
+    :root {
+      --ink: #20233c;
+      --muted: #696b80;
+      --paper: #fffdfa;
+      --panel: rgba(255, 255, 255, 0.9);
+      --line: #deddeb;
+      --purple: #5b44d6;
+      --purple-dark: #40309f;
+      --purple-soft: #ece9ff;
+      --orange: #ef7b3b;
+      --orange-dark: #9c421a;
+      --orange-soft: #ffeadc;
+      --mint: #1f9d76;
+      --mint-soft: #e2f7ef;
+      --red: #d7485c;
+      --red-soft: #ffe8ec;
+      --gold: #e4a72c;
+      --gold-soft: #fff3cc;
+      --accent: #5b44d6;
+      --accent-dark: #40309f;
+      --accent-soft: #ece9ff;
+      --accent-rgb: 91, 68, 214;
+      --theme-bg-a: #fffaf4;
+      --theme-bg-b: #f4f1ff;
+      --theme-bg-c: #eefaf7;
+      --shadow: 0 22px 60px rgba(52, 42, 105, 0.13);
+      --radius: 26px;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: Inter, ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(circle at 8% 7%, rgba(var(--accent-rgb), 0.19), transparent 25rem),
+        radial-gradient(circle at 92% 4%, rgba(var(--accent-rgb), 0.14), transparent 27rem),
+        linear-gradient(145deg, var(--theme-bg-a) 0%, var(--theme-bg-b) 50%, var(--theme-bg-c) 100%);
+      transition: background 220ms ease;
+    }
+
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, input:focus-visible {
+      outline: 4px solid rgba(var(--accent-rgb), 0.24);
+      outline-offset: 3px;
+    }
+
+    .app-shell {
+      width: min(1180px, calc(100% - 30px));
+      margin: 0 auto;
+      padding: 17px 0 40px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      min-height: 58px;
+      margin-bottom: 20px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      font-weight: 950;
+      letter-spacing: -0.035em;
+      font-size: clamp(1.05rem, 3vw, 1.36rem);
+    }
+
+    .brand-mark {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 43px;
+      height: 43px;
+      overflow: hidden;
+      border-radius: 14px;
+      color: white;
+      background: var(--accent);
+      box-shadow: 0 8px 22px rgba(var(--accent-rgb), 0.28);
+    }
+
+    .brand-mark::before {
+      content: "3";
+      font-size: 1.4rem;
+      font-weight: 1000;
+      transform: rotate(-6deg);
+    }
+
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+
+    .mode-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 12px;
+      border: 1px solid rgba(var(--accent-rgb), 0.13);
+      border-radius: 999px;
+      color: var(--accent-dark);
+      background: rgba(255, 255, 255, 0.72);
+      font-size: 0.78rem;
+      font-weight: 850;
+    }
+
+    .mode-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); }
+
+    .plain-button, .secondary-button, .primary-button, .danger-button, .gold-button {
+      min-height: 44px;
+      border: 0;
+      border-radius: 14px;
+      padding: 11px 17px;
+      cursor: pointer;
+      font-weight: 900;
+      transition: transform 150ms ease, box-shadow 150ms ease, filter 150ms ease, background 150ms ease;
+    }
+
+    .plain-button { color: var(--ink); background: transparent; }
+    .plain-button:hover { background: rgba(255, 255, 255, 0.82); }
+    .secondary-button { color: var(--accent-dark); background: var(--accent-soft); }
+    .primary-button { color: white; background: var(--accent); box-shadow: 0 11px 24px rgba(var(--accent-rgb), 0.25); }
+    .danger-button { color: var(--red); background: var(--red-soft); }
+    .gold-button { color: #5f3d00; background: var(--gold-soft); border: 1px solid #f0d67e; }
+    .primary-button:hover, .secondary-button:hover, .danger-button:hover, .gold-button:hover { transform: translateY(-2px); filter: saturate(1.05); }
+    .primary-button:active, .secondary-button:active, .danger-button:active, .gold-button:active, .plain-button:active { transform: translateY(0); }
+    button:disabled { cursor: not-allowed; transform: none !important; box-shadow: none !important; opacity: 0.43; }
+    .wide-button { width: 100%; }
+
+    .screen { animation: appear 240ms ease both; }
+    @keyframes appear { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .panel {
+      border: 1px solid rgba(86, 78, 130, 0.12);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(15px);
+    }
+
+    .hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+      gap: clamp(28px, 5vw, 70px);
+      align-items: center;
+      min-height: min(690px, calc(100vh - 130px));
+      padding: clamp(28px, 6vw, 70px);
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      right: -120px;
+      bottom: -135px;
+      border: 42px solid rgba(239, 123, 59, 0.12);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 950;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { max-width: 760px; margin-bottom: 18px; font-size: clamp(2.7rem, 7vw, 5.7rem); line-height: 0.92; letter-spacing: -0.065em; }
+    h2 { margin-bottom: 12px; font-size: clamp(2rem, 4.5vw, 3.35rem); line-height: 1; letter-spacing: -0.05em; }
+    h3 { margin-bottom: 8px; letter-spacing: -0.02em; }
+
+    .lead { max-width: 650px; margin-bottom: 25px; color: var(--muted); font-size: clamp(1rem, 2vw, 1.14rem); line-height: 1.65; }
+    .rule-strip { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 28px; }
+    .rule-chip { padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; background: white; color: #575970; font-size: 0.81rem; font-weight: 850; }
+
+    .setup-card { position: relative; z-index: 1; padding: clamp(22px, 4vw, 32px); border-radius: 24px; background: #24213d; color: white; box-shadow: 0 22px 50px rgba(31, 28, 64, 0.25); }
+    .setup-card p { color: #c8c4dc; line-height: 1.5; }
+    .field { display: grid; gap: 8px; margin: 18px 0; }
+    .field label { color: #e7e4f2; font-size: 0.82rem; font-weight: 850; }
+    .field input { width: 100%; min-height: 50px; padding: 12px 14px; border: 2px solid transparent; border-radius: 14px; color: var(--ink); background: white; font-weight: 780; }
+    .field input:focus { border-color: #a89cff; outline: none; }
+
+    .theme-picker { margin: 12px 0 19px; padding: 0; border: 0; }
+    .theme-picker legend { margin-bottom: 9px; color: #e7e4f2; font-size: 0.82rem; font-weight: 850; }
+    .theme-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .theme-option { cursor: pointer; }
+    .theme-option input { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; pointer-events: none; }
+    .theme-card { display: grid; place-items: center; gap: 5px; min-height: 58px; padding: 7px 4px; border: 2px solid transparent; border-radius: 13px; color: #d7d2e7; background: rgba(255, 255, 255, 0.08); font-size: 0.67rem; font-weight: 800; transition: 140ms ease; }
+    .theme-option:hover .theme-card { transform: translateY(-1px); background: rgba(255, 255, 255, 0.13); }
+    .theme-option input:checked + .theme-card { border-color: white; color: white; background: rgba(255, 255, 255, 0.17); }
+    .color-swatch { width: 23px; height: 23px; border: 3px solid rgba(255, 255, 255, 0.8); border-radius: 50%; background: var(--swatch); box-shadow: 0 3px 8px rgba(0,0,0,0.18); }
+    .setup-card .primary-button { margin-top: 8px; background: var(--orange); box-shadow: 0 11px 25px rgba(255, 138, 76, 0.25); }
+    .tiny-note { margin: 13px 0 0; font-size: 0.77rem; text-align: center; }
+
+    .handoff, .finish-panel, .public-result-screen {
+      display: grid;
+      place-items: center;
+      min-height: min(680px, calc(100vh - 130px));
+      padding: 32px;
+    }
+
+    .handoff-card, .finish-card, .public-result-card { width: min(100%, 720px); padding: clamp(30px, 6vw, 58px); text-align: center; }
+    .privacy-icon, .result-icon, .trophy { display: grid; place-items: center; width: 90px; height: 90px; margin: 0 auto 24px; border-radius: 29px; background: var(--accent-soft); font-size: 2.45rem; transform: rotate(-4deg); }
+    .handoff-card .lead, .public-result-card .lead, .finish-card .lead { margin-left: auto; margin-right: auto; }
+    .ready-check { display: flex; align-items: flex-start; gap: 10px; margin: 0 0 22px; padding: 13px 14px; border-radius: 14px; color: #625e78; background: #f6f4fb; text-align: left; font-size: 0.82rem; line-height: 1.45; }
+
+    .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 22px; margin: 12px 0 22px; }
+    .page-heading p:last-child { margin-bottom: 0; }
+    .round-summary { display: flex; flex-wrap: wrap; gap: 9px; justify-content: flex-end; }
+    .round-tag, .privacy-tag, .status-pill, .phase-pill { display: inline-flex; align-items: center; gap: 7px; width: fit-content; padding: 7px 11px; border-radius: 999px; font-size: 0.76rem; font-weight: 900; }
+    .round-tag, .phase-pill { color: var(--accent-dark); background: var(--accent-soft); }
+    .privacy-tag { color: #9c421a; background: var(--orange-soft); }
+    .status-pill.good { color: #087354; background: var(--mint-soft); }
+    .status-pill.bad { color: #ac2f44; background: var(--red-soft); }
+
+    .game-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
+    .board-panel { padding: clamp(16px, 3.5vw, 30px); }
+    .board-title-row, .player-row, .counter-row, .action-heading, .score-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .board-title-row { margin-bottom: 16px; }
+    .board-title-row h3, .board-title-row p, .counter-row h3 { margin: 0; }
+
+    .player-badge { display: inline-grid; place-items: center; flex: 0 0 auto; width: 34px; height: 34px; border-radius: 12px; color: white; font-weight: 950; }
+    .player-badge.a { background: var(--orange); }
+    .player-badge.b { background: var(--purple); }
+
+    .board-wrap { width: min(100%, 870px); margin: 0 auto; }
+    .card-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: clamp(6px, 1.1vw, 11px); padding: clamp(8px, 1.5vw, 14px); border: clamp(6px, 1vw, 9px) solid var(--ink); border-radius: 22px; background: #f2f0f7; box-shadow: inset 0 0 0 1px rgba(31,35,64,0.06), 0 16px 35px rgba(45,39,91,0.12); }
+
+    .memory-card {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 100%;
+      aspect-ratio: 0.82 / 1;
+      min-width: 0;
+      padding: 0;
+      overflow: hidden;
+      border: 0;
+      border-radius: clamp(10px, 1.6vw, 17px);
+      cursor: pointer;
+      color: white;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,0.13), transparent 45%),
+        repeating-linear-gradient(45deg, rgba(255,255,255,0.08) 0 6px, transparent 6px 12px),
+        #2f3152;
+      box-shadow: 0 7px 15px rgba(28, 28, 59, 0.18);
+      transition: transform 130ms ease, box-shadow 130ms ease, outline 130ms ease;
+    }
+
+    .memory-card:not(:disabled):hover { transform: translateY(-3px); box-shadow: 0 11px 20px rgba(28,28,59,0.23); }
+    .memory-card.selected { outline: 5px solid var(--accent); outline-offset: -3px; transform: translateY(-3px); }
+    .memory-card.face-up { cursor: default; color: var(--ink); background: var(--paper); border: 2px solid #dedbea; box-shadow: 0 5px 12px rgba(33,31,68,0.1); }
+    .memory-card.claim-a { background: linear-gradient(145deg, #fff6ef, #ffe1cf); border-color: #efad83; }
+    .memory-card.claim-b { background: linear-gradient(145deg, #f7f5ff, #e6e0ff); border-color: #aa9ff0; }
+    .memory-card.temp-good { background: linear-gradient(145deg, #f5fff9, #d8f4e9); border-color: #62c3a3; }
+    .memory-card.temp-bad { background: linear-gradient(145deg, #fff7f8, #ffdce2); border-color: #e48a98; }
+    .memory-card.witness { outline: 5px solid var(--gold); outline-offset: -4px; }
+    .memory-card:disabled { opacity: 1; }
+
+    .card-index { position: absolute; top: 6px; left: 7px; font-size: clamp(0.48rem, 1.25vw, 0.7rem); font-weight: 950; opacity: 0.74; }
+    .memory-card:not(.face-up) .card-index { color: rgba(255,255,255,0.76); }
+    .card-back-symbol { font-size: clamp(1.05rem, 3.4vw, 2rem); font-weight: 1000; opacity: 0.9; }
+    .card-value { font-size: clamp(1.45rem, 5vw, 3.2rem); font-weight: 1000; letter-spacing: -0.06em; }
+    .owner-mark { position: absolute; right: 6px; bottom: 6px; display: grid; place-items: center; width: clamp(18px, 3vw, 27px); height: clamp(18px, 3vw, 27px); border-radius: 9px; color: white; font-size: clamp(0.52rem, 1.3vw, 0.72rem); font-weight: 1000; }
+    .owner-mark.a { background: var(--orange); }
+    .owner-mark.b { background: var(--purple); }
+
+    .board-caption { display: flex; justify-content: space-between; gap: 14px; margin: 13px 3px 0; color: var(--muted); font-size: 0.76rem; font-weight: 760; }
+    .side-panel { display: grid; gap: 14px; }
+    .info-card { padding: 20px; }
+    .info-card p { color: var(--muted); line-height: 1.55; }
+    .button-stack { display: grid; gap: 10px; }
+
+    .scoreboard { display: grid; gap: 9px; margin-top: 14px; }
+    .score-player { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 12px; border: 1px solid #ebe9f1; border-radius: 15px; background: white; }
+    .score-player.active { border-color: rgba(var(--accent-rgb), 0.4); background: var(--accent-soft); }
+    .score-player strong, .score-player small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .score-player small { margin-top: 2px; color: var(--muted); font-size: 0.72rem; }
+    .score-number { font-size: 1.45rem; font-weight: 1000; }
+
+    .action-card { padding: 20px; border-radius: 21px; background: #f8f7fb; }
+    .action-card h3 { margin-bottom: 6px; }
+    .action-card p { margin-bottom: 14px; color: var(--muted); font-size: 0.86rem; line-height: 1.5; }
+    .selection-count { display: inline-grid; place-items: center; min-width: 34px; height: 34px; padding: 0 9px; border-radius: 11px; color: white; background: var(--ink); font-weight: 1000; }
+
+    .history-list { display: grid; gap: 8px; max-height: 240px; overflow: auto; margin-top: 12px; }
+    .history-item { padding: 10px 11px; border-radius: 13px; background: #f7f6fa; color: #626377; font-size: 0.78rem; line-height: 1.45; }
+    .history-item strong { color: var(--ink); }
+    .empty-history { color: var(--muted); font-size: 0.8rem; }
+
+    .private-overlay { position: fixed; z-index: 90; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(28,25,57,0.78); backdrop-filter: blur(7px); }
+    .private-reveal { width: min(100%, 460px); padding: clamp(27px, 6vw, 48px); border-radius: 27px; background: white; box-shadow: 0 28px 80px rgba(18,16,47,0.42); text-align: center; }
+    .private-reveal .privacy-tag { margin: 0 auto 17px; }
+    .giant-card { position: relative; display: grid; place-items: center; width: min(230px, 58vw); aspect-ratio: 0.82 / 1; margin: 20px auto 22px; border: 6px solid var(--ink); border-radius: 26px; background: var(--paper); box-shadow: 0 18px 36px rgba(34,31,76,0.18); }
+    .giant-card strong { font-size: clamp(5rem, 23vw, 8.7rem); line-height: 1; letter-spacing: -0.09em; }
+    .giant-card span { position: absolute; top: 13px; left: 15px; color: var(--muted); font-size: 0.82rem; font-weight: 950; }
+
+    .revealed-trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: min(100%, 480px); margin: 22px auto; }
+    .mini-reveal-card { position: relative; display: grid; place-items: center; aspect-ratio: 0.82 / 1; border: 3px solid #dedbea; border-radius: 18px; background: var(--paper); }
+    .mini-reveal-card strong { font-size: clamp(2.2rem, 10vw, 4rem); }
+    .mini-reveal-card span { position: absolute; top: 7px; left: 9px; color: var(--muted); font-size: 0.65rem; font-weight: 900; }
+    .result-icon.good { background: var(--mint-soft); }
+    .result-icon.bad { background: var(--red-soft); }
+    .result-icon.gold { background: var(--gold-soft); }
+
+    .result-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 24px 0; text-align: left; }
+    .result-player { padding: 16px; border: 1px solid var(--line); border-radius: 17px; background: #faf9fc; }
+    .result-player.winner { border-color: #e8c45b; background: #fffaf0; }
+    .result-player .player-row { justify-content: flex-start; }
+    .result-player p { margin: 11px 0 0; color: var(--muted); font-size: 0.82rem; line-height: 1.5; }
+
+    dialog { width: min(650px, calc(100% - 28px)); max-height: min(780px, calc(100vh - 30px)); overflow: auto; padding: 0; border: 0; border-radius: 25px; color: var(--ink); background: white; box-shadow: 0 28px 80px rgba(21,18,50,0.34); }
+    dialog::backdrop { background: rgba(25,22,50,0.64); backdrop-filter: blur(5px); }
+    .dialog-inner { padding: clamp(23px, 5vw, 38px); }
+    .dialog-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; }
+    .icon-button { display: grid; place-items: center; flex: 0 0 auto; width: 42px; height: 42px; border: 0; border-radius: 13px; color: var(--ink); background: #f2f1f7; cursor: pointer; font-size: 1.35rem; }
+    .rules-list { display: grid; gap: 12px; margin: 20px 0 0; padding: 0; list-style: none; }
+    .rules-list li { padding: 14px 15px; border-radius: 15px; background: #f7f6fb; color: #5f6074; line-height: 1.5; font-size: 0.9rem; }
+    .rules-list strong { color: var(--ink); }
+
+    .confirm-box { display: grid; gap: 11px; margin-top: 20px; }
+    .confirm-note { padding: 13px 14px; border-radius: 14px; color: #715b26; background: var(--gold-soft); font-size: 0.84rem; line-height: 1.5; }
+
+    .toast { position: fixed; z-index: 120; left: 50%; bottom: 24px; width: min(430px, calc(100% - 28px)); padding: 13px 16px; border-radius: 15px; color: white; background: var(--ink); box-shadow: 0 15px 35px rgba(31,35,64,0.28); font-weight: 850; text-align: center; transform: translate(-50%,0); animation: toast-in 180ms ease both; }
+    .toast.error { background: var(--red); }
+    .toast[hidden] { display: none; }
+    @keyframes toast-in { from { opacity: 0; transform: translate(-50%,12px); } to { opacity: 1; transform: translate(-50%,0); } }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .game-layout { grid-template-columns: 1fr; }
+      .side-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .side-panel > .info-card:last-child { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 650px) {
+      .app-shell { width: min(100% - 18px, 1180px); padding-top: 9px; }
+      .topbar { margin-bottom: 12px; }
+      .brand span:last-child { display: none; }
+      .mode-pill { display: none; }
+      .plain-button { padding-inline: 9px; }
+      .hero { padding: 24px 17px; gap: 25px; }
+      h1 { font-size: clamp(2.55rem, 16vw, 4.15rem); }
+      .page-heading { display: block; }
+      .round-summary { justify-content: flex-start; margin-top: 13px; }
+      .board-panel { padding: 11px; border-radius: 20px; }
+      .card-grid { gap: 4px; padding: 6px; border-width: 5px; border-radius: 16px; }
+      .memory-card { border-radius: 9px; }
+      .card-index { top: 3px; left: 4px; }
+      .owner-mark { right: 3px; bottom: 3px; border-radius: 6px; }
+      .board-caption { display: grid; gap: 4px; font-size: 0.66rem; }
+      .side-panel { grid-template-columns: 1fr; }
+      .side-panel > .info-card:last-child { grid-column: auto; }
+      .handoff, .finish-panel, .public-result-screen { padding: 13px 0; }
+      .handoff-card, .finish-card, .public-result-card { border-radius: 22px; }
+      .result-grid { grid-template-columns: 1fr; }
+      .revealed-trio { gap: 8px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand" aria-label="Memory Trio">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>Memory Trio</span>
+      </div>
+      <div class="top-actions">
+        <span class="mode-pill"><span class="mode-dot"></span>Local pass-and-play</span>
+        <button class="plain-button" id="rulesButton" type="button">How to play</button>
+        <button class="plain-button" id="newGameButton" type="button" hidden>New game</button>
+      </div>
+    </header>
+
+    <main id="screen" aria-live="polite"></main>
+  </div>
+
+  <dialog id="rulesDialog" aria-labelledby="rulesTitle">
+    <div class="dialog-inner">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">Game rules</p>
+          <h2 id="rulesTitle">Remember. Reveal. Decide.</h2>
+        </div>
+        <button class="icon-button" id="closeRulesButton" type="button" aria-label="Close rules">×</button>
+      </div>
+      <ul class="rules-list">
+        <li><strong>1. The board:</strong> There are 21 hidden cards: three copies of every number from 1 to 7.</li>
+        <li><strong>2. Valid trios:</strong> A trio is either three equal numbers, such as 4-4-4, or three consecutive numbers, such as 3-4-5.</li>
+        <li><strong>3. Your turn:</strong> Before flipping, you may call END. Otherwise, privately flip exactly one unclaimed card, remember it, and hide it again.</li>
+        <li><strong>4. Reveal a trio:</strong> After your private flip, you may select three unclaimed positions and publicly reveal them. You may reveal at most one trio per turn.</li>
+        <li><strong>5. Score:</strong> A valid trio earns 1 point. Those three cards stay face-up and cannot be used again.</li>
+        <li><strong>6. Wrong trio:</strong> If the three cards are not a valid trio, everyone sees them once, they are covered again, and your turn ends.</li>
+        <li><strong>7. Call END:</strong> If no valid trio remains among the unclaimed cards, the caller earns 3 points. If any trio remains, the opponent earns 3 points.</li>
+        <li><strong>8. Finish:</strong> The game ends immediately when all 21 cards have been successfully claimed into seven trios. It also ends when a player calls END. The player with the higher score wins; equal scores are a tie.</li>
+      </ul>
+    </div>
+  </dialog>
+
+  <dialog id="endDialog" aria-labelledby="endTitle">
+    <div class="dialog-inner">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">High-risk decision</p>
+          <h2 id="endTitle">Call END?</h2>
+        </div>
+        <button class="icon-button" id="closeEndButton" type="button" aria-label="Cancel calling end">×</button>
+      </div>
+      <p class="lead" id="endDialogText">The game will immediately reveal every remaining card.</p>
+      <div class="confirm-note"><strong>Correct:</strong> you gain 3 points. <strong>Wrong:</strong> your opponent gains 3 points.</div>
+      <div class="confirm-box">
+        <button class="gold-button wide-button" id="confirmEndButton" type="button">Yes — call END</button>
+        <button class="secondary-button wide-button" id="cancelEndButton" type="button">Not yet</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="assertive" hidden></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const ROWS = 3;
+      const COLS = 7;
+      const TOTAL_CARDS = ROWS * COLS;
+
+      const THEMES = {
+        peach: { name: "Peach", accent: "#e66f32", dark: "#99421b", soft: "#ffeadc", rgb: "230, 111, 50", backgrounds: ["#fff8f1", "#fff0e5", "#fffaf5"] },
+        purple: { name: "Purple", accent: "#6551d9", dark: "#40309f", soft: "#ece9ff", rgb: "101, 81, 217", backgrounds: ["#faf8ff", "#eeeaff", "#f8f5ff"] },
+        blue: { name: "Blue", accent: "#2f78c8", dark: "#17518f", soft: "#e2f0ff", rgb: "47, 120, 200", backgrounds: ["#f5fbff", "#e6f3ff", "#f4faff"] },
+        green: { name: "Green", accent: "#168a67", dark: "#0a6248", soft: "#dcf5eb", rgb: "22, 138, 103", backgrounds: ["#f3fcf8", "#e1f7ed", "#f6fcf9"] }
+      };
+
+      const NEUTRAL_THEME = { accent: "#5b44d6", dark: "#40309f", soft: "#ece9ff", rgb: "91, 68, 214", backgrounds: ["#fffaf4", "#f5f2ff", "#eefaf7"] };
+
+      const screen = document.getElementById("screen");
+      const rulesDialog = document.getElementById("rulesDialog");
+      const rulesButton = document.getElementById("rulesButton");
+      const closeRulesButton = document.getElementById("closeRulesButton");
+      const newGameButton = document.getElementById("newGameButton");
+      const endDialog = document.getElementById("endDialog");
+      const closeEndButton = document.getElementById("closeEndButton");
+      const cancelEndButton = document.getElementById("cancelEndButton");
+      const confirmEndButton = document.getElementById("confirmEndButton");
+      const endDialogText = document.getElementById("endDialogText");
+      const toast = document.getElementById("toast");
+      let toastTimer = null;
+
+      const state = {
+        view: "setup",
+        players: [],
+        deck: [],
+        claimedBy: Array(TOTAL_CARDS).fill(null),
+        active: 0,
+        starter: 0,
+        turnNumber: 1,
+        phase: "before-flip",
+        flippedIndex: null,
+        selected: new Set(),
+        publicReveal: null,
+        handoff: null,
+        history: [],
+        endResult: null
+      };
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function playerLabel(index) { return index === 0 ? "A" : "B"; }
+      function playerClass(index) { return index === 0 ? "a" : "b"; }
+
+      function themePickerHtml(groupName, selectedKey) {
+        return Object.entries(THEMES).map(([key, theme]) => `
+          <label class="theme-option">
+            <input type="radio" name="${groupName}" value="${key}" ${key === selectedKey ? "checked" : ""}>
+            <span class="theme-card">
+              <span class="color-swatch" style="--swatch:${theme.accent}"></span>
+              <span>${theme.name}</span>
+            </span>
+          </label>`).join("");
+      }
+
+      function setInterfaceTheme(theme) {
+        const root = document.documentElement;
+        root.style.setProperty("--accent", theme.accent);
+        root.style.setProperty("--accent-dark", theme.dark);
+        root.style.setProperty("--accent-soft", theme.soft);
+        root.style.setProperty("--accent-rgb", theme.rgb);
+        root.style.setProperty("--theme-bg-a", theme.backgrounds[0]);
+        root.style.setProperty("--theme-bg-b", theme.backgrounds[1]);
+        root.style.setProperty("--theme-bg-c", theme.backgrounds[2]);
+        document.querySelector('meta[name="theme-color"]').setAttribute("content", theme.accent);
+      }
+
+      function applyThemeForCurrentView() {
+        let theme = NEUTRAL_THEME;
+        if (state.players.length) {
+          let playerIndex = null;
+          if (state.view === "handoff") playerIndex = state.handoff.recipient;
+          if (state.view === "play" || state.view === "private-reveal") playerIndex = state.active;
+          if (state.view === "finish" && state.endResult) playerIndex = state.endResult.bonusPlayer;
+          if (playerIndex !== null) theme = THEMES[state.players[playerIndex].themeKey] || NEUTRAL_THEME;
+        }
+        setInterfaceTheme(theme);
+      }
+
+      function showToast(message, isError = false) {
+        window.clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.className = `toast${isError ? " error" : ""}`;
+        toast.hidden = false;
+        toastTimer = window.setTimeout(() => { toast.hidden = true; }, 2500);
+      }
+
+      function shuffledDeck() {
+        const deck = [];
+        for (let number = 1; number <= 7; number += 1) {
+          deck.push(number, number, number);
+        }
+        for (let i = deck.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [deck[i], deck[j]] = [deck[j], deck[i]];
+        }
+        return deck;
+      }
+
+      function makePlayer(name, index, themeKey) {
+        return {
+          name: name || `Player ${playerLabel(index)}`,
+          themeKey: THEMES[themeKey] ? themeKey : (index === 0 ? "peach" : "purple"),
+          score: 0,
+          trios: 0
+        };
+      }
+
+      function classifyCombination(values) {
+        if (!Array.isArray(values) || values.length !== 3) return null;
+        const sorted = [...values].sort((a, b) => a - b);
+        if (sorted[0] === sorted[2]) return { type: "triple", label: `${sorted[0]}-${sorted[0]}-${sorted[0]}` };
+        if (sorted[1] === sorted[0] + 1 && sorted[2] === sorted[1] + 1) {
+          return { type: "run", label: sorted.join("-") };
+        }
+        return null;
+      }
+
+      function findRemainingCombo() {
+        const available = [];
+        for (let index = 0; index < TOTAL_CARDS; index += 1) {
+          if (state.claimedBy[index] === null) available.push(index);
+        }
+
+        const positionsByValue = Array.from({ length: 8 }, () => []);
+        for (const index of available) positionsByValue[state.deck[index]].push(index);
+
+        for (let value = 1; value <= 7; value += 1) {
+          if (positionsByValue[value].length >= 3) {
+            return { indices: positionsByValue[value].slice(0, 3), values: [value, value, value], type: "triple" };
+          }
+        }
+
+        for (let start = 1; start <= 5; start += 1) {
+          if (positionsByValue[start].length && positionsByValue[start + 1].length && positionsByValue[start + 2].length) {
+            return {
+              indices: [positionsByValue[start][0], positionsByValue[start + 1][0], positionsByValue[start + 2][0]],
+              values: [start, start + 1, start + 2],
+              type: "run"
+            };
+          }
+        }
+        return null;
+      }
+
+      function unclaimedCount() {
+        return state.claimedBy.filter((owner) => owner === null).length;
+      }
+
+      function setHandoff(recipient, message) {
+        state.handoff = {
+          recipient,
+          eyebrow: `Turn ${state.turnNumber}`,
+          title: `Pass the device to ${state.players[recipient].name}`,
+          message,
+          button: `I’m ${state.players[recipient].name} — begin my turn`
+        };
+        state.view = "handoff";
+        render();
+      }
+
+      function startFreshGame({ keepPlayers = false, switchStarter = false } = {}) {
+        if (!keepPlayers) return;
+        if (switchStarter) state.starter = 1 - state.starter;
+        state.players.forEach((player) => { player.score = 0; player.trios = 0; });
+        state.deck = shuffledDeck();
+        state.claimedBy = Array(TOTAL_CARDS).fill(null);
+        state.active = state.starter;
+        state.turnNumber = 1;
+        state.phase = "before-flip";
+        state.flippedIndex = null;
+        state.selected = new Set();
+        state.publicReveal = null;
+        state.history = [];
+        state.endResult = null;
+        setHandoff(state.active, `${state.players[state.active].name} goes first. The other player should look away.`);
+      }
+
+      function render() {
+        applyThemeForCurrentView();
+        newGameButton.hidden = state.view === "setup";
+        if (state.view === "setup") renderSetup();
+        if (state.view === "handoff") renderHandoff();
+        if (state.view === "play" || state.view === "private-reveal") renderPlay();
+        if (state.view === "public-result") renderPublicResult();
+        if (state.view === "finish") renderFinish();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function renderSetup() {
+        screen.innerHTML = `
+          <section class="screen panel hero">
+            <div>
+              <p class="eyebrow">A memory and deduction game for two</p>
+              <h1>Remember.<br>Reveal.<br>Decide.</h1>
+              <p class="lead">Privately discover hidden numbers, publicly claim trios, and decide exactly when no combination remains.</p>
+              <div class="rule-strip" aria-label="Quick rules">
+                <span class="rule-chip">21 cards</span>
+                <span class="rule-chip">Numbers 1–7 × 3</span>
+                <span class="rule-chip">Valid trio = 1 point</span>
+                <span class="rule-chip">Correct END = 3 points</span>
+              </div>
+            </div>
+            <form class="setup-card" id="setupForm">
+              <p class="eyebrow" style="color:#b9afff">One device · two players</p>
+              <h3>Who is playing?</h3>
+              <p>Enter two names. Pass the device whenever the privacy screen appears.</p>
+              <div class="field">
+                <label for="playerAName">Player A</label>
+                <input id="playerAName" name="playerAName" maxlength="28" value="Player A" autocomplete="off" required>
+              </div>
+              <fieldset class="theme-picker">
+                <legend>Player A interface color</legend>
+                <div class="theme-options">${themePickerHtml("playerATheme", "peach")}</div>
+              </fieldset>
+              <div class="field">
+                <label for="playerBName">Player B</label>
+                <input id="playerBName" name="playerBName" maxlength="28" value="Player B" autocomplete="off" required>
+              </div>
+              <fieldset class="theme-picker">
+                <legend>Player B interface color</legend>
+                <div class="theme-options">${themePickerHtml("playerBTheme", "purple")}</div>
+              </fieldset>
+              <button class="primary-button wide-button" type="submit">Shuffle & start</button>
+              <p class="tiny-note">Everything stays inside this browser. No account or internet connection is required.</p>
+            </form>
+          </section>`;
+
+        document.getElementById("setupForm").addEventListener("submit", (event) => {
+          event.preventDefault();
+          const form = new FormData(event.currentTarget);
+          const nameA = String(form.get("playerAName") || "").trim().slice(0, 28) || "Player A";
+          const nameB = String(form.get("playerBName") || "").trim().slice(0, 28) || "Player B";
+          const themeA = String(form.get("playerATheme") || "peach");
+          const themeB = String(form.get("playerBTheme") || "purple");
+          if (themeA === themeB) {
+            showToast("Choose a different color for each player.", true);
+            return;
+          }
+          state.players = [makePlayer(nameA, 0, themeA), makePlayer(nameB, 1, themeB)];
+          state.starter = 0;
+          startFreshGame({ keepPlayers: true });
+        });
+      }
+
+      function renderHandoff() {
+        const handoff = state.handoff;
+        screen.innerHTML = `
+          <section class="screen handoff">
+            <div class="panel handoff-card">
+              <div class="privacy-icon" aria-hidden="true">🙈</div>
+              <p class="eyebrow">${escapeHtml(handoff.eyebrow)}</p>
+              <h2>${escapeHtml(handoff.title)}</h2>
+              <p class="lead">${escapeHtml(handoff.message)}</p>
+              <div class="ready-check"><span aria-hidden="true">✓</span><span>Make sure only the named player can see the screen before continuing.</span></div>
+              <button class="primary-button wide-button" id="handoffButton" type="button">${escapeHtml(handoff.button)}</button>
+            </div>
+          </section>`;
+
+        document.getElementById("handoffButton").addEventListener("click", () => {
+          state.view = "play";
+          state.phase = "before-flip";
+          state.flippedIndex = null;
+          state.selected = new Set();
+          render();
+        });
+      }
+
+      function phaseCopy() {
+        if (state.phase === "before-flip") {
+          return {
+            title: "Choose one private card",
+            text: "You may call END now, or tap one face-down card to view it privately.",
+            pill: "Before flip"
+          };
+        }
+        return {
+          title: "Build a trio—or pass",
+          text: "Select exactly three face-down cards to reveal one trio, or end your turn without revealing.",
+          pill: "After flip"
+        };
+      }
+
+      function buildBoard({ revealAll = false, witness = [], tempReveal = null } = {}) {
+        const witnessSet = new Set(witness);
+        const tempSet = new Set(tempReveal ? tempReveal.indices : []);
+        return `<div class="card-grid" role="grid" aria-label="3 by 7 memory board">
+          ${state.deck.map((value, index) => {
+            const owner = state.claimedBy[index];
+            const claimed = owner !== null;
+            const temp = tempSet.has(index);
+            const faceUp = revealAll || claimed || temp;
+            const selectable = state.view === "play" && !claimed && !revealAll && !temp &&
+              ((state.phase === "before-flip") || (state.phase === "after-flip"));
+            const selected = state.selected.has(index);
+            const classes = ["memory-card"];
+            if (faceUp) classes.push("face-up");
+            if (claimed) classes.push(owner === 0 ? "claim-a" : "claim-b");
+            if (temp) classes.push(tempReveal.valid ? "temp-good" : "temp-bad");
+            if (selected) classes.push("selected");
+            if (witnessSet.has(index)) classes.push("witness");
+            const ownerHtml = claimed ? `<span class="owner-mark ${playerClass(owner)}">${playerLabel(owner)}</span>` : "";
+            const inner = faceUp
+              ? `<span class="card-index">${index + 1}</span><strong class="card-value">${value}</strong>${ownerHtml}`
+              : `<span class="card-index">${index + 1}</span><span class="card-back-symbol">✦</span>`;
+            return `<button class="${classes.join(" ")}" type="button" data-card="${index}" role="gridcell" aria-label="Card ${index + 1}${faceUp ? `, value ${value}` : ", face down"}" ${selectable ? "" : "disabled"}>${inner}</button>`;
+          }).join("")}
+        </div>`;
+      }
+
+      function scoreboardHtml() {
+        return `<div class="scoreboard">
+          ${state.players.map((player, index) => `
+            <div class="score-player${index === state.active && state.view !== "finish" ? " active" : ""}">
+              <span class="player-badge ${playerClass(index)}">${playerLabel(index)}</span>
+              <div><strong>${escapeHtml(player.name)}</strong><small>${player.trios} trio${player.trios === 1 ? "" : "s"} claimed</small></div>
+              <span class="score-number">${player.score}</span>
+            </div>`).join("")}
+        </div>`;
+      }
+
+      function historyHtml() {
+        if (!state.history.length) return `<p class="empty-history">No trio has been claimed yet.</p>`;
+        return `<div class="history-list">${state.history.slice().reverse().map((item) => `
+          <div class="history-item"><strong>${escapeHtml(item.player)}</strong> claimed ${escapeHtml(item.label)}.</div>`).join("")}</div>`;
+      }
+
+      function renderPlay() {
+        const active = state.players[state.active];
+        const copy = phaseCopy();
+        screen.innerHTML = `
+          <section class="screen">
+            <div class="page-heading">
+              <div>
+                <p class="eyebrow">Private turn · Opponent look away</p>
+                <h2>${escapeHtml(active.name)}’s turn</h2>
+                <p class="lead">Remember the hidden numbers. Publicly claimed cards stay visible to both players.</p>
+              </div>
+              <div class="round-summary">
+                <span class="round-tag">Turn ${state.turnNumber}</span>
+                <span class="phase-pill">${escapeHtml(copy.pill)}</span>
+                <span class="privacy-tag">◉ Private screen</span>
+              </div>
+            </div>
+
+            <div class="game-layout">
+              <div class="panel board-panel">
+                <div class="board-title-row">
+                  <div class="player-row">
+                    <span class="player-badge ${playerClass(state.active)}">${playerLabel(state.active)}</span>
+                    <div><h3>${escapeHtml(copy.title)}</h3><p>${escapeHtml(copy.text)}</p></div>
+                  </div>
+                  <span class="status-pill good">${unclaimedCount()} cards remain</span>
+                </div>
+                <div class="board-wrap">
+                  ${buildBoard()}
+                  <div class="board-caption"><span>Card numbers mark positions only</span><span>Claimed cards stay public</span></div>
+                </div>
+              </div>
+
+              <aside class="side-panel">
+                <div class="panel info-card">
+                  <div class="counter-row"><h3>Score</h3><span class="phase-pill">+1 trio · +3 END</span></div>
+                  ${scoreboardHtml()}
+                </div>
+
+                <div class="panel info-card">
+                  <div class="action-card">
+                    <div class="action-heading">
+                      <h3>Your action</h3>
+                      ${state.phase === "after-flip" ? `<span class="selection-count">${state.selected.size}/3</span>` : ""}
+                    </div>
+                    ${state.phase === "before-flip" ? `
+                      <p>Tap one face-down card for a private look, or risk calling END before you flip.</p>
+                      <div class="button-stack">
+                        <button class="gold-button wide-button" id="callEndButton" type="button">Call END</button>
+                      </div>` : `
+                      <p>Your private card is hidden again. You may now select three positions to publicly test a trio.</p>
+                      <div class="button-stack">
+                        <button class="primary-button wide-button" id="revealTrioButton" type="button" ${state.selected.size === 3 ? "" : "disabled"}>Reveal selected trio</button>
+                        <button class="secondary-button wide-button" id="clearSelectionButton" type="button" ${state.selected.size ? "" : "disabled"}>Clear selection</button>
+                        <button class="plain-button wide-button" id="passTurnButton" type="button">End turn without a trio</button>
+                      </div>`}
+                  </div>
+                </div>
+
+                <div class="panel info-card">
+                  <h3>Public claims</h3>
+                  ${historyHtml()}
+                </div>
+              </aside>
+            </div>
+          </section>
+          ${state.view === "private-reveal" ? privateRevealOverlay() : ""}`;
+
+        screen.querySelectorAll("[data-card]").forEach((button) => {
+          button.addEventListener("click", () => handleCardClick(Number(button.dataset.card)));
+        });
+
+        const callEndButton = document.getElementById("callEndButton");
+        if (callEndButton) callEndButton.addEventListener("click", openEndDialog);
+
+        const revealButton = document.getElementById("revealTrioButton");
+        if (revealButton) revealButton.addEventListener("click", revealSelectedTrio);
+
+        const clearButton = document.getElementById("clearSelectionButton");
+        if (clearButton) clearButton.addEventListener("click", () => { state.selected.clear(); render(); });
+
+        const passButton = document.getElementById("passTurnButton");
+        if (passButton) passButton.addEventListener("click", () => advanceTurn("No trio was revealed."));
+
+        const hidePrivateButton = document.getElementById("hidePrivateButton");
+        if (hidePrivateButton) hidePrivateButton.addEventListener("click", hidePrivateCard);
+      }
+
+      function privateRevealOverlay() {
+        const index = state.flippedIndex;
+        const value = state.deck[index];
+        return `
+          <div class="private-overlay" role="dialog" aria-modal="true" aria-label="Private card reveal">
+            <div class="private-reveal">
+              <span class="privacy-tag">◉ Only ${escapeHtml(state.players[state.active].name)} should look</span>
+              <p class="eyebrow">Private card ${index + 1}</p>
+              <h2>Remember this number</h2>
+              <div class="giant-card"><span>Position ${index + 1}</span><strong>${value}</strong></div>
+              <p class="lead">When you hide it, the card will turn face-down again. The game will not save a private note for you.</p>
+              <button class="primary-button wide-button" id="hidePrivateButton" type="button">I remember it — hide the card</button>
+            </div>
+          </div>`;
+      }
+
+      function handleCardClick(index) {
+        if (state.claimedBy[index] !== null) return;
+        if (state.phase === "before-flip") {
+          state.flippedIndex = index;
+          state.view = "private-reveal";
+          render();
+          return;
+        }
+        if (state.phase !== "after-flip") return;
+        if (state.selected.has(index)) {
+          state.selected.delete(index);
+        } else if (state.selected.size < 3) {
+          state.selected.add(index);
+        } else {
+          showToast("You may select only three cards.", true);
+        }
+        render();
+      }
+
+      function hidePrivateCard() {
+        state.view = "play";
+        state.phase = "after-flip";
+        state.selected = new Set();
+        render();
+      }
+
+      function revealSelectedTrio() {
+        if (state.selected.size !== 3) return;
+        const indices = [...state.selected];
+        if (indices.some((index) => state.claimedBy[index] !== null)) {
+          showToast("One selected card is no longer available.", true);
+          state.selected.clear();
+          render();
+          return;
+        }
+        const values = indices.map((index) => state.deck[index]);
+        const combo = classifyCombination(values);
+        const valid = Boolean(combo);
+
+        if (valid) {
+          for (const index of indices) state.claimedBy[index] = state.active;
+          state.players[state.active].score += 1;
+          state.players[state.active].trios += 1;
+          state.history.push({ player: state.players[state.active].name, label: combo.label });
+        }
+
+        state.publicReveal = {
+          indices,
+          values,
+          valid,
+          combo,
+          player: state.active
+        };
+        state.selected.clear();
+        state.view = "public-result";
+        render();
+      }
+
+      function renderPublicResult() {
+        const result = state.publicReveal;
+        const player = state.players[result.player];
+        const title = result.valid ? "Valid trio! +1 point" : "Not a valid trio";
+        const subtitle = result.valid
+          ? `${player.name} claimed ${result.combo.label}. These cards stay face-up and leave the game.`
+          : "Both players may study these three cards now. They will be covered again after Continue.";
+        screen.innerHTML = `
+          <section class="screen public-result-screen">
+            <div class="panel public-result-card">
+              <div class="result-icon ${result.valid ? "good" : "bad"}" aria-hidden="true">${result.valid ? "✓" : "×"}</div>
+              <p class="eyebrow">Public reveal · Both players may look</p>
+              <h2>${escapeHtml(title)}</h2>
+              <p class="lead">${escapeHtml(subtitle)}</p>
+              <div class="revealed-trio">
+                ${result.indices.map((index) => `<div class="mini-reveal-card"><span>Position ${index + 1}</span><strong>${state.deck[index]}</strong></div>`).join("")}
+              </div>
+              <div class="ready-check"><span aria-hidden="true">👀</span><span>This is a public screen. Give both players enough time to see the numbers before continuing.</span></div>
+              <button class="primary-button wide-button" id="publicContinueButton" type="button">${result.valid && unclaimedCount() === 0 ? "View final results" : "Continue & pass the device"}</button>
+            </div>
+          </section>`;
+
+        document.getElementById("publicContinueButton").addEventListener("click", () => {
+          if (result.valid && unclaimedCount() === 0) {
+            state.publicReveal = null;
+            state.endResult = {
+              automatic: true,
+              caller: null,
+              correct: true,
+              bonusPlayer: null,
+              witness: null
+            };
+            state.view = "finish";
+            render();
+            return;
+          }
+
+          const message = result.valid
+            ? `${player.name} scored 1 point with ${result.combo.label}.`
+            : `${player.name} revealed an invalid trio. The three cards are hidden again.`;
+          state.publicReveal = null;
+          advanceTurn(message);
+        });
+      }
+
+      function advanceTurn(message) {
+        state.active = 1 - state.active;
+        state.turnNumber += 1;
+        state.phase = "before-flip";
+        state.flippedIndex = null;
+        state.selected = new Set();
+        setHandoff(state.active, `${message} ${state.players[state.active].name}, you may now flip a card or call END.`);
+      }
+
+      function openEndDialog() {
+        endDialogText.textContent = `${state.players[state.active].name}, are you certain that no valid trio remains among the ${unclaimedCount()} face-down cards?`;
+        endDialog.showModal();
+      }
+
+      function resolveEndCall() {
+        endDialog.close();
+        const caller = state.active;
+        const witness = findRemainingCombo();
+        const correct = witness === null;
+        const bonusPlayer = correct ? caller : 1 - caller;
+        state.players[bonusPlayer].score += 3;
+        state.endResult = { caller, correct, bonusPlayer, witness };
+        state.view = "finish";
+        render();
+      }
+
+      function renderFinish() {
+        const result = state.endResult;
+        const [a, b] = state.players;
+        let winner = null;
+        if (a.score > b.score) winner = 0;
+        if (b.score > a.score) winner = 1;
+
+        let headline;
+        let explanation;
+        if (result.automatic) {
+          headline = "All 21 cards were claimed!";
+          explanation = "The seventh valid trio completed the board, so the game ended automatically. No END bonus is awarded.";
+        } else {
+          const caller = state.players[result.caller];
+          const bonusPlayer = state.players[result.bonusPlayer];
+          headline = result.correct ? "Correct END call!" : "A trio was still available!";
+          explanation = result.correct
+            ? `${caller.name} correctly judged that no valid trio remained and earned 3 points.`
+            : `${caller.name} called END too early. ${bonusPlayer.name} earned 3 points.`;
+        }
+
+        const outcome = winner === null ? "The game ends in a tie." : `${state.players[winner].name} wins the game!`;
+        const witness = result.witness ? result.witness.indices : [];
+
+        screen.innerHTML = `
+          <section class="screen finish-panel">
+            <div class="panel finish-card" style="width:min(100%,920px)">
+              <div class="trophy" aria-hidden="true">${winner === null ? "🤝" : "🏆"}</div>
+              <p class="eyebrow">Game complete · All cards revealed</p>
+              <h2>${escapeHtml(headline)}</h2>
+              <p class="lead">${escapeHtml(explanation)} <strong>${escapeHtml(outcome)}</strong></p>
+              ${result.automatic
+                ? `<div class="ready-check"><span>✓</span><span>Every card belongs to one of the seven successfully claimed trios.</span></div>`
+                : result.witness
+                  ? `<div class="confirm-note">The gold outlines show one trio that was still available: <strong>${result.witness.values.join("-")}</strong>.</div>`
+                  : `<div class="ready-check"><span>✓</span><span>No triple and no three-number run remained among the unclaimed cards.</span></div>`}
+              <div class="board-wrap" style="margin-top:22px">
+                ${buildBoard({ revealAll: true, witness })}
+              </div>
+              <div class="result-grid">
+                ${state.players.map((player, index) => `
+                  <div class="result-player${winner === index ? " winner" : ""}">
+                    <div class="player-row">
+                      <span class="player-badge ${playerClass(index)}">${playerLabel(index)}</span>
+                      <strong>${escapeHtml(player.name)}</strong>
+                    </div>
+                    <p><strong>${player.score} points</strong><br>${player.trios} claimed trio${player.trios === 1 ? "" : "s"}${result.bonusPlayer === index ? " · received the 3-point END bonus" : ""}.</p>
+                  </div>`).join("")}
+              </div>
+              <div class="button-stack" style="max-width:520px;margin:0 auto">
+                <button class="primary-button wide-button" id="playAgainButton" type="button">Play again · switch starting player</button>
+                <button class="secondary-button wide-button" id="backSetupButton" type="button">Change player names</button>
+              </div>
+            </div>
+          </section>`;
+
+        document.getElementById("playAgainButton").addEventListener("click", () => startFreshGame({ keepPlayers: true, switchStarter: true }));
+        document.getElementById("backSetupButton").addEventListener("click", resetToSetup);
+      }
+
+      function resetToSetup() {
+        state.view = "setup";
+        state.players = [];
+        state.deck = [];
+        state.claimedBy = Array(TOTAL_CARDS).fill(null);
+        state.active = 0;
+        state.starter = 0;
+        state.turnNumber = 1;
+        state.phase = "before-flip";
+        state.flippedIndex = null;
+        state.selected = new Set();
+        state.publicReveal = null;
+        state.handoff = null;
+        state.history = [];
+        state.endResult = null;
+        render();
+      }
+
+      rulesButton.addEventListener("click", () => rulesDialog.showModal());
+      closeRulesButton.addEventListener("click", () => rulesDialog.close());
+      rulesDialog.addEventListener("click", (event) => { if (event.target === rulesDialog) rulesDialog.close(); });
+
+      closeEndButton.addEventListener("click", () => endDialog.close());
+      cancelEndButton.addEventListener("click", () => endDialog.close());
+      confirmEndButton.addEventListener("click", resolveEndCall);
+      endDialog.addEventListener("click", (event) => { if (event.target === endDialog) endDialog.close(); });
+
+      newGameButton.addEventListener("click", () => {
+        if (window.confirm("Start a new game? All current scores and card positions will be lost.")) resetToSetup();
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && state.view === "private-reveal") {
+          event.preventDefault();
+          showToast("Use the Hide button so the turn continues correctly.", true);
+        }
+      });
+
+      console.assert(shuffledDeck().length === 21, "The deck must contain 21 cards.");
+      console.assert(classifyCombination([1, 2, 3])?.type === "run", "1-2-3 must be a run.");
+      console.assert(classifyCombination([7, 7, 7])?.type === "triple", "7-7-7 must be a triple.");
+      console.assert(classifyCombination([1, 3, 4]) === null, "1-3-4 must be invalid.");
+
+      window.__MEMORY_TRIO_TEST__ = {
+        constants: { ROWS, COLS, TOTAL_CARDS },
+        shuffledDeck,
+        classifyCombination,
+        findRemainingCombo
+      };
+
+      render();
+    })();
+  </script>
+</body>
+</html>
