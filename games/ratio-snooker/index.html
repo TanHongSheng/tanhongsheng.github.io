@@ -1,0 +1,2490 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#071b14" />
+  <title>Ratio Snooker</title>
+  <style>
+    :root {
+      --ink: #effff8;
+      --muted: #91b2a5;
+      --faint: #5f7d72;
+      --felt: #0b5a42;
+      --felt-dark: #063b2c;
+      --panel: rgba(11, 39, 30, 0.86);
+      --panel-solid: #0b271e;
+      --line: rgba(180, 241, 215, 0.13);
+      --mint: #68f5b6;
+      --mint-deep: #28c883;
+      --gold: #ffd166;
+      --coral: #ff746c;
+      --blue: #70d7ff;
+      --shadow: 0 28px 70px rgba(0, 0, 0, 0.34);
+      --radius: 22px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      color-scheme: dark;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(41, 146, 103, 0.22), transparent 32rem),
+        radial-gradient(circle at 92% 12%, rgba(104, 245, 182, 0.09), transparent 25rem),
+        linear-gradient(145deg, #05130f 0%, #081f18 55%, #061712 100%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      content: "";
+      opacity: 0.16;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.86' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.2'/%3E%3C/svg%3E");
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    button:focus-visible,
+    input:focus-visible {
+      outline: 3px solid rgba(104, 245, 182, 0.42);
+      outline-offset: 3px;
+    }
+
+    .app {
+      width: min(1500px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 18px clamp(16px, 3vw, 42px) 40px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      min-height: 58px;
+      margin-bottom: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      position: relative;
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid rgba(104, 245, 182, 0.3);
+      border-radius: 13px;
+      background: linear-gradient(145deg, rgba(104, 245, 182, 0.2), rgba(104, 245, 182, 0.04));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      position: absolute;
+      content: "";
+      border-radius: 999px;
+    }
+
+    .brand-mark::before {
+      width: 9px;
+      height: 9px;
+      background: white;
+      box-shadow: 0 1px 7px rgba(255, 255, 255, 0.8);
+      transform: translate(-7px, 7px);
+    }
+
+    .brand-mark::after {
+      width: 26px;
+      height: 2px;
+      background: var(--mint);
+      box-shadow: 0 0 8px rgba(104, 245, 182, 0.65);
+      transform: rotate(-45deg);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(1.08rem, 2.1vw, 1.42rem);
+      font-weight: 820;
+      letter-spacing: -0.035em;
+    }
+
+    .brand p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 0.71rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-button,
+    .text-button {
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.045);
+      cursor: pointer;
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+
+    .icon-button {
+      width: 42px;
+      padding: 0;
+    }
+
+    .text-button {
+      padding: 0 14px;
+      color: #d8eee5;
+      font-size: 0.82rem;
+      font-weight: 720;
+    }
+
+    .icon-button:hover,
+    .text-button:hover {
+      border-color: rgba(104, 245, 182, 0.34);
+      background: rgba(104, 245, 182, 0.09);
+      transform: translateY(-1px);
+    }
+
+    .icon {
+      width: 19px;
+      height: 19px;
+      fill: none;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 1.8;
+    }
+
+    .score-ribbon {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: stretch;
+      max-width: 900px;
+      margin: 0 auto 16px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(6, 27, 20, 0.78);
+      box-shadow: 0 15px 34px rgba(0, 0, 0, 0.18);
+      backdrop-filter: blur(16px);
+    }
+
+    .player-score {
+      position: relative;
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 13px;
+      padding: 13px clamp(14px, 2vw, 23px);
+      transition: background 220ms ease;
+    }
+
+    .player-score.two {
+      flex-direction: row-reverse;
+      text-align: right;
+    }
+
+    .player-score.active {
+      background: linear-gradient(100deg, rgba(104, 245, 182, 0.12), transparent);
+    }
+
+    .player-score.two.active {
+      background: linear-gradient(260deg, rgba(255, 209, 102, 0.12), transparent);
+    }
+
+    .player-score.active::after {
+      position: absolute;
+      right: 16px;
+      bottom: 0;
+      left: 16px;
+      height: 2px;
+      border-radius: 99px;
+      content: "";
+      background: var(--mint);
+      box-shadow: 0 0 12px rgba(104, 245, 182, 0.75);
+    }
+
+    .player-score.two.active::after {
+      background: var(--gold);
+      box-shadow: 0 0 12px rgba(255, 209, 102, 0.65);
+    }
+
+    .player-orb {
+      display: grid;
+      flex: 0 0 auto;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 50%;
+      color: #05271b;
+      background: linear-gradient(145deg, #b7ffde, var(--mint-deep));
+      box-shadow: 0 7px 18px rgba(40, 200, 131, 0.24);
+      font-size: 0.8rem;
+      font-weight: 900;
+    }
+
+    .two .player-orb {
+      color: #352400;
+      background: linear-gradient(145deg, #fff1bd, var(--gold));
+      box-shadow: 0 7px 18px rgba(255, 209, 102, 0.18);
+    }
+
+    .score-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .score-name {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 5px;
+      color: #d6eee4;
+      font-size: 0.75rem;
+      font-weight: 760;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .two .score-name {
+      justify-content: flex-end;
+    }
+
+    .turn-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--mint);
+      box-shadow: 0 0 9px var(--mint);
+      opacity: 0;
+    }
+
+    .two .turn-dot {
+      background: var(--gold);
+      box-shadow: 0 0 9px var(--gold);
+    }
+
+    .active .turn-dot {
+      opacity: 1;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .score-line {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .two .score-line {
+      justify-content: flex-end;
+    }
+
+    .score-number {
+      font-size: 1.52rem;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+
+    .score-target {
+      color: var(--faint);
+      font-size: 0.73rem;
+      font-weight: 700;
+    }
+
+    .score-progress {
+      width: min(190px, 100%);
+      height: 4px;
+      margin-top: 7px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .two .score-progress {
+      margin-left: auto;
+    }
+
+    .score-progress span {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--mint-deep), var(--mint));
+      transition: width 520ms cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .two .score-progress span {
+      margin-left: auto;
+      background: linear-gradient(90deg, #e9af28, var(--gold));
+    }
+
+    .versus {
+      display: grid;
+      min-width: 66px;
+      place-items: center;
+      border-right: 1px solid var(--line);
+      border-left: 1px solid var(--line);
+      color: var(--faint);
+      font-size: 0.68rem;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+    }
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: minmax(430px, 1fr) 340px;
+      gap: clamp(15px, 2vw, 25px);
+      align-items: start;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .board-panel,
+    .control-panel,
+    .history-panel {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .board-panel {
+      position: relative;
+      overflow: hidden;
+      border-radius: 26px;
+    }
+
+    .board-topline {
+      display: flex;
+      min-height: 57px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .shot-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .eyebrow {
+      color: var(--faint);
+      font-size: 0.65rem;
+      font-weight: 850;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .ball-coordinate {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 3px;
+      font-size: 0.97rem;
+      font-weight: 820;
+    }
+
+    .ball-coordinate::before {
+      width: 8px;
+      height: 8px;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      content: "";
+      background: white;
+      box-shadow: 0 0 9px white;
+    }
+
+    .hit-readout {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hit-label {
+      color: var(--muted);
+      font-size: 0.69rem;
+      font-weight: 750;
+    }
+
+    .hit-pips {
+      display: flex;
+      gap: 4px;
+    }
+
+    .hit-pip {
+      display: grid;
+      width: 19px;
+      height: 19px;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      color: var(--faint);
+      background: rgba(255, 255, 255, 0.035);
+      font-size: 0.6rem;
+      font-weight: 850;
+      transition: 160ms ease;
+    }
+
+    .hit-pip.lit {
+      border-color: rgba(104, 245, 182, 0.45);
+      color: #062a1d;
+      background: var(--mint);
+      box-shadow: 0 0 12px rgba(104, 245, 182, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .hit-pip.danger {
+      border-color: rgba(255, 116, 108, 0.5);
+      color: white;
+      background: var(--coral);
+      box-shadow: 0 0 14px rgba(255, 116, 108, 0.45);
+    }
+
+    .table-stage {
+      position: relative;
+      padding: clamp(10px, 1.8vw, 18px);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.025), transparent 35%),
+        rgba(0, 0, 0, 0.09);
+    }
+
+    .table-frame {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+      border: clamp(8px, 1.4vw, 14px) solid #5b3721;
+      border-radius: 18px;
+      background: #0b5a42;
+      box-shadow:
+        inset 0 0 0 3px rgba(255, 216, 161, 0.16),
+        inset 0 0 0 7px rgba(33, 13, 5, 0.4),
+        0 15px 28px rgba(0, 0, 0, 0.28);
+    }
+
+    .table-frame::before {
+      position: absolute;
+      inset: -14px;
+      z-index: 2;
+      pointer-events: none;
+      border: 14px solid transparent;
+      border-radius: 16px;
+      content: "";
+      box-shadow: inset 0 0 18px rgba(255, 191, 116, 0.18);
+    }
+
+    #tableCanvas {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1;
+      touch-action: manipulation;
+    }
+
+    .board-message {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      z-index: 3;
+      display: flex;
+      width: max-content;
+      max-width: calc(100% - 48px);
+      align-items: center;
+      gap: 8px;
+      padding: 8px 13px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 999px;
+      color: #d9f4e8;
+      background: rgba(3, 22, 15, 0.72);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+      font-size: 0.72rem;
+      font-weight: 720;
+      text-align: center;
+      transform: translateX(-50%);
+      backdrop-filter: blur(12px);
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .board-message.hidden {
+      opacity: 0;
+      transform: translate(-50%, 8px);
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--mint);
+      box-shadow: 0 0 9px var(--mint);
+    }
+
+    .control-stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .control-panel,
+    .history-panel {
+      border-radius: var(--radius);
+    }
+
+    .control-panel {
+      overflow: hidden;
+    }
+
+    .turn-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 15px 17px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(115deg, rgba(104, 245, 182, 0.1), transparent);
+    }
+
+    .turn-banner.player-two {
+      background: linear-gradient(115deg, rgba(255, 209, 102, 0.1), transparent);
+    }
+
+    .turn-person {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .turn-avatar {
+      display: grid;
+      width: 35px;
+      height: 35px;
+      place-items: center;
+      border-radius: 11px;
+      color: #032519;
+      background: var(--mint);
+      font-size: 0.72rem;
+      font-weight: 900;
+    }
+
+    .player-two .turn-avatar {
+      color: #352400;
+      background: var(--gold);
+    }
+
+    .turn-copy small {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--faint);
+      font-size: 0.6rem;
+      font-weight: 850;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .turn-copy strong {
+      font-size: 0.91rem;
+    }
+
+    .shot-number {
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 780;
+    }
+
+    .controls-body {
+      padding: 18px;
+    }
+
+    .controls-heading {
+      margin: 0 0 4px;
+      font-size: 1.03rem;
+      font-weight: 850;
+      letter-spacing: -0.025em;
+    }
+
+    .controls-intro {
+      margin: 0 0 17px;
+      color: var(--muted);
+      font-size: 0.74rem;
+      line-height: 1.5;
+    }
+
+    .direction-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .direction-control {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .direction-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 9px;
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-weight: 780;
+    }
+
+    .axis-pill {
+      display: grid;
+      width: 24px;
+      height: 24px;
+      place-items: center;
+      border-radius: 8px;
+      color: var(--mint);
+      background: rgba(104, 245, 182, 0.1);
+      font-size: 0.76rem;
+      font-weight: 900;
+    }
+
+    .stepper {
+      display: grid;
+      grid-template-columns: 30px 1fr 30px;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .step-button {
+      display: grid;
+      width: 30px;
+      height: 34px;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      border-radius: 9px;
+      color: #bdd8cd;
+      background: rgba(255, 255, 255, 0.045);
+      cursor: pointer;
+      font-size: 1rem;
+      transition: 150ms ease;
+    }
+
+    .step-button:hover {
+      color: var(--ink);
+      background: rgba(104, 245, 182, 0.12);
+    }
+
+    .direction-input {
+      width: 100%;
+      height: 36px;
+      border: 0;
+      color: white;
+      background: transparent;
+      font-size: 1.15rem;
+      font-weight: 850;
+      text-align: center;
+      appearance: textfield;
+    }
+
+    .direction-input::-webkit-outer-spin-button,
+    .direction-input::-webkit-inner-spin-button {
+      margin: 0;
+      appearance: none;
+    }
+
+    .ratio-card {
+      display: flex;
+      min-height: 61px;
+      align-items: center;
+      gap: 11px;
+      margin-top: 12px;
+      padding: 11px 13px;
+      border: 1px solid rgba(104, 245, 182, 0.14);
+      border-radius: 14px;
+      background: rgba(104, 245, 182, 0.055);
+    }
+
+    .ratio-icon {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 11px;
+      color: var(--mint);
+      background: rgba(104, 245, 182, 0.1);
+      font-size: 1rem;
+      font-weight: 950;
+    }
+
+    .ratio-card small {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--faint);
+      font-size: 0.59rem;
+      font-weight: 850;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    .ratio-card strong {
+      display: block;
+      overflow: hidden;
+      color: #d9f5e8;
+      font-size: 0.78rem;
+      font-weight: 750;
+      line-height: 1.35;
+      text-overflow: ellipsis;
+    }
+
+    .validation {
+      min-height: 17px;
+      margin: 8px 2px 0;
+      color: var(--coral);
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+
+    .primary-button,
+    .next-button {
+      position: relative;
+      display: flex;
+      width: 100%;
+      min-height: 49px;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      overflow: hidden;
+      border: 0;
+      border-radius: 14px;
+      color: #03271a;
+      background: linear-gradient(135deg, #8cffca, var(--mint));
+      box-shadow: 0 12px 28px rgba(41, 215, 143, 0.2);
+      cursor: pointer;
+      font-size: 0.83rem;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      transition: filter 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .primary-button::before,
+    .next-button::before {
+      position: absolute;
+      top: -100%;
+      left: -35%;
+      width: 25%;
+      height: 300%;
+      content: "";
+      background: rgba(255, 255, 255, 0.34);
+      transform: rotate(24deg);
+      transition: left 450ms ease;
+    }
+
+    .primary-button:hover,
+    .next-button:hover {
+      filter: brightness(1.05);
+      transform: translateY(-2px);
+      box-shadow: 0 16px 34px rgba(41, 215, 143, 0.27);
+    }
+
+    .primary-button:hover::before,
+    .next-button:hover::before {
+      left: 120%;
+    }
+
+    .primary-button:disabled {
+      color: var(--faint);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .button-hint {
+      margin: 8px 0 0;
+      color: var(--faint);
+      font-size: 0.62rem;
+      text-align: center;
+    }
+
+    .result-card {
+      display: none;
+      padding: 18px;
+      animation: rise 260ms ease both;
+    }
+
+    .control-panel.show-result .controls-body {
+      display: none;
+    }
+
+    .control-panel.show-result .result-card {
+      display: block;
+    }
+
+    .result-symbol {
+      display: grid;
+      width: 48px;
+      height: 48px;
+      margin-bottom: 13px;
+      place-items: center;
+      border: 1px solid rgba(104, 245, 182, 0.28);
+      border-radius: 16px;
+      color: var(--mint);
+      background: rgba(104, 245, 182, 0.09);
+      font-size: 1.4rem;
+      font-weight: 900;
+    }
+
+    .result-card.fail .result-symbol {
+      border-color: rgba(255, 116, 108, 0.3);
+      color: var(--coral);
+      background: rgba(255, 116, 108, 0.09);
+    }
+
+    .result-title {
+      margin: 0 0 5px;
+      font-size: 1.18rem;
+      font-weight: 900;
+      letter-spacing: -0.035em;
+    }
+
+    .result-detail {
+      min-height: 42px;
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.55;
+    }
+
+    .award-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding: 11px 13px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .award-row span {
+      color: var(--muted);
+      font-size: 0.69rem;
+      font-weight: 720;
+    }
+
+    .award-row strong {
+      color: var(--mint);
+      font-size: 1.22rem;
+      font-weight: 920;
+    }
+
+    .fail .award-row strong {
+      color: var(--coral);
+    }
+
+    .next-button {
+      background: linear-gradient(135deg, #f4fff9, #baffdb);
+    }
+
+    .history-panel {
+      overflow: hidden;
+    }
+
+    .history-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 15px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .history-heading h2 {
+      margin: 0;
+      font-size: 0.76rem;
+      font-weight: 850;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .history-heading span {
+      color: var(--faint);
+      font-size: 0.62rem;
+    }
+
+    .history-list {
+      min-height: 53px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .history-empty {
+      padding: 17px 15px;
+      color: var(--faint);
+      font-size: 0.7rem;
+      text-align: center;
+    }
+
+    .history-item {
+      display: grid;
+      grid-template-columns: 26px minmax(0, 1fr) auto;
+      gap: 9px;
+      align-items: center;
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.055);
+      animation: rise 220ms ease both;
+    }
+
+    .history-item:last-child {
+      border-bottom: 0;
+    }
+
+    .history-player {
+      display: grid;
+      width: 25px;
+      height: 25px;
+      place-items: center;
+      border-radius: 8px;
+      color: #05251a;
+      background: var(--mint);
+      font-size: 0.58rem;
+      font-weight: 900;
+    }
+
+    .history-player.p2 {
+      color: #352400;
+      background: var(--gold);
+    }
+
+    .history-path {
+      min-width: 0;
+    }
+
+    .history-path strong {
+      display: block;
+      overflow: hidden;
+      color: #d6ece3;
+      font-size: 0.68rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .history-path small {
+      color: var(--faint);
+      font-size: 0.59rem;
+    }
+
+    .history-award {
+      color: var(--mint);
+      font-size: 0.7rem;
+      font-weight: 870;
+    }
+
+    .history-award.zero {
+      color: var(--coral);
+    }
+
+    dialog {
+      width: min(530px, calc(100% - 28px));
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid rgba(182, 242, 216, 0.18);
+      border-radius: 23px;
+      color: var(--ink);
+      background: #0a281e;
+      box-shadow: 0 35px 90px rgba(0, 0, 0, 0.55);
+    }
+
+    dialog::backdrop {
+      background: rgba(1, 10, 7, 0.78);
+      backdrop-filter: blur(8px);
+    }
+
+    .dialog-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 19px 21px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .dialog-head h2 {
+      margin: 0;
+      font-size: 1.12rem;
+      letter-spacing: -0.025em;
+    }
+
+    .close-dialog {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+    }
+
+    .rules-content {
+      padding: 21px;
+    }
+
+    .rules-lead {
+      margin: 0 0 17px;
+      color: #c8e1d7;
+      font-size: 0.82rem;
+      line-height: 1.62;
+    }
+
+    .rule-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      counter-reset: rule;
+      list-style: none;
+    }
+
+    .rule-list li {
+      position: relative;
+      min-height: 35px;
+      padding-left: 45px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      line-height: 1.55;
+      counter-increment: rule;
+    }
+
+    .rule-list li::before {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      border-radius: 10px;
+      color: var(--mint);
+      content: counter(rule, decimal-leading-zero);
+      background: rgba(104, 245, 182, 0.09);
+      font-size: 0.61rem;
+      font-weight: 900;
+    }
+
+    .rule-list strong {
+      color: #e7fff5;
+    }
+
+    .math-note {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255, 209, 102, 0.16);
+      border-radius: 13px;
+      color: #e8d9ac;
+      background: rgba(255, 209, 102, 0.06);
+      font-size: 0.71rem;
+      line-height: 1.5;
+    }
+
+    .winner-dialog {
+      text-align: center;
+    }
+
+    .winner-content {
+      padding: 30px 23px 24px;
+    }
+
+    .winner-crown {
+      display: grid;
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 15px;
+      place-items: center;
+      border: 1px solid rgba(255, 209, 102, 0.25);
+      border-radius: 23px;
+      color: var(--gold);
+      background: rgba(255, 209, 102, 0.1);
+      box-shadow: 0 0 32px rgba(255, 209, 102, 0.12);
+      font-size: 2rem;
+    }
+
+    .winner-content h2 {
+      margin: 0 0 7px;
+      font-size: 1.65rem;
+      letter-spacing: -0.045em;
+    }
+
+    .winner-content p {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .winner-score {
+      display: inline-flex;
+      margin-bottom: 21px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      color: var(--mint);
+      background: rgba(104, 245, 182, 0.08);
+      font-size: 0.76rem;
+      font-weight: 820;
+    }
+
+    .confetti {
+      position: fixed;
+      top: -20px;
+      z-index: 20;
+      width: 8px;
+      height: 15px;
+      border-radius: 2px;
+      pointer-events: none;
+      animation: confetti-fall var(--fall, 2.8s) linear forwards;
+    }
+
+    .table-frame.shake {
+      animation: shake 280ms ease;
+    }
+
+    @keyframes pulse {
+      50% { opacity: 0.35; transform: scale(0.78); }
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(7px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shake {
+      20% { transform: translateX(-4px); }
+      40% { transform: translateX(4px); }
+      60% { transform: translateX(-3px); }
+      80% { transform: translateX(2px); }
+    }
+
+    @keyframes confetti-fall {
+      to {
+        transform: translate3d(var(--drift, 30px), 110vh, 0) rotate(760deg);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .game-layout {
+        grid-template-columns: 1fr;
+        max-width: 680px;
+      }
+
+      .control-stack {
+        grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+      }
+    }
+
+    @media (max-width: 620px) {
+      .app {
+        padding: 11px 10px 28px;
+      }
+
+      .topbar {
+        min-height: 50px;
+        margin-bottom: 10px;
+      }
+
+      .brand-mark {
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
+      }
+
+      .brand p,
+      .new-match-label {
+        display: none;
+      }
+
+      .text-button {
+        width: 41px;
+        padding: 0;
+      }
+
+      .score-ribbon {
+        margin-bottom: 11px;
+        border-radius: 15px;
+      }
+
+      .player-score {
+        gap: 8px;
+        padding: 10px;
+      }
+
+      .player-orb {
+        width: 31px;
+        height: 31px;
+        font-size: 0.67rem;
+      }
+
+      .score-name {
+        font-size: 0.59rem;
+      }
+
+      .score-number {
+        font-size: 1.25rem;
+      }
+
+      .score-target {
+        display: none;
+      }
+
+      .versus {
+        min-width: 37px;
+        font-size: 0.55rem;
+      }
+
+      .game-layout {
+        min-width: 0;
+        gap: 11px;
+      }
+
+      .board-panel {
+        border-radius: 18px;
+      }
+
+      .board-topline {
+        min-height: 49px;
+        padding: 9px 11px;
+      }
+
+      .hit-label {
+        display: none;
+      }
+
+      .hit-pips {
+        gap: 3px;
+      }
+
+      .hit-pip {
+        width: 16px;
+        height: 16px;
+        border-radius: 5px;
+        font-size: 0.51rem;
+      }
+
+      .table-stage {
+        padding: 7px;
+      }
+
+      .table-frame {
+        border-width: 8px;
+        border-radius: 13px;
+      }
+
+      .board-message {
+        bottom: 19px;
+        max-width: calc(100% - 30px);
+        font-size: 0.63rem;
+      }
+
+      .control-stack {
+        grid-template-columns: 1fr;
+        gap: 11px;
+      }
+
+      .history-panel {
+        order: 2;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div>
+          <h1>Ratio Snooker</h1>
+          <p>A game of angles &amp; reflection</p>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button class="icon-button" id="soundButton" type="button" aria-label="Turn sound off" title="Sound">
+          <svg class="icon sound-on-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M11 5 6.5 9H3v6h3.5l4.5 4V5Z"></path>
+            <path d="M15 9.2a4 4 0 0 1 0 5.6M17.8 6.5a7.7 7.7 0 0 1 0 11"></path>
+          </svg>
+        </button>
+        <button class="text-button" id="rulesButton" type="button">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M9.7 9a2.4 2.4 0 1 1 3.4 2.2c-.7.4-1.1.8-1.1 1.8M12 17h.01"></path>
+          </svg>
+          Rules
+        </button>
+        <button class="text-button" id="newMatchButton" type="button">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 11a8 8 0 1 0-2.3 5.7"></path>
+            <path d="M20 4v7h-7"></path>
+          </svg>
+          <span class="new-match-label">New match</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="score-ribbon" aria-label="Scoreboard">
+      <article class="player-score one active" id="playerOneScore">
+        <div class="player-orb">P1</div>
+        <div class="score-copy">
+          <div class="score-name"><span class="turn-dot"></span> Player 1</div>
+          <div class="score-line">
+            <strong class="score-number" id="scoreOne">0</strong>
+            <span class="score-target">/ 15 marks</span>
+          </div>
+          <div class="score-progress"><span id="progressOne"></span></div>
+        </div>
+      </article>
+      <div class="versus">VS</div>
+      <article class="player-score two" id="playerTwoScore">
+        <div class="player-orb">P2</div>
+        <div class="score-copy">
+          <div class="score-name">Player 2 <span class="turn-dot"></span></div>
+          <div class="score-line">
+            <strong class="score-number" id="scoreTwo">0</strong>
+            <span class="score-target">/ 15 marks</span>
+          </div>
+          <div class="score-progress"><span id="progressTwo"></span></div>
+        </div>
+      </article>
+    </section>
+
+    <main class="game-layout">
+      <section class="board-panel" aria-label="Snooker board">
+        <div class="board-topline">
+          <div class="shot-meta">
+            <div>
+              <div class="eyebrow">Ball position</div>
+              <div class="ball-coordinate" id="ballCoordinate">(2, 3)</div>
+            </div>
+          </div>
+          <div class="hit-readout" aria-label="Wall hit counter">
+            <span class="hit-label">Wall hits</span>
+            <div class="hit-pips" id="hitPips">
+              <span class="hit-pip">1</span>
+              <span class="hit-pip">2</span>
+              <span class="hit-pip">3</span>
+              <span class="hit-pip">4</span>
+              <span class="hit-pip">5</span>
+              <span class="hit-pip">×</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-stage">
+          <div class="table-frame" id="tableFrame">
+            <canvas id="tableCanvas" role="img" aria-label="A coordinate board from zero to six, with holes at zero zero and six six"></canvas>
+          </div>
+          <div class="board-message" id="boardMessage" aria-live="polite">
+            <span class="status-dot"></span>
+            <span id="boardMessageText">Choose a ratio, then take your shot</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="control-stack">
+        <section class="control-panel" id="controlPanel">
+          <div class="turn-banner" id="turnBanner">
+            <div class="turn-person">
+              <div class="turn-avatar" id="turnAvatar">P1</div>
+              <div class="turn-copy">
+                <small>Now playing</small>
+                <strong id="turnName">Player 1</strong>
+              </div>
+            </div>
+            <span class="shot-number" id="shotNumber">Shot 01</span>
+          </div>
+
+          <div class="controls-body">
+            <h2 class="controls-heading">Set your direction</h2>
+            <p class="controls-intro">Use integers from −6 to 6. The sign controls left/right and down/up.</p>
+
+            <div class="direction-grid">
+              <label class="direction-control">
+                <span class="direction-label">
+                  Horizontal <span class="axis-pill">h</span>
+                </span>
+                <span class="stepper">
+                  <button class="step-button" type="button" data-step="h" data-change="-1" aria-label="Decrease horizontal value">−</button>
+                  <input class="direction-input" id="horizontalInput" type="number" min="-6" max="6" step="1" value="2" inputmode="numeric" aria-label="Horizontal direction" />
+                  <button class="step-button" type="button" data-step="h" data-change="1" aria-label="Increase horizontal value">+</button>
+                </span>
+              </label>
+
+              <label class="direction-control">
+                <span class="direction-label">
+                  Vertical <span class="axis-pill">v</span>
+                </span>
+                <span class="stepper">
+                  <button class="step-button" type="button" data-step="v" data-change="-1" aria-label="Decrease vertical value">−</button>
+                  <input class="direction-input" id="verticalInput" type="number" min="-6" max="6" step="1" value="3" inputmode="numeric" aria-label="Vertical direction" />
+                  <button class="step-button" type="button" data-step="v" data-change="1" aria-label="Increase vertical value">+</button>
+                </span>
+              </label>
+            </div>
+
+            <div class="ratio-card">
+              <div class="ratio-icon">∠</div>
+              <div>
+                <small>Reduced direction</small>
+                <strong id="ratioDescription">(2, 3) · 2 right for every 3 up</strong>
+              </div>
+            </div>
+
+            <p class="validation" id="validationMessage" aria-live="polite"></p>
+
+            <button class="primary-button" id="shootButton" type="button">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m5 19 14-14M10 5h9v9"></path>
+                <circle cx="6" cy="18" r="2"></circle>
+              </svg>
+              Take the shot
+            </button>
+            <p class="button-hint">Press Enter to shoot · proportional pairs make the same path</p>
+          </div>
+
+          <div class="result-card" id="resultCard">
+            <div class="result-symbol" id="resultSymbol">✓</div>
+            <h2 class="result-title" id="resultTitle">Pocketed!</h2>
+            <p class="result-detail" id="resultDetail"></p>
+            <div class="award-row">
+              <span>Marks earned</span>
+              <strong id="marksEarned">+0</strong>
+            </div>
+            <button class="next-button" id="nextButton" type="button">
+              Next player
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h14M14 7l5 5-5 5"></path>
+              </svg>
+            </button>
+          </div>
+        </section>
+
+        <section class="history-panel" aria-label="Shot history">
+          <div class="history-heading">
+            <h2>Shot history</h2>
+            <span>Latest first</span>
+          </div>
+          <ul class="history-list" id="historyList">
+            <li class="history-empty">Your first shot will appear here.</li>
+          </ul>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <dialog id="rulesDialog">
+    <div class="dialog-head">
+      <h2>How to play</h2>
+      <button class="close-dialog" id="closeRulesButton" type="button" aria-label="Close rules">×</button>
+    </div>
+    <div class="rules-content">
+      <p class="rules-lead">Choose a direction ratio that sends the ball into either corner hole—after as many safe wall hits as you can manage.</p>
+      <ol class="rule-list">
+        <li>A new ball appears at a random point whose coordinates come from <strong>{0, 2, 3, 4, 6}</strong>, excluding the two holes.</li>
+        <li>Enter integers <strong>(h, v)</strong> from −6 to 6. Negative h means left, positive h means right; negative v means down, positive v means up. <strong>(0, 0) is forbidden.</strong></li>
+        <li>Proportional pairs are the same shot: <strong>(2, 3)</strong> and <strong>(4, 6)</strong> follow exactly the same path.</li>
+        <li>The walls are perfectly elastic. A non-hole corner reflects both directions but counts as <strong>one wall hit</strong>.</li>
+        <li>Pocket the ball after 0–5 wall hits to earn that many marks. On the <strong>sixth wall hit</strong>, the mission fails immediately and earns 0.</li>
+        <li>Players alternate with a new ball after every shot. The first player to reach <strong>15 marks</strong> wins.</li>
+      </ol>
+      <div class="math-note"><strong>Board-edge note:</strong> if a ball begins on a wall and the chosen direction points outward, it reflects inward immediately. Its starting contact is not counted as a wall hit.</div>
+    </div>
+  </dialog>
+
+  <dialog class="winner-dialog" id="winnerDialog">
+    <div class="winner-content">
+      <div class="winner-crown" aria-hidden="true">♛</div>
+      <h2 id="winnerTitle">Player 1 wins!</h2>
+      <p>A sharp victory built from ratios, angles, and reflections.</p>
+      <div class="winner-score" id="winnerScore">15–10 marks</div>
+      <button class="next-button" id="playAgainButton" type="button">Play another match</button>
+    </div>
+  </dialog>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const BOARD_SIZE = 6;
+      const TARGET_SCORE = 15;
+      const MAX_SAFE_HITS = 5;
+      const SPAWN_VALUES = [0, 2, 3, 4, 6];
+      const EPSILON = 1e-8;
+
+      const canvas = document.getElementById("tableCanvas");
+      const ctx = canvas.getContext("2d");
+      const tableFrame = document.getElementById("tableFrame");
+      const hInput = document.getElementById("horizontalInput");
+      const vInput = document.getElementById("verticalInput");
+      const shootButton = document.getElementById("shootButton");
+      const nextButton = document.getElementById("nextButton");
+      const controlPanel = document.getElementById("controlPanel");
+      const resultCard = document.getElementById("resultCard");
+      const resultTitle = document.getElementById("resultTitle");
+      const resultDetail = document.getElementById("resultDetail");
+      const resultSymbol = document.getElementById("resultSymbol");
+      const marksEarned = document.getElementById("marksEarned");
+      const validationMessage = document.getElementById("validationMessage");
+      const ratioDescription = document.getElementById("ratioDescription");
+      const ballCoordinate = document.getElementById("ballCoordinate");
+      const boardMessage = document.getElementById("boardMessage");
+      const boardMessageText = document.getElementById("boardMessageText");
+      const hitPips = Array.from(document.querySelectorAll(".hit-pip"));
+      const historyList = document.getElementById("historyList");
+      const rulesDialog = document.getElementById("rulesDialog");
+      const winnerDialog = document.getElementById("winnerDialog");
+      const soundButton = document.getElementById("soundButton");
+
+      const state = {
+        scores: [0, 0],
+        activePlayer: 0,
+        shotNumber: 1,
+        ball: { x: 2, y: 3 },
+        lastBall: null,
+        phase: "aiming",
+        liveHits: 0,
+        history: [],
+        soundOn: true,
+        reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+        animation: null,
+        effects: [],
+        displayBall: { x: 2, y: 3, scale: 1 },
+        completedTrail: [],
+        currentTrailPoint: null
+      };
+
+      let audioContext = null;
+      let canvasMetrics = { width: 600, height: 600, dpr: 1, pad: 52, board: 496 };
+      let animationFrame = 0;
+
+      function clampInteger(value) {
+        const parsed = Number.parseInt(value, 10);
+        if (Number.isNaN(parsed)) return 0;
+        return Math.max(-6, Math.min(6, parsed));
+      }
+
+      function gcd(a, b) {
+        a = Math.abs(a);
+        b = Math.abs(b);
+        while (b) {
+          const t = b;
+          b = a % b;
+          a = t;
+        }
+        return a || 1;
+      }
+
+      function reducedDirection(h, v) {
+        const divisor = gcd(h, v);
+        return { h: h / divisor, v: v / divisor };
+      }
+
+      function nearlyEqual(a, b) {
+        return Math.abs(a - b) < EPSILON;
+      }
+
+      function isHole(point) {
+        return (
+          (nearlyEqual(point.x, 0) && nearlyEqual(point.y, 0)) ||
+          (nearlyEqual(point.x, BOARD_SIZE) && nearlyEqual(point.y, BOARD_SIZE))
+        );
+      }
+
+      function directionWords(value, negativeWord, positiveWord, axisWord) {
+        if (value === 0) return `no ${axisWord} movement`;
+        return `${Math.abs(value)} ${value < 0 ? negativeWord : positiveWord}`;
+      }
+
+      function getInputDirection() {
+        return {
+          h: clampInteger(hInput.value),
+          v: clampInteger(vInput.value)
+        };
+      }
+
+      function updateDirectionUI(normalize = true) {
+        const hValue = Number(hInput.value);
+        const vValue = Number(vInput.value);
+        const incomplete =
+          hInput.value === "" ||
+          vInput.value === "" ||
+          !Number.isInteger(hValue) ||
+          !Number.isInteger(vValue) ||
+          hValue < -6 ||
+          hValue > 6 ||
+          vValue < -6 ||
+          vValue > 6;
+
+        if (incomplete && !normalize) {
+          shootButton.disabled = true;
+          validationMessage.textContent = "Enter a whole number from −6 to 6 in both boxes.";
+          ratioDescription.textContent = "Finish entering your direction";
+          drawScene();
+          return;
+        }
+
+        const raw = getInputDirection();
+        if (normalize) {
+          hInput.value = String(raw.h);
+          vInput.value = String(raw.v);
+        }
+
+        const invalid = raw.h === 0 && raw.v === 0;
+        shootButton.disabled = invalid || state.phase !== "aiming";
+        validationMessage.textContent = invalid ? "Choose a direction other than (0, 0)." : "";
+
+        if (invalid) {
+          ratioDescription.textContent = "(0, 0) has no direction";
+        } else {
+          const reduced = reducedDirection(raw.h, raw.v);
+          const horizontal = directionWords(reduced.h, "left", "right", "horizontal");
+          const vertical = directionWords(reduced.v, "down", "up", "vertical");
+          ratioDescription.textContent = `(${reduced.h}, ${reduced.v}) · ${horizontal}, ${vertical}`;
+        }
+
+        if (state.phase === "aiming") {
+          drawScene();
+        }
+      }
+
+      function generateBall() {
+        let candidate;
+        let attempts = 0;
+        do {
+          candidate = {
+            x: SPAWN_VALUES[Math.floor(Math.random() * SPAWN_VALUES.length)],
+            y: SPAWN_VALUES[Math.floor(Math.random() * SPAWN_VALUES.length)]
+          };
+          attempts += 1;
+        } while (
+          (isHole(candidate) ||
+            (state.ball && candidate.x === state.ball.x && candidate.y === state.ball.y)) &&
+          attempts < 100
+        );
+        state.lastBall = state.ball;
+        state.ball = candidate;
+        state.displayBall = { ...candidate, scale: 1 };
+        state.completedTrail = [];
+        state.currentTrailPoint = null;
+        state.effects = [];
+        state.liveHits = 0;
+        ballCoordinate.textContent = `(${candidate.x}, ${candidate.y})`;
+        updateHitPips(0);
+        drawScene();
+      }
+
+      function simulateShot(start, horizontal, vertical) {
+        const reduced = reducedDirection(horizontal, vertical);
+        let dx = reduced.h;
+        let dy = reduced.v;
+        let x = start.x;
+        let y = start.y;
+        let hits = 0;
+        const segments = [];
+        const startReflections = [];
+
+        if (nearlyEqual(x, 0) && dx < 0) {
+          dx *= -1;
+          startReflections.push("left");
+        } else if (nearlyEqual(x, BOARD_SIZE) && dx > 0) {
+          dx *= -1;
+          startReflections.push("right");
+        }
+
+        if (nearlyEqual(y, 0) && dy < 0) {
+          dy *= -1;
+          startReflections.push("bottom");
+        } else if (nearlyEqual(y, BOARD_SIZE) && dy > 0) {
+          dy *= -1;
+          startReflections.push("top");
+        }
+
+        for (let guard = 0; guard < 20; guard += 1) {
+          const tx = dx > 0
+            ? (BOARD_SIZE - x) / dx
+            : dx < 0
+              ? (0 - x) / dx
+              : Number.POSITIVE_INFINITY;
+          const ty = dy > 0
+            ? (BOARD_SIZE - y) / dy
+            : dy < 0
+              ? (0 - y) / dy
+              : Number.POSITIVE_INFINITY;
+          const travelTime = Math.min(tx, ty);
+
+          if (!Number.isFinite(travelTime) || travelTime <= EPSILON) {
+            return { success: false, hits, segments, reduced, startReflections, reason: "invalid" };
+          }
+
+          const next = {
+            x: Math.max(0, Math.min(BOARD_SIZE, x + dx * travelTime)),
+            y: Math.max(0, Math.min(BOARD_SIZE, y + dy * travelTime))
+          };
+          const touchesVertical = nearlyEqual(travelTime, tx);
+          const touchesHorizontal = nearlyEqual(travelTime, ty);
+          const distance = Math.hypot(next.x - x, next.y - y);
+
+          if (isHole(next)) {
+            segments.push({
+              from: { x, y },
+              to: next,
+              distance,
+              event: "pocket",
+              hitsAfter: hits
+            });
+            return {
+              success: true,
+              hits,
+              segments,
+              reduced,
+              startReflections,
+              pocket: { ...next }
+            };
+          }
+
+          hits += 1;
+          const failed = hits > MAX_SAFE_HITS;
+          segments.push({
+            from: { x, y },
+            to: next,
+            distance,
+            event: failed ? "fail" : "bounce",
+            hitsAfter: hits,
+            corner: touchesVertical && touchesHorizontal
+          });
+
+          if (failed) {
+            return {
+              success: false,
+              hits,
+              segments,
+              reduced,
+              startReflections,
+              reason: "sixth-hit"
+            };
+          }
+
+          x = next.x;
+          y = next.y;
+          if (touchesVertical) dx *= -1;
+          if (touchesHorizontal) dy *= -1;
+        }
+
+        return { success: false, hits, segments, reduced, startReflections, reason: "no-pocket" };
+      }
+
+      function tone(frequency, duration, type = "sine", volume = 0.05, delay = 0, endFrequency = null) {
+        if (!state.soundOn) return;
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioContext.state === "suspended") audioContext.resume();
+
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const start = audioContext.currentTime + delay;
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, start);
+        if (endFrequency) {
+          oscillator.frequency.exponentialRampToValueAtTime(Math.max(20, endFrequency), start + duration);
+        }
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(volume, start + Math.min(0.018, duration / 4));
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(start);
+        oscillator.stop(start + duration + 0.03);
+      }
+
+      function playStrike() {
+        tone(155, 0.11, "triangle", 0.045, 0, 82);
+        tone(420, 0.035, "square", 0.012, 0.015, 250);
+      }
+
+      function playBounce(corner = false) {
+        tone(corner ? 225 : 190, 0.075, "triangle", 0.038, 0, 105);
+        tone(corner ? 450 : 360, 0.035, "sine", 0.018, 0.008, 210);
+      }
+
+      function playPocket() {
+        tone(392, 0.12, "sine", 0.038, 0);
+        tone(523, 0.14, "sine", 0.04, 0.09);
+        tone(784, 0.24, "triangle", 0.035, 0.19);
+      }
+
+      function playFail() {
+        tone(190, 0.2, "sawtooth", 0.027, 0, 92);
+        tone(115, 0.26, "triangle", 0.04, 0.11, 60);
+      }
+
+      function pointToCanvas(point) {
+        const { pad, board } = canvasMetrics;
+        return {
+          x: pad + (point.x / BOARD_SIZE) * board,
+          y: pad + ((BOARD_SIZE - point.y) / BOARD_SIZE) * board
+        };
+      }
+
+      function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.max(1, Math.round(rect.width * dpr));
+        canvas.height = Math.max(1, Math.round(rect.height * dpr));
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const width = rect.width;
+        const height = rect.height;
+        const pad = Math.max(30, Math.min(52, width * 0.085));
+        canvasMetrics = {
+          width,
+          height,
+          dpr,
+          pad,
+          board: Math.min(width, height) - pad * 2
+        };
+        drawScene();
+      }
+
+      function roundedRect(context, x, y, width, height, radius) {
+        const r = Math.min(radius, width / 2, height / 2);
+        context.beginPath();
+        context.moveTo(x + r, y);
+        context.arcTo(x + width, y, x + width, y + height, r);
+        context.arcTo(x + width, y + height, x, y + height, r);
+        context.arcTo(x, y + height, x, y, r);
+        context.arcTo(x, y, x + width, y, r);
+        context.closePath();
+      }
+
+      function drawBoard() {
+        const { width, height, pad, board } = canvasMetrics;
+        ctx.clearRect(0, 0, width, height);
+
+        const felt = ctx.createRadialGradient(
+          pad + board * 0.34,
+          pad + board * 0.22,
+          board * 0.05,
+          pad + board * 0.5,
+          pad + board * 0.5,
+          board * 0.85
+        );
+        felt.addColorStop(0, "#137454");
+        felt.addColorStop(0.52, "#0a5b42");
+        felt.addColorStop(1, "#064331");
+        ctx.fillStyle = felt;
+        ctx.fillRect(0, 0, width, height);
+
+        const vignette = ctx.createRadialGradient(width / 2, height / 2, board * 0.35, width / 2, height / 2, board * 0.83);
+        vignette.addColorStop(0, "rgba(0,0,0,0)");
+        vignette.addColorStop(1, "rgba(0,18,12,0.34)");
+        ctx.fillStyle = vignette;
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.save();
+        ctx.lineWidth = 1;
+        for (let i = 0; i <= BOARD_SIZE; i += 1) {
+          const t = pad + (i / BOARD_SIZE) * board;
+          ctx.strokeStyle = i === 0 || i === BOARD_SIZE
+            ? "rgba(222,255,242,0.34)"
+            : "rgba(222,255,242,0.14)";
+          ctx.beginPath();
+          ctx.moveTo(t, pad);
+          ctx.lineTo(t, pad + board);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(pad, t);
+          ctx.lineTo(pad + board, t);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        ctx.save();
+        ctx.fillStyle = "rgba(226,255,243,0.74)";
+        ctx.font = `700 ${Math.max(10, board * 0.024)}px Inter, system-ui, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        for (let i = 0; i <= BOARD_SIZE; i += 1) {
+          const x = pad + (i / BOARD_SIZE) * board;
+          const y = pad + ((BOARD_SIZE - i) / BOARD_SIZE) * board;
+          ctx.fillText(String(i), x, pad + board + pad * 0.48);
+          ctx.fillText(String(i), pad * 0.43, y);
+        }
+        ctx.fillStyle = "rgba(104,245,182,0.9)";
+        ctx.font = `850 ${Math.max(11, board * 0.027)}px Inter, system-ui, sans-serif`;
+        ctx.fillText("x →", pad + board, pad + board + pad * 0.84);
+        ctx.fillText("y ↑", pad * 0.42, pad * 0.28);
+        ctx.restore();
+
+        drawPocket({ x: 0, y: 0 });
+        drawPocket({ x: BOARD_SIZE, y: BOARD_SIZE });
+      }
+
+      function drawPocket(point) {
+        const p = pointToCanvas(point);
+        const radius = Math.max(12, canvasMetrics.board * 0.037);
+        const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, radius * 1.9);
+        glow.addColorStop(0, "rgba(0,0,0,1)");
+        glow.addColorStop(0.58, "rgba(0,0,0,0.92)");
+        glow.addColorStop(0.7, "rgba(104,245,182,0.28)");
+        glow.addColorStop(1, "rgba(104,245,182,0)");
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, radius * 1.9, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#01110c";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(197,255,230,0.62)";
+        ctx.lineWidth = Math.max(1.5, radius * 0.13);
+        ctx.stroke();
+      }
+
+      function drawAimGuide() {
+        if (state.phase !== "aiming") return;
+        const { h, v } = getInputDirection();
+        if (h === 0 && v === 0) return;
+        let dx = h;
+        let dy = v;
+        const magnitude = Math.hypot(dx, dy);
+        dx /= magnitude;
+        dy /= magnitude;
+        const from = pointToCanvas(state.ball);
+        const guideLength = Math.min(canvasMetrics.board * 0.17, canvasMetrics.board / 6 * 1.15);
+        const to = {
+          x: from.x + dx * guideLength,
+          y: from.y - dy * guideLength
+        };
+
+        ctx.save();
+        const gradient = ctx.createLinearGradient(from.x, from.y, to.x, to.y);
+        gradient.addColorStop(0, "rgba(255,255,255,0.7)");
+        gradient.addColorStop(1, "rgba(104,245,182,0)");
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 6]);
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawTrail() {
+        const segments = [...state.completedTrail];
+        if (state.currentTrailPoint && state.animation) {
+          const currentSegment = state.animation.plan.segments[state.animation.segmentIndex];
+          if (currentSegment) {
+            segments.push({
+              from: currentSegment.from,
+              to: state.currentTrailPoint,
+              current: true
+            });
+          }
+        }
+        if (!segments.length) return;
+
+        ctx.save();
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        segments.forEach((segment, index) => {
+          const from = pointToCanvas(segment.from);
+          const to = pointToCanvas(segment.to);
+          const alpha = Math.max(0.25, 0.92 - (segments.length - index - 1) * 0.11);
+          ctx.shadowColor = "rgba(104,245,182,0.9)";
+          ctx.shadowBlur = 10;
+          ctx.strokeStyle = `rgba(104,245,182,${alpha})`;
+          ctx.lineWidth = Math.max(2.2, canvasMetrics.board * 0.006);
+          ctx.beginPath();
+          ctx.moveTo(from.x, from.y);
+          ctx.lineTo(to.x, to.y);
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = `rgba(236,255,247,${alpha * 0.72})`;
+          ctx.lineWidth = Math.max(0.8, canvasMetrics.board * 0.0018);
+          ctx.stroke();
+        });
+        ctx.restore();
+      }
+
+      function drawEffects(now) {
+        state.effects = state.effects.filter(effect => now - effect.start < effect.duration);
+        state.effects.forEach(effect => {
+          const progress = Math.min(1, (now - effect.start) / effect.duration);
+          const p = pointToCanvas(effect.point);
+          ctx.save();
+          if (effect.type === "bounce" || effect.type === "fail") {
+            const color = effect.type === "fail" ? "255,116,108" : "104,245,182";
+            ctx.strokeStyle = `rgba(${color},${1 - progress})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 5 + progress * 25, 0, Math.PI * 2);
+            ctx.stroke();
+            for (let i = 0; i < 7; i += 1) {
+              const angle = (Math.PI * 2 * i) / 7 + effect.seed;
+              const distance = 6 + progress * 24;
+              ctx.fillStyle = `rgba(${color},${1 - progress})`;
+              ctx.beginPath();
+              ctx.arc(
+                p.x + Math.cos(angle) * distance,
+                p.y + Math.sin(angle) * distance,
+                Math.max(0.5, 2.2 * (1 - progress)),
+                0,
+                Math.PI * 2
+              );
+              ctx.fill();
+            }
+          } else if (effect.type === "pocket") {
+            ctx.strokeStyle = `rgba(255,209,102,${1 - progress})`;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 8 + progress * 38, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+          ctx.restore();
+        });
+      }
+
+      function drawBall(point = state.displayBall) {
+        if (!point || point.scale <= 0.01) return;
+        const p = pointToCanvas(point);
+        const radius = Math.max(7.5, canvasMetrics.board * 0.0205) * (point.scale ?? 1);
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,0.52)";
+        ctx.shadowBlur = radius * 1.2;
+        ctx.shadowOffsetY = radius * 0.5;
+        const gradient = ctx.createRadialGradient(
+          p.x - radius * 0.32,
+          p.y - radius * 0.38,
+          radius * 0.08,
+          p.x,
+          p.y,
+          radius
+        );
+        gradient.addColorStop(0, "#ffffff");
+        gradient.addColorStop(0.45, "#eef7f3");
+        gradient.addColorStop(1, "#aebeb7");
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowColor = "transparent";
+        ctx.strokeStyle = "rgba(255,255,255,0.75)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawScene(now = performance.now()) {
+        drawBoard();
+        drawAimGuide();
+        drawTrail();
+        drawEffects(now);
+        drawBall();
+      }
+
+      function updateHitPips(hits, failed = false) {
+        hitPips.forEach((pip, index) => {
+          pip.classList.remove("lit", "danger");
+          if (index < Math.min(hits, 5)) pip.classList.add("lit");
+          if (index === 5 && (failed || hits >= 6)) pip.classList.add("danger");
+        });
+      }
+
+      function setBoardMessage(message, mode = "normal") {
+        boardMessageText.textContent = message;
+        boardMessage.classList.remove("hidden");
+        const dot = boardMessage.querySelector(".status-dot");
+        dot.style.background = mode === "fail" ? "var(--coral)" : mode === "success" ? "var(--gold)" : "var(--mint)";
+        dot.style.boxShadow = `0 0 9px ${mode === "fail" ? "var(--coral)" : mode === "success" ? "var(--gold)" : "var(--mint)"}`;
+      }
+
+      function takeShot() {
+        if (state.phase !== "aiming") return;
+        const direction = getInputDirection();
+        if (direction.h === 0 && direction.v === 0) {
+          updateDirectionUI();
+          return;
+        }
+
+        state.phase = "moving";
+        updateDirectionUI();
+        document.querySelectorAll(".step-button, .direction-input").forEach(element => {
+          element.disabled = true;
+        });
+        const plan = simulateShot(state.ball, direction.h, direction.v);
+        state.liveHits = 0;
+        state.completedTrail = [];
+        state.currentTrailPoint = null;
+        state.displayBall = { ...state.ball, scale: 1 };
+        updateHitPips(0);
+        setBoardMessage(plan.startReflections.length ? "Starting reflection—this contact does not count" : "Ball in motion…");
+        playStrike();
+
+        const durations = plan.segments.map(segment => {
+          if (state.reducedMotion) return 90;
+          return Math.max(220, Math.min(690, segment.distance * 118));
+        });
+        state.animation = {
+          plan,
+          rawDirection: direction,
+          segmentIndex: 0,
+          segmentStart: performance.now(),
+          durations,
+          pocketStart: null
+        };
+        cancelAnimationFrame(animationFrame);
+        animationFrame = requestAnimationFrame(animateShot);
+      }
+
+      function animateShot(now) {
+        const animation = state.animation;
+        if (!animation) return;
+        const segment = animation.plan.segments[animation.segmentIndex];
+        if (!segment) {
+          finishShot(animation.plan, animation.rawDirection);
+          return;
+        }
+
+        const duration = animation.durations[animation.segmentIndex];
+        const rawProgress = Math.min(1, (now - animation.segmentStart) / duration);
+        const progress = rawProgress < 0.5
+          ? 2 * rawProgress * rawProgress
+          : 1 - Math.pow(-2 * rawProgress + 2, 2) / 2;
+        state.currentTrailPoint = {
+          x: segment.from.x + (segment.to.x - segment.from.x) * progress,
+          y: segment.from.y + (segment.to.y - segment.from.y) * progress
+        };
+        state.displayBall = { ...state.currentTrailPoint, scale: 1 };
+        drawScene(now);
+
+        if (rawProgress >= 1) {
+          state.completedTrail.push({ from: segment.from, to: segment.to });
+          state.currentTrailPoint = null;
+
+          if (segment.event === "bounce") {
+            state.liveHits = segment.hitsAfter;
+            updateHitPips(state.liveHits);
+            setBoardMessage(`Wall hit ${state.liveHits} of 5`);
+            playBounce(segment.corner);
+            addEffect("bounce", segment.to);
+          } else if (segment.event === "fail") {
+            state.liveHits = segment.hitsAfter;
+            updateHitPips(state.liveHits, true);
+            setBoardMessage("Sixth wall hit—mission failed", "fail");
+            playFail();
+            addEffect("fail", segment.to);
+            tableFrame.classList.remove("shake");
+            void tableFrame.offsetWidth;
+            tableFrame.classList.add("shake");
+          } else if (segment.event === "pocket") {
+            setBoardMessage(`Pocketed after ${animation.plan.hits} wall hit${animation.plan.hits === 1 ? "" : "s"}!`, "success");
+            playPocket();
+            addEffect("pocket", segment.to);
+          }
+
+          animation.segmentIndex += 1;
+          animation.segmentStart = now + (state.reducedMotion ? 0 : 70);
+
+          if (animation.segmentIndex >= animation.plan.segments.length) {
+            if (segment.event === "pocket") {
+              animatePocket(now, animation);
+              return;
+            }
+            drawScene(now);
+            window.setTimeout(() => finishShot(animation.plan, animation.rawDirection), state.reducedMotion ? 30 : 430);
+            return;
+          }
+        }
+
+        animationFrame = requestAnimationFrame(animateShot);
+      }
+
+      function animatePocket(startTime, animation) {
+        animation.pocketStart = startTime;
+        function shrink(now) {
+          if (!state.animation) return;
+          const progress = Math.min(1, (now - animation.pocketStart) / (state.reducedMotion ? 80 : 430));
+          state.displayBall.scale = 1 - progress;
+          drawScene(now);
+          if (progress < 1) {
+            animationFrame = requestAnimationFrame(shrink);
+          } else {
+            window.setTimeout(() => finishShot(animation.plan, animation.rawDirection), state.reducedMotion ? 20 : 190);
+          }
+        }
+        animationFrame = requestAnimationFrame(shrink);
+      }
+
+      function addEffect(type, point) {
+        state.effects.push({
+          type,
+          point: { ...point },
+          start: performance.now(),
+          duration: state.reducedMotion ? 60 : 520,
+          seed: Math.random() * Math.PI
+        });
+      }
+
+      function finishShot(plan, rawDirection) {
+        if (state.phase !== "moving") return;
+        state.animation = null;
+        state.phase = "result";
+        const marks = plan.success ? plan.hits : 0;
+        const player = state.activePlayer;
+
+        if (plan.success) {
+          state.scores[player] += marks;
+          resultCard.classList.remove("fail");
+          resultSymbol.textContent = "✓";
+          resultTitle.textContent = marks === 5 ? "Perfect five!" : "Pocketed!";
+          resultDetail.textContent = marks === 0
+            ? "A direct pocket is successful, but it earns 0 marks because there were no wall hits."
+            : `The ball reached the hole after ${marks} wall hit${marks === 1 ? "" : "s"}.`;
+          marksEarned.textContent = `+${marks}`;
+        } else {
+          resultCard.classList.add("fail");
+          resultSymbol.textContent = "×";
+          resultTitle.textContent = "Mission failed";
+          resultDetail.textContent = "The ball reached its sixth wall hit before entering a hole, so this shot earns 0 marks.";
+          marksEarned.textContent = "+0";
+        }
+
+        controlPanel.classList.add("show-result");
+        addHistory({
+          player,
+          start: { ...state.ball },
+          direction: { ...plan.reduced },
+          marks,
+          success: plan.success,
+          hits: plan.hits
+        });
+        updateScoreboard();
+        nextButton.textContent = state.scores[player] >= TARGET_SCORE ? "See the winner" : "Next player";
+        const arrow = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        arrow.setAttribute("class", "icon");
+        arrow.setAttribute("viewBox", "0 0 24 24");
+        arrow.setAttribute("aria-hidden", "true");
+        arrow.innerHTML = '<path d="M5 12h14M14 7l5 5-5 5"></path>';
+        nextButton.appendChild(arrow);
+      }
+
+      function addHistory(entry) {
+        state.history.unshift(entry);
+        state.history = state.history.slice(0, 5);
+        historyList.innerHTML = "";
+        state.history.forEach(item => {
+          const li = document.createElement("li");
+          li.className = "history-item";
+          const direction = `(${item.direction.h}, ${item.direction.v})`;
+          li.innerHTML = `
+            <span class="history-player ${item.player === 1 ? "p2" : ""}">P${item.player + 1}</span>
+            <span class="history-path">
+              <strong>Ball (${item.start.x}, ${item.start.y}) · ${direction}</strong>
+              <small>${item.success ? `Pocket · ${item.hits} hit${item.hits === 1 ? "" : "s"}` : "Sixth-hit fail"}</small>
+            </span>
+            <span class="history-award ${item.marks === 0 ? "zero" : ""}">+${item.marks}</span>
+          `;
+          historyList.appendChild(li);
+        });
+      }
+
+      function updateScoreboard() {
+        document.getElementById("scoreOne").textContent = state.scores[0];
+        document.getElementById("scoreTwo").textContent = state.scores[1];
+        document.getElementById("progressOne").style.width = `${Math.min(100, state.scores[0] / TARGET_SCORE * 100)}%`;
+        document.getElementById("progressTwo").style.width = `${Math.min(100, state.scores[1] / TARGET_SCORE * 100)}%`;
+
+        document.getElementById("playerOneScore").classList.toggle("active", state.activePlayer === 0);
+        document.getElementById("playerTwoScore").classList.toggle("active", state.activePlayer === 1);
+        document.getElementById("turnBanner").classList.toggle("player-two", state.activePlayer === 1);
+        document.getElementById("turnAvatar").textContent = `P${state.activePlayer + 1}`;
+        document.getElementById("turnName").textContent = `Player ${state.activePlayer + 1}`;
+        document.getElementById("shotNumber").textContent = `Shot ${String(state.shotNumber).padStart(2, "0")}`;
+      }
+
+      function nextTurn() {
+        const winner = state.scores[state.activePlayer] >= TARGET_SCORE;
+        if (winner) {
+          showWinner(state.activePlayer);
+          return;
+        }
+        state.activePlayer = state.activePlayer === 0 ? 1 : 0;
+        state.shotNumber += 1;
+        state.phase = "aiming";
+        state.animation = null;
+        controlPanel.classList.remove("show-result");
+        document.querySelectorAll(".step-button, .direction-input").forEach(element => {
+          element.disabled = false;
+        });
+        generateBall();
+        updateScoreboard();
+        updateDirectionUI();
+        setBoardMessage(`Player ${state.activePlayer + 1}: choose a ratio, then take your shot`);
+      }
+
+      function showWinner(player) {
+        document.getElementById("winnerTitle").textContent = `Player ${player + 1} wins!`;
+        document.getElementById("winnerScore").textContent = `${state.scores[0]}–${state.scores[1]} marks`;
+        winnerDialog.showModal();
+        launchConfetti(player);
+        tone(523, 0.16, "triangle", 0.04, 0);
+        tone(659, 0.18, "triangle", 0.04, 0.11);
+        tone(784, 0.28, "triangle", 0.04, 0.22);
+      }
+
+      function launchConfetti(player) {
+        const colors = player === 0
+          ? ["#68f5b6", "#eafff5", "#70d7ff", "#ffd166"]
+          : ["#ffd166", "#fff1bd", "#ff927f", "#68f5b6"];
+        for (let i = 0; i < 54; i += 1) {
+          const piece = document.createElement("span");
+          piece.className = "confetti";
+          piece.style.left = `${Math.random() * 100}vw`;
+          piece.style.background = colors[i % colors.length];
+          piece.style.setProperty("--fall", `${2.2 + Math.random() * 1.6}s`);
+          piece.style.setProperty("--drift", `${-80 + Math.random() * 160}px`);
+          piece.style.animationDelay = `${Math.random() * 0.45}s`;
+          document.body.appendChild(piece);
+          window.setTimeout(() => piece.remove(), 4500);
+        }
+      }
+
+      function resetMatch(skipConfirmation = false) {
+        const hasProgress = state.scores[0] > 0 || state.scores[1] > 0 || state.shotNumber > 1;
+        if (!skipConfirmation && hasProgress && !window.confirm("Start a new match? The current scores will be cleared.")) {
+          return;
+        }
+        cancelAnimationFrame(animationFrame);
+        state.scores = [0, 0];
+        state.activePlayer = 0;
+        state.shotNumber = 1;
+        state.phase = "aiming";
+        state.history = [];
+        state.animation = null;
+        state.lastBall = null;
+        historyList.innerHTML = '<li class="history-empty">Your first shot will appear here.</li>';
+        controlPanel.classList.remove("show-result");
+        document.querySelectorAll(".step-button, .direction-input").forEach(element => {
+          element.disabled = false;
+        });
+        if (winnerDialog.open) winnerDialog.close();
+        generateBall();
+        updateScoreboard();
+        updateDirectionUI();
+        setBoardMessage("Choose a ratio, then take your shot");
+      }
+
+      document.querySelectorAll(".step-button").forEach(button => {
+        button.addEventListener("click", () => {
+          if (state.phase !== "aiming") return;
+          const input = button.dataset.step === "h" ? hInput : vInput;
+          const next = clampInteger(Number.parseInt(input.value || "0", 10) + Number(button.dataset.change));
+          input.value = String(next);
+          updateDirectionUI();
+        });
+      });
+
+      [hInput, vInput].forEach(input => {
+        input.addEventListener("input", () => updateDirectionUI(false));
+        input.addEventListener("blur", () => updateDirectionUI(true));
+        input.addEventListener("keydown", event => {
+          if (event.key === "Enter" && !shootButton.disabled) {
+            event.preventDefault();
+            takeShot();
+          }
+        });
+      });
+
+      shootButton.addEventListener("click", takeShot);
+      nextButton.addEventListener("click", nextTurn);
+      document.getElementById("rulesButton").addEventListener("click", () => rulesDialog.showModal());
+      document.getElementById("closeRulesButton").addEventListener("click", () => rulesDialog.close());
+      document.getElementById("newMatchButton").addEventListener("click", () => resetMatch(false));
+      document.getElementById("playAgainButton").addEventListener("click", () => resetMatch(true));
+
+      soundButton.addEventListener("click", () => {
+        state.soundOn = !state.soundOn;
+        soundButton.setAttribute("aria-label", state.soundOn ? "Turn sound off" : "Turn sound on");
+        soundButton.title = state.soundOn ? "Sound on" : "Sound off";
+        soundButton.style.color = state.soundOn ? "var(--ink)" : "var(--faint)";
+        if (state.soundOn) tone(520, 0.08, "sine", 0.025);
+      });
+
+      [rulesDialog, winnerDialog].forEach(dialog => {
+        dialog.addEventListener("click", event => {
+          if (event.target === dialog) dialog.close();
+        });
+      });
+
+      window.addEventListener("keydown", event => {
+        if (event.key === "Enter" && state.phase === "aiming" && document.activeElement?.tagName !== "BUTTON" && !shootButton.disabled) {
+          takeShot();
+        }
+      });
+
+      const resizeObserver = new ResizeObserver(resizeCanvas);
+      resizeObserver.observe(canvas);
+      resetMatch(true);
+      requestAnimationFrame(resizeCanvas);
+    })();
+  </script>
+</body>
+</html>
