@@ -1,0 +1,1190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#090908" />
+  <title>Nine Men's Morris — The Marble Arena</title>
+  <style>
+    :root {
+      --ink: #f2ead9;
+      --muted: #aea58f;
+      --gold: #d9ac5c;
+      --gold-bright: #f5cf82;
+      --ember: #b84e32;
+      --obsidian: #090908;
+      --panel: rgba(22, 21, 18, 0.88);
+      --panel-2: rgba(34, 31, 25, 0.86);
+      --line: rgba(227, 190, 117, 0.23);
+      --shadow: rgba(0, 0, 0, 0.55);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { color-scheme: dark; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 50% -20%, rgba(130, 78, 34, 0.22), transparent 42%),
+        radial-gradient(circle at 7% 70%, rgba(122, 40, 26, 0.12), transparent 32%),
+        linear-gradient(145deg, #090908 0%, #12110f 50%, #080807 100%);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.18;
+      background-image:
+        repeating-linear-gradient(16deg, transparent 0 62px, rgba(255,255,255,.018) 63px 64px),
+        repeating-linear-gradient(103deg, transparent 0 91px, rgba(255,255,255,.012) 92px 93px);
+      mix-blend-mode: screen;
+    }
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      width: min(1500px, 100%);
+      margin: 0 auto;
+      padding: 22px clamp(16px, 3vw, 42px) 38px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 22px;
+      margin-bottom: 20px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 14px; }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border: 1px solid rgba(236, 195, 116, .44);
+      border-radius: 50%;
+      color: var(--gold-bright);
+      background: radial-gradient(circle at 35% 28%, #3b3323, #14120f 72%);
+      box-shadow: inset 0 0 0 4px rgba(218, 174, 90, .06), 0 10px 35px rgba(0,0,0,.32);
+      font: 700 20px/1 Georgia, serif;
+    }
+
+    .eyebrow {
+      margin: 0 0 3px;
+      color: var(--gold);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font: 600 clamp(22px, 3vw, 34px)/1.05 Georgia, "Times New Roman", serif;
+      letter-spacing: -.025em;
+    }
+
+    .top-actions { display: flex; align-items: center; gap: 9px; }
+
+    .icon-button, .new-game, .primary, .secondary {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease, color .18s ease;
+    }
+
+    .icon-button:hover, .new-game:hover, .primary:hover, .secondary:hover {
+      transform: translateY(-1px);
+      border-color: rgba(238, 197, 116, .58);
+    }
+
+    .icon-button:focus-visible, .new-game:focus-visible, .primary:focus-visible,
+    .secondary:focus-visible, .point:focus-visible, summary:focus-visible {
+      outline: 3px solid rgba(245, 207, 130, .45);
+      outline-offset: 3px;
+    }
+
+    .icon-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 40px;
+      padding: 0 12px;
+      background: rgba(25, 23, 19, .78);
+      color: var(--muted);
+    }
+
+    .icon-button.active { color: var(--gold-bright); }
+    .sound-icon { width: 18px; height: 18px; }
+
+    .volume {
+      width: 72px;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+
+    .new-game {
+      min-height: 40px;
+      padding: 0 15px;
+      background: linear-gradient(180deg, #342a1b, #211b13);
+      color: #f0d9ae;
+      font-weight: 750;
+      letter-spacing: .02em;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(590px, 1.42fr) minmax(320px, .72fr);
+      gap: clamp(18px, 2.4vw, 34px);
+      align-items: start;
+    }
+
+    .arena-card, .side-card {
+      border: 1px solid var(--line);
+      background: linear-gradient(155deg, rgba(33, 30, 24, .92), rgba(13, 13, 12, .94));
+      box-shadow: 0 28px 80px var(--shadow), inset 0 1px rgba(255,255,255,.04);
+    }
+
+    .arena-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 28px;
+      padding: clamp(14px, 2.2vw, 26px);
+    }
+
+    .arena-card::before {
+      content: "";
+      position: absolute;
+      width: 46%;
+      aspect-ratio: 1;
+      top: -24%;
+      left: 27%;
+      border-radius: 50%;
+      background: rgba(210, 155, 62, .08);
+      filter: blur(55px);
+      pointer-events: none;
+    }
+
+    .status-band {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .player-card {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+      padding: 10px 12px;
+      border: 1px solid transparent;
+      border-radius: 15px;
+      opacity: .52;
+      transition: opacity .25s ease, background .25s ease, border-color .25s ease, transform .25s ease;
+    }
+
+    .player-card:last-child { justify-content: flex-end; text-align: right; }
+
+    .player-card.active {
+      opacity: 1;
+      background: rgba(221, 179, 95, .075);
+      border-color: rgba(221, 179, 95, .25);
+      transform: translateY(-1px);
+    }
+
+    .mini-piece {
+      flex: 0 0 auto;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      box-shadow: 0 5px 12px rgba(0,0,0,.36);
+    }
+
+    .mini-piece.white {
+      border: 1px solid #fff9e8;
+      background: radial-gradient(circle at 34% 26%, #fffef4 0 18%, #e6ddc9 60%, #aaa28f 100%);
+    }
+
+    .mini-piece.black {
+      border: 1px solid #776749;
+      background: radial-gradient(circle at 34% 26%, #5d594f 0 10%, #292824 50%, #070707 100%);
+    }
+
+    .player-name { display: block; font-size: 13px; font-weight: 820; letter-spacing: .08em; text-transform: uppercase; }
+    .player-count { display: block; margin-top: 2px; color: var(--muted); font-size: 11px; }
+
+    .phase-badge {
+      padding: 7px 11px;
+      border: 1px solid rgba(228, 186, 102, .25);
+      border-radius: 999px;
+      color: var(--gold-bright);
+      background: rgba(12,12,11,.76);
+      font-size: 10px;
+      font-weight: 850;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .board-stage {
+      position: relative;
+      width: min(100%, 690px);
+      margin: 0 auto;
+      padding: clamp(10px, 2vw, 18px);
+    }
+
+    .board-shell {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      border: 1px solid rgba(238, 208, 146, .27);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 47% 43%, rgba(255,255,255,.05), transparent 24%),
+        radial-gradient(circle, #40382c 0%, #2b2720 56%, #12110f 76%);
+      box-shadow:
+        inset 0 0 0 9px rgba(10,10,9,.42),
+        inset 0 0 70px rgba(0,0,0,.78),
+        0 20px 46px rgba(0,0,0,.38);
+    }
+
+    .board-shell::before, .board-shell::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .board-shell::before { inset: 3.5%; border: 1px solid rgba(226, 183, 100, .13); }
+    .board-shell::after { inset: 8%; border: 1px dashed rgba(226, 183, 100, .07); }
+
+    .board-lines {
+      position: absolute;
+      inset: 8%;
+      width: 84%;
+      height: 84%;
+      overflow: visible;
+      filter: drop-shadow(0 2px 0 rgba(0,0,0,.7));
+    }
+
+    .board-lines rect, .board-lines line {
+      fill: none;
+      stroke: #b89458;
+      stroke-width: 1.15;
+      vector-effect: non-scaling-stroke;
+      opacity: .79;
+    }
+
+    .points { position: absolute; inset: 8%; }
+
+    .point {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      width: clamp(30px, 6.4vw, 52px);
+      aspect-ratio: 1;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      transform: translate(-50%, -50%);
+      -webkit-tap-highlight-color: transparent;
+      z-index: 3;
+    }
+
+    .point::before {
+      content: "";
+      width: 28%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: #d0aa69;
+      box-shadow: 0 0 0 4px rgba(10,9,8,.62), 0 1px 0 rgba(255,255,255,.34);
+      transition: width .16s ease, box-shadow .16s ease, transform .16s ease;
+    }
+
+    .point:hover::before { width: 36%; box-shadow: 0 0 0 4px rgba(10,9,8,.62), 0 0 15px rgba(238,190,101,.42); }
+
+    .point.white::before, .point.black::before {
+      width: 76%;
+      border: 1px solid;
+      box-shadow: 0 7px 11px rgba(0,0,0,.48), inset 0 2px 2px rgba(255,255,255,.22);
+      animation: piece-arrive .24s cubic-bezier(.2,.8,.3,1.2);
+    }
+
+    .point.white::before {
+      border-color: #fff8e5;
+      background: radial-gradient(circle at 34% 26%, #fffef5 0 17%, #e8deca 58%, #a8a08e 100%);
+    }
+
+    .point.black::before {
+      border-color: #8a7652;
+      background: radial-gradient(circle at 34% 26%, #625e54 0 9%, #292824 48%, #060606 100%);
+    }
+
+    .point.selected::before {
+      width: 82%;
+      box-shadow: 0 0 0 4px rgba(241,195,108,.72), 0 0 28px rgba(239, 177, 63, .65);
+      animation: selected-pulse 1.1s ease-in-out infinite;
+    }
+
+    .point.valid::after {
+      content: "";
+      position: absolute;
+      width: 58%;
+      aspect-ratio: 1;
+      border: 2px solid var(--gold-bright);
+      border-radius: 50%;
+      box-shadow: 0 0 18px rgba(241, 195, 108, .52);
+      animation: target-pulse 1.15s ease-in-out infinite;
+    }
+
+    .point.captureable::after {
+      content: "";
+      position: absolute;
+      width: 92%;
+      aspect-ratio: 1;
+      border: 2px solid #ed7458;
+      border-radius: 50%;
+      box-shadow: 0 0 20px rgba(220, 69, 42, .58);
+      animation: target-pulse .72s ease-in-out infinite;
+    }
+
+    @keyframes piece-arrive { from { transform: scale(.2); opacity: .2; } to { transform: scale(1); opacity: 1; } }
+    @keyframes selected-pulse { 50% { transform: scale(1.07); } }
+    @keyframes target-pulse { 50% { transform: scale(1.13); opacity: .62; } }
+
+    .instruction {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 62px;
+      margin-top: 9px;
+      padding: 13px 16px;
+      border: 1px solid rgba(233, 190, 105, .17);
+      border-radius: 16px;
+      background: rgba(8,8,7,.58);
+    }
+
+    .instruction-label {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--gold);
+      font-size: 9px;
+      font-weight: 850;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    #instructionText { margin: 0; font-size: clamp(13px, 1.5vw, 15px); font-weight: 650; line-height: 1.35; }
+
+    .duel-counter {
+      display: none;
+      flex: 0 0 auto;
+      min-width: 95px;
+      text-align: right;
+    }
+
+    .duel-counter.visible { display: block; }
+    .duel-counter strong { display: block; color: var(--gold-bright); font: 600 20px/1 Georgia, serif; }
+    .duel-counter span { color: var(--muted); font-size: 9px; letter-spacing: .09em; text-transform: uppercase; }
+
+    .sidebar { display: grid; gap: 15px; }
+
+    .side-card { border-radius: var(--radius); padding: 20px; }
+
+    .side-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 14px;
+      font: 600 20px/1.1 Georgia, serif;
+    }
+
+    .side-title small {
+      color: var(--gold);
+      font: 750 9px/1 system-ui, sans-serif;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+
+    .rule-list { display: grid; gap: 13px; margin: 0; }
+
+    .rule {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 11px;
+      align-items: start;
+    }
+
+    .rule-number {
+      display: grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border: 1px solid rgba(225, 182, 96, .3);
+      border-radius: 50%;
+      color: var(--gold-bright);
+      background: rgba(224, 176, 83, .05);
+      font: 700 12px/1 Georgia, serif;
+    }
+
+    .rule h3 { margin: 1px 0 3px; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; }
+    .rule p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.52; }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      margin-top: 15px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(221,183,105,.12);
+    }
+
+    .legend-item { text-align: center; color: var(--muted); font-size: 9px; text-transform: uppercase; letter-spacing: .06em; }
+    .legend-symbol { display: block; width: 18px; height: 18px; margin: 0 auto 5px; border-radius: 50%; }
+    .legend-symbol.gold { border: 2px solid var(--gold-bright); box-shadow: 0 0 8px rgba(241,195,108,.35); }
+    .legend-symbol.red { border: 2px solid #ed7458; box-shadow: 0 0 8px rgba(220,69,42,.35); }
+    .legend-symbol.solid { background: #d7cdb9; border: 1px solid #fff7e5; }
+
+    details.side-card { padding: 0; overflow: hidden; }
+    details summary {
+      padding: 17px 20px;
+      cursor: pointer;
+      list-style: none;
+      font: 600 16px/1 Georgia, serif;
+    }
+    details summary::-webkit-details-marker { display: none; }
+    details summary::after { content: "+"; float: right; color: var(--gold); font: 400 20px/16px system-ui; }
+    details[open] summary::after { content: "−"; }
+    .full-rules { padding: 0 20px 18px; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    .full-rules ul { margin: 8px 0 0; padding-left: 18px; }
+    .full-rules li + li { margin-top: 5px; }
+
+    .history { min-height: 120px; }
+    .history-list { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+    .history-list li { display: flex; gap: 9px; color: var(--muted); font-size: 11px; line-height: 1.35; }
+    .history-list li::before { content: "·"; color: var(--gold); font-size: 18px; line-height: 10px; }
+    .history-list li:first-child { color: var(--ink); }
+
+    .modal {
+      position: fixed;
+      z-index: 20;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(5,5,4,.78);
+      backdrop-filter: blur(12px);
+      transition: opacity .3s ease, visibility .3s ease;
+    }
+
+    .modal.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    .modal-panel {
+      position: relative;
+      width: min(520px, 100%);
+      overflow: hidden;
+      padding: clamp(28px, 6vw, 52px);
+      border: 1px solid rgba(232, 191, 110, .38);
+      border-radius: 28px;
+      text-align: center;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(211,160,66,.15), transparent 42%),
+        linear-gradient(160deg, #252117, #0d0d0b 72%);
+      box-shadow: 0 40px 110px rgba(0,0,0,.7), inset 0 1px rgba(255,255,255,.06);
+    }
+
+    .modal-panel::before {
+      content: "IX";
+      position: absolute;
+      top: -24px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(224, 182, 98, .055);
+      font: 700 190px/1 Georgia, serif;
+      pointer-events: none;
+    }
+
+    .laurel { position: relative; color: var(--gold); font-size: 30px; letter-spacing: .2em; }
+    .modal h2 { position: relative; margin: 16px 0 9px; font: 600 clamp(34px, 8vw, 58px)/.95 Georgia, serif; letter-spacing: -.04em; }
+    .modal-copy { position: relative; width: min(390px, 100%); margin: 0 auto 24px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+    .modal-actions { position: relative; display: grid; gap: 9px; width: min(300px, 100%); margin: 0 auto; }
+
+    .primary, .secondary { min-height: 50px; padding: 0 20px; font-weight: 820; letter-spacing: .04em; }
+    .primary { border-color: #e0b25f; background: linear-gradient(180deg, #e2b761, #a66c26); color: #19130c; box-shadow: 0 12px 30px rgba(171,105,29,.25); }
+    .secondary { background: rgba(10,10,9,.5); color: var(--muted); }
+
+    .gameover-mark { position: relative; margin-bottom: 10px; color: var(--gold); font: 700 12px/1 system-ui; letter-spacing: .24em; text-transform: uppercase; }
+
+    .toast {
+      position: fixed;
+      z-index: 15;
+      left: 50%;
+      bottom: 28px;
+      min-width: min(360px, calc(100% - 32px));
+      padding: 13px 18px;
+      border: 1px solid rgba(238, 192, 104, .36);
+      border-radius: 999px;
+      text-align: center;
+      color: #f7e4bd;
+      background: rgba(25,21,15,.94);
+      box-shadow: 0 16px 50px rgba(0,0,0,.46);
+      transform: translate(-50%, 120px);
+      opacity: 0;
+      transition: transform .28s ease, opacity .28s ease;
+      pointer-events: none;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 1050px) {
+      body { overflow: auto; }
+      .layout { grid-template-columns: 1fr; }
+      .arena-card { width: min(790px, 100%); margin: 0 auto; }
+      .sidebar { grid-template-columns: 1.15fr .85fr; }
+      details.side-card { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 700px) {
+      .app { padding: 14px 10px 26px; }
+      .topbar { align-items: flex-start; margin-bottom: 12px; }
+      .brand-mark { width: 38px; height: 38px; }
+      .top-actions { flex-wrap: wrap; justify-content: flex-end; }
+      .volume, .music-label { display: none; }
+      .arena-card { padding: 10px; border-radius: 20px; }
+      .status-band { grid-template-columns: 1fr 1fr; }
+      .phase-badge { grid-column: 1 / -1; grid-row: 2; justify-self: center; }
+      .player-card { padding: 8px; }
+      .board-stage { padding: 4px; }
+      .board-shell { border-radius: 24px; }
+      .board-shell::before, .board-shell::after { border-radius: 20px; }
+      .instruction { min-height: 68px; padding: 11px; }
+      .sidebar { grid-template-columns: 1fr; }
+      details.side-card { grid-column: auto; }
+      .history { min-height: auto; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">IX</div>
+        <div>
+          <p class="eyebrow">The ancient game of mills</p>
+          <h1>Nine Men’s Morris</h1>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button class="icon-button" id="musicButton" type="button" aria-pressed="false" aria-label="Turn music on">
+          <svg class="sound-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/>
+          </svg>
+          <span class="music-label">Music</span>
+        </button>
+        <label class="sr-only" for="volumeControl">Sound volume</label>
+        <input class="volume" id="volumeControl" type="range" min="0" max="100" value="62" />
+        <button class="new-game" id="resetButton" type="button">New Game</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="arena-card" aria-label="Game board">
+        <div class="status-band">
+          <div class="player-card active" id="whiteCard">
+            <span class="mini-piece white" aria-hidden="true"></span>
+            <span>
+              <span class="player-name">White</span>
+              <span class="player-count" id="whiteCount">9 in hand · 0 on board</span>
+            </span>
+          </div>
+
+          <div class="phase-badge" id="phaseBadge">Placement</div>
+
+          <div class="player-card" id="blackCard">
+            <span>
+              <span class="player-name">Black</span>
+              <span class="player-count" id="blackCount">9 in hand · 0 on board</span>
+            </span>
+            <span class="mini-piece black" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <div class="board-stage">
+          <div class="board-shell">
+            <svg class="board-lines" viewBox="0 0 100 100" aria-hidden="true">
+              <rect x="6" y="6" width="88" height="88" />
+              <rect x="21" y="21" width="58" height="58" />
+              <rect x="36" y="36" width="28" height="28" />
+              <line x1="50" y1="6" x2="50" y2="36" />
+              <line x1="50" y1="64" x2="50" y2="94" />
+              <line x1="6" y1="50" x2="36" y2="50" />
+              <line x1="64" y1="50" x2="94" y2="50" />
+            </svg>
+            <div class="points" id="points"></div>
+          </div>
+        </div>
+
+        <div class="instruction" aria-live="polite">
+          <div>
+            <span class="instruction-label">Your move</span>
+            <p id="instructionText">White begins. Place a white piece on any empty point.</p>
+          </div>
+          <div class="duel-counter" id="duelCounter">
+            <strong id="duelValue">0 / 10</strong>
+            <span>Final-duel rounds</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="side-card">
+          <h2 class="side-title">How to play <small>Quick guide</small></h2>
+          <div class="rule-list">
+            <div class="rule">
+              <span class="rule-number">I</span>
+              <div><h3>Place</h3><p>White starts. Take turns placing all nine pieces on empty points.</p></div>
+            </div>
+            <div class="rule">
+              <span class="rule-number">II</span>
+              <div><h3>Make a mill</h3><p>Form a connected line of three to remove one opposing piece.</p></div>
+            </div>
+            <div class="rule">
+              <span class="rule-number">III</span>
+              <div><h3>Move</h3><p>After placement, move one piece along a line to an adjacent empty point.</p></div>
+            </div>
+            <div class="rule">
+              <span class="rule-number">IV</span>
+              <div><h3>Fly & win</h3><p>With three pieces, fly anywhere. Reduce your rival below three or block every move.</p></div>
+            </div>
+          </div>
+          <div class="legend" aria-label="Board highlight legend">
+            <div class="legend-item"><span class="legend-symbol gold"></span>Legal move</div>
+            <div class="legend-item"><span class="legend-symbol red"></span>Capture</div>
+            <div class="legend-item"><span class="legend-symbol solid"></span>Selected</div>
+          </div>
+        </section>
+
+        <section class="side-card history">
+          <h2 class="side-title">Battle record <small>Latest</small></h2>
+          <ol class="history-list" id="historyList" aria-live="polite"></ol>
+        </section>
+
+        <details class="side-card">
+          <summary>Complete rules</summary>
+          <div class="full-rules">
+            <ul>
+              <li>Each player has nine pieces. White always moves first.</li>
+              <li>Place one piece per turn. A mill is three pieces in a connected horizontal or vertical line.</li>
+              <li>After making a mill, remove one opposing piece. A piece in a mill is protected unless every opposing piece is in a mill.</li>
+              <li>After all pieces are placed, move along the marked lines to an adjacent empty point. Pieces cannot jump.</li>
+              <li>A player with exactly three pieces may fly one piece to any empty point.</li>
+              <li>You win when your opponent has fewer than three pieces or no legal move.</li>
+              <li>If both players have three pieces and nobody wins within 10 complete rounds, the game is a draw. One round gives each player one turn.</li>
+            </ul>
+          </div>
+        </details>
+      </aside>
+    </main>
+  </div>
+
+  <div class="modal" id="startModal" role="dialog" aria-modal="true" aria-labelledby="startTitle">
+    <div class="modal-panel">
+      <div class="laurel" aria-hidden="true">❧ IX ❧</div>
+      <p class="eyebrow">A contest of patience and position</p>
+      <h2 id="startTitle">Enter the arena</h2>
+      <p class="modal-copy">Two players. Eighteen stones. One ancient battle of mills. White commands the first move.</p>
+      <div class="modal-actions">
+        <button class="primary" id="enterButton" type="button">Enter with Music</button>
+        <button class="secondary" id="silentButton" type="button">Play Silently</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="gameOverModal" role="dialog" aria-modal="true" aria-labelledby="gameOverTitle">
+    <div class="modal-panel">
+      <div class="gameover-mark">The contest is decided</div>
+      <h2 id="gameOverTitle">White triumphs</h2>
+      <p class="modal-copy" id="gameOverCopy">Black has fewer than three pieces remaining.</p>
+      <div class="modal-actions">
+        <button class="primary" id="playAgainButton" type="button">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+    const PLAYERS = { WHITE: "white", BLACK: "black" };
+    const NAMES = { white: "White", black: "Black" };
+    const opponent = (player) => player === PLAYERS.WHITE ? PLAYERS.BLACK : PLAYERS.WHITE;
+
+    const POINTS = [
+      [6,6,"a7"], [50,6,"d7"], [94,6,"g7"],
+      [21,21,"b6"], [50,21,"d6"], [79,21,"f6"],
+      [36,36,"c5"], [50,36,"d5"], [64,36,"e5"],
+      [6,50,"a4"], [21,50,"b4"], [36,50,"c4"],
+      [64,50,"e4"], [79,50,"f4"], [94,50,"g4"],
+      [36,64,"c3"], [50,64,"d3"], [64,64,"e3"],
+      [21,79,"b2"], [50,79,"d2"], [79,79,"f2"],
+      [6,94,"a1"], [50,94,"d1"], [94,94,"g1"]
+    ];
+
+    const ADJACENT = [
+      [1,9], [0,2,4], [1,14], [4,10], [1,3,5,7], [4,13],
+      [7,11], [4,6,8], [7,12], [0,10,21], [3,9,11,18], [6,10,15],
+      [8,13,17], [5,12,14,20], [2,13,23], [11,16], [15,17,19], [12,16],
+      [10,19], [16,18,20,22], [13,19], [9,22], [19,21,23], [14,22]
+    ];
+
+    const MILLS = [
+      [0,1,2], [3,4,5], [6,7,8], [9,10,11], [12,13,14], [15,16,17], [18,19,20], [21,22,23],
+      [0,9,21], [3,10,18], [6,11,15], [1,4,7], [16,19,22], [8,12,17], [5,13,20], [2,14,23]
+    ];
+
+    const elements = {
+      points: document.getElementById("points"),
+      whiteCard: document.getElementById("whiteCard"),
+      blackCard: document.getElementById("blackCard"),
+      whiteCount: document.getElementById("whiteCount"),
+      blackCount: document.getElementById("blackCount"),
+      phaseBadge: document.getElementById("phaseBadge"),
+      instruction: document.getElementById("instructionText"),
+      duelCounter: document.getElementById("duelCounter"),
+      duelValue: document.getElementById("duelValue"),
+      history: document.getElementById("historyList"),
+      startModal: document.getElementById("startModal"),
+      gameOverModal: document.getElementById("gameOverModal"),
+      gameOverTitle: document.getElementById("gameOverTitle"),
+      gameOverCopy: document.getElementById("gameOverCopy"),
+      musicButton: document.getElementById("musicButton"),
+      volume: document.getElementById("volumeControl"),
+      toast: document.getElementById("toast")
+    };
+
+    function initialState() {
+      return {
+        board: Array(24).fill(null),
+        inHand: { white: 9, black: 9 },
+        current: PLAYERS.WHITE,
+        selected: null,
+        mustCapture: false,
+        result: null,
+        resultReason: "",
+        threePieceMode: false,
+        threePieceTurns: 0,
+        history: ["White enters the arena and moves first."]
+      };
+    }
+
+    let state = initialState();
+    let pointButtons = [];
+    let toastTimer = null;
+
+    function phase() {
+      return state.inHand.white + state.inHand.black > 0 ? "placing" : "moving";
+    }
+
+    function boardCount(player) {
+      return state.board.filter((piece) => piece === player).length;
+    }
+
+    function totalRemaining(player) {
+      return boardCount(player) + state.inHand[player];
+    }
+
+    function formsMill(index, player) {
+      return MILLS.some((mill) => mill.includes(index) && mill.every((point) => state.board[point] === player));
+    }
+
+    function isInMill(index, player) {
+      return MILLS.some((mill) => mill.includes(index) && mill.every((point) => state.board[point] === player));
+    }
+
+    function captureTargets() {
+      const rival = opponent(state.current);
+      const rivalPieces = state.board.map((piece, index) => piece === rival ? index : -1).filter((index) => index >= 0);
+      const exposed = rivalPieces.filter((index) => !isInMill(index, rival));
+      return exposed.length ? exposed : rivalPieces;
+    }
+
+    function validDestinations(index) {
+      if (index === null || state.board[index] !== state.current || phase() !== "moving") return [];
+      if (boardCount(state.current) === 3) {
+        return state.board.map((piece, point) => piece === null ? point : -1).filter((point) => point >= 0);
+      }
+      return ADJACENT[index].filter((point) => state.board[point] === null);
+    }
+
+    function hasLegalMove(player) {
+      if (state.inHand[player] > 0) return state.board.some((piece) => piece === null);
+      if (boardCount(player) === 3) return state.board.some((piece) => piece === null);
+      return state.board.some((piece, index) => piece === player && ADJACENT[index].some((point) => state.board[point] === null));
+    }
+
+    function addHistory(message) {
+      state.history.unshift(message);
+      state.history = state.history.slice(0, 6);
+    }
+
+    function announce(message) {
+      elements.toast.textContent = message;
+      elements.toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => elements.toast.classList.remove("show"), 1850);
+    }
+
+    function handlePoint(index) {
+      if (state.result) return;
+
+      if (state.mustCapture) {
+        if (!captureTargets().includes(index)) {
+          announce("Choose a highlighted opposing piece.");
+          return;
+        }
+        const removed = state.board[index];
+        state.board[index] = null;
+        addHistory(`${NAMES[state.current]} removes ${NAMES[removed]}'s piece at ${POINTS[index][2]}.`);
+        state.mustCapture = false;
+        playEffect("capture");
+        finishTurn();
+        return;
+      }
+
+      if (phase() === "placing") {
+        if (state.board[index] !== null) {
+          announce("That point is already occupied.");
+          return;
+        }
+        state.board[index] = state.current;
+        state.inHand[state.current] -= 1;
+        addHistory(`${NAMES[state.current]} places at ${POINTS[index][2]}.`);
+        playEffect("place");
+        resolveMillOrFinish(index);
+        return;
+      }
+
+      if (state.selected === null) {
+        if (state.board[index] !== state.current) {
+          announce(`Select one of ${NAMES[state.current]}'s pieces.`);
+          return;
+        }
+        state.selected = index;
+        playEffect("select");
+        render();
+        return;
+      }
+
+      if (state.board[index] === state.current) {
+        state.selected = index;
+        playEffect("select");
+        render();
+        return;
+      }
+
+      const valid = validDestinations(state.selected);
+      if (!valid.includes(index)) {
+        announce(boardCount(state.current) === 3 ? "Fly to any empty point." : "Move only to a highlighted adjacent point.");
+        return;
+      }
+
+      const from = state.selected;
+      state.board[from] = null;
+      state.board[index] = state.current;
+      state.selected = null;
+      addHistory(`${NAMES[state.current]} moves ${POINTS[from][2]} → ${POINTS[index][2]}.`);
+      playEffect(boardCount(state.current) === 3 ? "fly" : "move");
+      resolveMillOrFinish(index);
+    }
+
+    function resolveMillOrFinish(index) {
+      if (formsMill(index, state.current)) {
+        state.mustCapture = true;
+        addHistory(`${NAMES[state.current]} closes a mill.`);
+        announce("Mill formed — remove an opposing piece!");
+        playEffect("mill");
+        render();
+      } else {
+        finishTurn();
+      }
+    }
+
+    function finishTurn() {
+      const rival = opponent(state.current);
+
+      if (totalRemaining(rival) < 3) {
+        endGame(state.current, `${NAMES[rival]} has fewer than three pieces remaining.`);
+        return;
+      }
+
+      const bothThree = state.inHand.white === 0 && state.inHand.black === 0 && boardCount(PLAYERS.WHITE) === 3 && boardCount(PLAYERS.BLACK) === 3;
+      if (bothThree) {
+        if (state.threePieceMode) {
+          state.threePieceTurns += 1;
+        } else {
+          state.threePieceMode = true;
+          state.threePieceTurns = 0;
+          addHistory("The final duel begins: 10 rounds remain.");
+          announce("Final duel — both players may fly!");
+        }
+      } else {
+        state.threePieceMode = false;
+        state.threePieceTurns = 0;
+      }
+
+      if (state.threePieceMode && state.threePieceTurns >= 20) {
+        endGame("draw", "Neither player won within 10 complete final-duel rounds.");
+        return;
+      }
+
+      state.current = rival;
+      state.selected = null;
+
+      if (phase() === "moving" && !hasLegalMove(state.current)) {
+        endGame(opponent(state.current), `${NAMES[state.current]} has no legal move.`);
+        return;
+      }
+
+      render();
+    }
+
+    function endGame(result, reason) {
+      state.result = result;
+      state.resultReason = reason;
+      state.selected = null;
+      state.mustCapture = false;
+      if (result === "draw") {
+        addHistory("The final duel ends in a draw.");
+        elements.gameOverTitle.textContent = "The arena stands even";
+        playEffect("draw");
+      } else {
+        addHistory(`${NAMES[result]} wins the contest.`);
+        elements.gameOverTitle.textContent = `${NAMES[result]} triumphs`;
+        playEffect("victory");
+      }
+      elements.gameOverCopy.textContent = reason;
+      render();
+      setTimeout(() => elements.gameOverModal.classList.remove("hidden"), 450);
+    }
+
+    function restartGame() {
+      state = initialState();
+      elements.gameOverModal.classList.add("hidden");
+      render();
+      announce("A new contest begins. White moves first.");
+    }
+
+    function instructionText() {
+      if (state.result) return state.result === "draw" ? "The game has ended in a draw." : `${NAMES[state.result]} wins the game.`;
+      if (state.mustCapture) return `${NAMES[state.current]} formed a mill. Remove one highlighted ${NAMES[opponent(state.current)]} piece.`;
+      if (phase() === "placing") return `${NAMES[state.current]}: place a piece on any empty point (${state.inHand[state.current]} remaining).`;
+      if (state.selected !== null) return boardCount(state.current) === 3
+        ? `${NAMES[state.current]} may fly to any highlighted empty point.`
+        : `${NAMES[state.current]}: move to a highlighted adjacent point.`;
+      if (boardCount(state.current) === 3) return `${NAMES[state.current]} is flying. Select a piece, then any empty point.`;
+      return `${NAMES[state.current]}: select a piece to move.`;
+    }
+
+    function render() {
+      const valid = new Set(validDestinations(state.selected));
+      const capturable = new Set(state.mustCapture ? captureTargets() : []);
+
+      pointButtons.forEach((button, index) => {
+        button.className = "point";
+        const piece = state.board[index];
+        if (piece) button.classList.add(piece);
+        if (state.selected === index) button.classList.add("selected");
+        if (valid.has(index)) button.classList.add("valid");
+        if (capturable.has(index)) button.classList.add("captureable");
+
+        const status = piece ? `${NAMES[piece]} piece` : "empty";
+        const action = capturable.has(index) ? ", remove this piece" : valid.has(index) ? ", legal destination" : "";
+        button.setAttribute("aria-label", `${POINTS[index][2]}, ${status}${action}`);
+        button.setAttribute("aria-pressed", state.selected === index ? "true" : "false");
+      });
+
+      elements.whiteCard.classList.toggle("active", state.current === PLAYERS.WHITE && !state.result);
+      elements.blackCard.classList.toggle("active", state.current === PLAYERS.BLACK && !state.result);
+      elements.whiteCount.textContent = `${state.inHand.white} in hand · ${boardCount(PLAYERS.WHITE)} on board`;
+      elements.blackCount.textContent = `${state.inHand.black} in hand · ${boardCount(PLAYERS.BLACK)} on board`;
+      elements.phaseBadge.textContent = state.mustCapture ? "Capture" : phase() === "placing" ? "Placement" : boardCount(state.current) === 3 ? "Flying" : "Movement";
+      elements.instruction.textContent = instructionText();
+
+      const completedRounds = Math.min(10, Math.floor(state.threePieceTurns / 2));
+      elements.duelCounter.classList.toggle("visible", state.threePieceMode);
+      elements.duelValue.textContent = `${completedRounds} / 10`;
+
+      elements.history.innerHTML = "";
+      state.history.slice(0, 5).forEach((entry) => {
+        const item = document.createElement("li");
+        item.textContent = entry;
+        elements.history.appendChild(item);
+      });
+    }
+
+    function createBoard() {
+      POINTS.forEach(([x, y, label], index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "point";
+        button.style.left = `${x}%`;
+        button.style.top = `${y}%`;
+        button.dataset.point = String(index);
+        button.title = label;
+        button.addEventListener("click", () => handlePoint(index));
+        elements.points.appendChild(button);
+        pointButtons.push(button);
+      });
+    }
+
+    // Original procedural soundtrack — no external audio files are required.
+    let audioContext = null;
+    let masterGain = null;
+    let musicGain = null;
+    let effectsGain = null;
+    let musicTimer = null;
+    let musicStep = 0;
+    let musicOn = false;
+
+    function ensureAudio() {
+      if (audioContext) {
+        if (audioContext.state === "suspended") audioContext.resume();
+        return;
+      }
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      audioContext = new AudioCtx();
+      masterGain = audioContext.createGain();
+      musicGain = audioContext.createGain();
+      effectsGain = audioContext.createGain();
+      masterGain.gain.value = Number(elements.volume.value) / 100;
+      musicGain.gain.value = 0;
+      effectsGain.gain.value = .55;
+      musicGain.connect(masterGain);
+      effectsGain.connect(masterGain);
+      masterGain.connect(audioContext.destination);
+    }
+
+    function tone(frequency, start, duration, type, gainValue, destination, endFrequency) {
+      if (!audioContext || !destination) return;
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, start);
+      if (endFrequency) oscillator.frequency.exponentialRampToValueAtTime(endFrequency, start + duration);
+      gain.gain.setValueAtTime(.0001, start);
+      gain.gain.exponentialRampToValueAtTime(gainValue, start + .025);
+      gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+      oscillator.connect(gain);
+      gain.connect(destination);
+      oscillator.start(start);
+      oscillator.stop(start + duration + .03);
+    }
+
+    function musicBeat() {
+      if (!musicOn || !audioContext) return;
+      const now = audioContext.currentTime + .025;
+      const bass = [82.41, 82.41, 98.00, 77.78, 82.41, 110.00, 98.00, 73.42];
+      const upper = [164.81, 196.00, 220.00, 146.83, 164.81, 220.00, 196.00, 155.56];
+      const step = musicStep % bass.length;
+      tone(bass[step], now, .33, "sawtooth", .055, musicGain);
+      tone(bass[step] / 2, now, .36, "sine", .085, musicGain);
+      if (musicStep % 2 === 0) tone(upper[step], now + .035, .23, "triangle", .035, musicGain);
+      if (musicStep % 4 === 0) tone(78, now, .16, "sine", .14, musicGain, 34);
+      musicStep += 1;
+    }
+
+    function setMusic(enabled) {
+      ensureAudio();
+      if (!audioContext) return;
+      musicOn = enabled;
+      musicGain.gain.cancelScheduledValues(audioContext.currentTime);
+      musicGain.gain.setTargetAtTime(enabled ? .72 : 0, audioContext.currentTime, .06);
+      clearInterval(musicTimer);
+      if (enabled) {
+        musicStep = 0;
+        musicBeat();
+        musicTimer = setInterval(musicBeat, 365);
+      }
+      elements.musicButton.classList.toggle("active", enabled);
+      elements.musicButton.setAttribute("aria-pressed", String(enabled));
+      elements.musicButton.setAttribute("aria-label", enabled ? "Turn music off" : "Turn music on");
+    }
+
+    function playEffect(kind) {
+      if (!audioContext || !effectsGain) return;
+      const now = audioContext.currentTime + .01;
+      const effects = {
+        select: () => tone(310, now, .07, "sine", .07, effectsGain),
+        place: () => { tone(145, now, .11, "sine", .12, effectsGain, 95); tone(660, now, .08, "triangle", .035, effectsGain); },
+        move: () => tone(220, now, .12, "triangle", .075, effectsGain, 290),
+        fly: () => { tone(320, now, .22, "sine", .06, effectsGain, 820); tone(640, now + .07, .18, "triangle", .035, effectsGain); },
+        capture: () => { tone(120, now, .32, "sawtooth", .09, effectsGain, 48); tone(72, now, .28, "sine", .16, effectsGain, 34); },
+        mill: () => { [261.63, 329.63, 392].forEach((note, i) => tone(note, now + i * .045, .55, "triangle", .055, effectsGain)); },
+        victory: () => { [196, 246.94, 293.66, 392].forEach((note, i) => tone(note, now + i * .12, .75, "triangle", .07, effectsGain)); },
+        draw: () => { tone(174.61, now, .8, "triangle", .06, effectsGain); tone(164.81, now + .14, .8, "triangle", .05, effectsGain); }
+      };
+      if (effects[kind]) effects[kind]();
+    }
+
+    document.getElementById("enterButton").addEventListener("click", () => {
+      setMusic(true);
+      elements.startModal.classList.add("hidden");
+      announce("White commands the first move.");
+    });
+
+    document.getElementById("silentButton").addEventListener("click", () => {
+      elements.startModal.classList.add("hidden");
+      announce("White commands the first move.");
+    });
+
+    elements.musicButton.addEventListener("click", () => setMusic(!musicOn));
+    elements.volume.addEventListener("input", () => {
+      if (masterGain && audioContext) masterGain.gain.setTargetAtTime(Number(elements.volume.value) / 100, audioContext.currentTime, .03);
+    });
+    document.getElementById("resetButton").addEventListener("click", restartGame);
+    document.getElementById("playAgainButton").addEventListener("click", restartGame);
+
+    createBoard();
+    render();
+  </script>
+</body>
+</html>
