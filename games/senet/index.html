@@ -1,0 +1,1286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Senet — 1 vs 1</title>
+<style>
+  :root{
+    --ink:#2f2417;
+    --muted:#6f604b;
+    --papyrus:#ead9b4;
+    --papyrus-2:#f4e8ca;
+    --gold:#b88935;
+    --gold-dark:#7a5721;
+    --red:#9d4c35;
+    --blue:#355d67;
+    --human:#f5efe0;
+    --computer:#3a2b21;
+    --shadow:rgba(49,35,20,.22);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;font-family:Georgia,"Times New Roman",serif;color:var(--ink)}
+  body{
+    background:
+      radial-gradient(circle at 15% 10%,rgba(255,255,255,.22),transparent 24%),
+      radial-gradient(circle at 85% 75%,rgba(90,58,25,.10),transparent 28%),
+      linear-gradient(135deg,#d6bd86,#efdcae 48%,#caa96d);
+    padding:24px;
+  }
+  body:before{
+    content:"";position:fixed;inset:0;pointer-events:none;opacity:.16;
+    background-image:
+      repeating-linear-gradient(0deg,rgba(70,48,22,.10) 0 1px,transparent 1px 5px),
+      repeating-linear-gradient(90deg,rgba(255,255,255,.08) 0 1px,transparent 1px 8px);
+    mix-blend-mode:multiply;
+  }
+  .app{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;align-items:start}
+  .panel{
+    background:rgba(244,232,202,.93);
+    border:1px solid rgba(102,72,31,.35);
+    border-radius:22px;
+    box-shadow:0 18px 42px var(--shadow);
+  }
+  .game{padding:20px}
+  .topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+  h1{font-size:clamp(28px,4vw,46px);margin:0;letter-spacing:.04em}
+  .subtitle{margin:5px 0 0;color:var(--muted);font-size:14px}
+  .badge{font:700 12px/1 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;background:#2f2417;color:#f5e6c2;padding:9px 11px;border-radius:999px;white-space:nowrap}
+  .status-row{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;margin:12px 0 16px}
+  .player-card{
+    border:1px solid rgba(79,55,25,.22);border-radius:15px;padding:11px 13px;background:rgba(255,255,255,.28);
+    display:flex;justify-content:space-between;gap:10px;align-items:center
+  }
+  .player-card.active{outline:3px solid rgba(184,137,53,.42)}
+  .player-name{font:700 13px/1.2 system-ui,sans-serif}
+  .player-sub{font:12px/1.4 system-ui,sans-serif;color:var(--muted)}
+  .score{font:700 20px/1 system-ui,sans-serif}
+  .turn-glyph{font-size:24px;color:var(--gold-dark)}
+  .board-wrap{
+    padding:15px;border-radius:18px;background:linear-gradient(#b2874f,#8c6337);
+    box-shadow:inset 0 0 0 2px rgba(72,44,17,.35), inset 0 0 24px rgba(57,35,14,.24);
+    overflow-x:auto;
+  }
+  .board{
+    min-width:590px;display:grid;grid-template-columns:repeat(8,1fr);
+    border:2px solid #5f421f;background:#d8bc7b;
+  }
+  .cell{
+    aspect-ratio:1/1;min-height:66px;position:relative;border:1px solid rgba(86,58,25,.55);
+    display:flex;align-items:center;justify-content:center;
+    background:
+      radial-gradient(circle at 30% 20%,rgba(255,255,255,.15),transparent 36%),
+      #d9bd7c;
+  }
+  .cell:nth-child(even){background-color:#dfc98f}
+  .cell.special{background-color:#d0ad65}
+  .cell.water{background:linear-gradient(145deg,#6f9fa1,#446e77);color:#f7ecd2}
+  .cell.beauty{background:linear-gradient(145deg,#e1c36f,#c89a42)}
+  .cell.exit-zone{background:linear-gradient(145deg,#d9bb73,#a98240)}
+  .num{position:absolute;left:5px;top:4px;font:700 10px/1 system-ui,sans-serif;opacity:.58}
+  .symbol{position:absolute;right:5px;bottom:4px;font-size:20px;opacity:.72}
+  .piece{
+    width:44px;height:44px;border-radius:50%;display:grid;place-items:center;position:relative;z-index:3;
+    font:900 13px/1 system-ui,sans-serif;letter-spacing:.04em;cursor:default;user-select:none;
+    transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
+    border:3px solid rgba(57,39,20,.55);
+  }
+  .piece.human{background:radial-gradient(circle at 35% 25%,#fffef8,#e6dcc8 70%);color:#33261b;box-shadow:0 5px 10px rgba(42,30,18,.25)}
+  .piece.ai{background:radial-gradient(circle at 35% 25%,#6b5341,#33261e 70%);color:#f5e6c2;border-color:#1f1712;box-shadow:0 5px 10px rgba(42,30,18,.36)}
+  .piece.legal{cursor:pointer;animation:pulse 1.15s infinite}
+  .piece.legal:hover{transform:translateY(-3px) scale(1.07)}
+  .cell.legal-cell{box-shadow:inset 0 0 0 4px rgba(255,248,203,.84)}
+  @keyframes pulse{50%{box-shadow:0 0 0 7px rgba(255,244,173,.22),0 6px 12px rgba(42,30,18,.22)}}
+  .controls{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;margin-top:16px}
+  .throw-area{display:flex;align-items:center;gap:12px}
+  .sticks{display:flex;gap:7px;min-width:182px}
+  .stick{
+    width:34px;height:74px;border-radius:10px;border:2px solid #5d4021;box-shadow:0 5px 9px rgba(54,34,15,.22);
+    display:grid;place-items:center;font:700 10px/1 system-ui,sans-serif;transition:transform .25s ease,background .25s ease,color .25s ease;
+    transform-origin:center;
+  }
+  .stick.light{background:#f7e7bb;color:#5b442c}
+  .stick.dark{background:#563b28;color:#f3d99a}
+  .sticks.throwing .stick:nth-child(1){transform:rotate(24deg) translateY(-5px)}
+  .sticks.throwing .stick:nth-child(2){transform:rotate(-18deg) translateY(3px)}
+  .sticks.throwing .stick:nth-child(3){transform:rotate(13deg) translateY(-8px)}
+  .sticks.throwing .stick:nth-child(4){transform:rotate(-28deg) translateY(4px)}
+  .roll-info{font-family:system-ui,sans-serif}
+  .roll-big{font-size:27px;font-weight:900;line-height:1}
+  .roll-small{font-size:12px;color:var(--muted);margin-top:4px}
+  button{
+    appearance:none;border:0;border-radius:13px;padding:13px 16px;font:800 13px/1 system-ui,sans-serif;cursor:pointer;
+    background:#2f2417;color:#f4e3bc;box-shadow:0 6px 12px rgba(54,34,15,.18);transition:.16s ease;
+  }
+  button:hover:not(:disabled){transform:translateY(-1px);background:#443220}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .secondary{background:rgba(65,47,28,.10);color:#4f3820;border:1px solid rgba(79,56,32,.25);box-shadow:none}
+  .secondary:hover:not(:disabled){background:rgba(65,47,28,.17)}
+  .message{
+    margin-top:14px;min-height:48px;padding:12px 14px;border-radius:13px;background:rgba(255,255,255,.28);
+    font:600 13px/1.45 system-ui,sans-serif;color:#4b3928
+  }
+  .side{padding:18px}
+  .side h2{margin:2px 0 10px;font-size:22px}
+  .side h3{margin:20px 0 7px;font:800 13px/1.2 system-ui,sans-serif;text-transform:uppercase;letter-spacing:.08em;color:#6d512d}
+  .rules{font:13px/1.55 system-ui,sans-serif;color:#4b4035}
+  .rules ol{padding-left:20px;margin:8px 0}
+  .rules li{margin-bottom:7px}
+  .legend{display:grid;gap:8px;font:12px/1.35 system-ui,sans-serif}
+  .legend-row{display:grid;grid-template-columns:34px 1fr;gap:9px;align-items:center}
+  .legend-icon{width:34px;height:30px;border-radius:8px;display:grid;place-items:center;background:#d2ae63;border:1px solid rgba(79,55,25,.28);font-size:17px}
+  .history{
+    max-height:170px;overflow:auto;padding:10px;border-radius:12px;background:rgba(255,255,255,.24);
+    font:12px/1.45 system-ui,sans-serif;color:#5e4d3b
+  }
+  .history div+div{margin-top:5px}
+  .footnote{font:11px/1.45 system-ui,sans-serif;color:#756650;margin-top:13px}
+  .win-overlay{
+    position:fixed;inset:0;background:rgba(41,29,16,.62);display:none;align-items:center;justify-content:center;padding:20px;z-index:20;
+  }
+  .win-card{max-width:420px;text-align:center;padding:28px;border-radius:22px;background:#f2e4c4;box-shadow:0 22px 60px rgba(0,0,0,.32)}
+  .win-card h2{font-size:34px;margin:0 0 8px}
+  .win-card p{font:14px/1.5 system-ui,sans-serif;color:#62513c}
+  .win-card button{margin-top:10px}
+  @media(max-width:900px){
+    body{padding:12px}
+    .app{grid-template-columns:1fr}
+    .side{order:2}
+  }
+  @media(max-width:560px){
+    .topbar{align-items:center}
+    .status-row{grid-template-columns:1fr 1fr}.turn-glyph{display:none}
+    .controls{grid-template-columns:1fr}
+    .throw-area{flex-wrap:wrap}
+    .sticks{min-width:0}
+  }
+
+  .dice-stage{
+    display:flex;gap:12px;align-items:center;justify-content:center;perspective:500px;min-height:92px;
+  }
+  .d5{
+    width:76px;height:72px;
+    clip-path:polygon(50% 0%,98% 35%,80% 100%,20% 100%,2% 35%);
+    background:
+      radial-gradient(circle at 35% 28%,rgba(255,255,255,.42),transparent 25%),
+      linear-gradient(145deg,#f6e2a6,#b78132);
+    border:none;
+    filter:drop-shadow(0 7px 5px rgba(55,34,13,.28));
+    display:grid;place-items:center;
+    color:#3d2a16;
+    font:900 31px/1 system-ui,sans-serif;
+    position:relative;
+    transform:rotate(0deg);
+  }
+  .d5:after{
+    content:"";position:absolute;inset:7px;
+    clip-path:polygon(50% 0%,98% 35%,80% 100%,20% 100%,2% 35%);
+    border:2px solid rgba(83,54,22,.34);
+  }
+  .d5 span{position:relative;z-index:2;text-shadow:0 1px rgba(255,255,255,.45)}
+  .d5.rolling{animation:d5roll .52s cubic-bezier(.2,.8,.2,1)}
+  @keyframes d5roll{
+    0%{transform:rotate(0deg) scale(1)}
+    25%{transform:rotate(105deg) scale(.88)}
+    55%{transform:rotate(235deg) scale(1.08)}
+    78%{transform:rotate(330deg) scale(.94)}
+    100%{transform:rotate(360deg) scale(1)}
+  }
+
+
+  .d5{
+    cursor:default;
+    transition:transform .16s ease, filter .16s ease, opacity .16s ease, box-shadow .16s ease;
+  }
+  .d5.selectable{
+    cursor:pointer;
+    box-shadow:0 0 0 4px rgba(255,246,178,.35);
+  }
+  .d5.selectable:hover{
+    transform:translateY(-2px) scale(1.04);
+    filter:drop-shadow(0 9px 8px rgba(55,34,13,.32));
+  }
+  .d5.chosen{
+    box-shadow:0 0 0 5px rgba(255,248,203,.75);
+  }
+  .d5.disabled{
+    opacity:.45;
+    filter:grayscale(.2) drop-shadow(0 5px 4px rgba(55,34,13,.18));
+  }
+
+
+  /* ---------- Dramatic temple atmosphere ---------- */
+  body{
+    position:relative;
+    overflow-x:hidden;
+    background:
+      radial-gradient(circle at 50% 115%,rgba(176,104,30,.28),transparent 36%),
+      radial-gradient(circle at 15% 12%,rgba(247,191,73,.14),transparent 22%),
+      radial-gradient(circle at 86% 20%,rgba(210,93,39,.10),transparent 24%),
+      linear-gradient(145deg,#17110c 0%,#2a1b10 36%,#503018 68%,#1b130d 100%);
+  }
+  body:after{
+    content:"";
+    position:fixed;inset:0;pointer-events:none;z-index:-1;
+    background:
+      linear-gradient(90deg,transparent 0 8%,rgba(232,183,89,.035) 8% 9%,transparent 9% 91%,rgba(232,183,89,.035) 91% 92%,transparent 92%),
+      repeating-linear-gradient(90deg,transparent 0 120px,rgba(248,217,151,.018) 120px 122px);
+    box-shadow:inset 0 0 180px rgba(0,0,0,.72);
+  }
+
+  .temple-glow{
+    position:fixed;z-index:-1;width:360px;height:360px;border-radius:50%;
+    filter:blur(70px);opacity:.24;pointer-events:none;
+    animation:torchBreath 4.6s ease-in-out infinite alternate;
+  }
+  .glow-a{left:-120px;top:18%;background:#d27a25;}
+  .glow-b{right:-120px;top:36%;background:#b24f2d;animation-delay:-2.1s}
+  @keyframes torchBreath{
+    from{transform:scale(.82);opacity:.16}
+    to{transform:scale(1.15);opacity:.34}
+  }
+
+  .panel{
+    background:
+      linear-gradient(rgba(244,232,202,.965),rgba(228,207,161,.955));
+    border:1px solid rgba(234,194,106,.58);
+    box-shadow:
+      0 24px 70px rgba(0,0,0,.46),
+      0 0 0 1px rgba(255,229,169,.15) inset,
+      0 0 34px rgba(192,119,42,.08);
+  }
+
+  .game{
+    position:relative;
+    overflow:hidden;
+  }
+  .game:before{
+    content:"𓂀  𓋹  𓆣  𓂀  𓋹  𓆣";
+    position:absolute;left:20px;right:20px;top:8px;
+    font-size:24px;letter-spacing:18px;text-align:center;
+    opacity:.045;pointer-events:none;white-space:nowrap;
+  }
+
+  .top-actions{display:flex;gap:8px;align-items:center}
+  .sound-btn{
+    padding:9px 11px;border-radius:999px;
+    font-size:11px;letter-spacing:.05em;
+    background:rgba(47,36,23,.10);color:#4b351f;
+    border:1px solid rgba(88,60,28,.25);box-shadow:none;
+  }
+  .sound-btn:hover:not(:disabled){background:rgba(47,36,23,.17)}
+  .sound-btn.muted{opacity:.66}
+
+  .player-card.active{
+    outline:3px solid rgba(214,154,47,.68);
+    box-shadow:0 0 0 1px rgba(255,244,185,.38) inset,0 0 22px rgba(203,130,36,.22);
+    animation:activePulse 1.45s ease-in-out infinite;
+  }
+  @keyframes activePulse{
+    50%{transform:translateY(-1px);box-shadow:0 0 0 1px rgba(255,244,185,.42) inset,0 0 29px rgba(207,131,34,.34)}
+  }
+
+  .board-wrap{
+    position:relative;
+    border:1px solid rgba(255,224,152,.36);
+    box-shadow:
+      inset 0 0 0 2px rgba(72,44,17,.55),
+      inset 0 0 30px rgba(57,35,14,.34),
+      0 14px 35px rgba(38,22,9,.28);
+  }
+  .board-wrap:after{
+    content:"";
+    position:absolute;inset:7px;border-radius:13px;pointer-events:none;
+    border:1px solid rgba(255,231,170,.16);
+  }
+  .board-wrap.capture-shake{animation:captureShake .33s linear}
+  @keyframes captureShake{
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-7px) rotate(-.15deg)}
+    40%{transform:translateX(6px) rotate(.15deg)}
+    60%{transform:translateX(-4px)}
+    80%{transform:translateX(3px)}
+  }
+
+  .cell.water{position:relative;overflow:hidden}
+  .cell.water:after{
+    content:"≈";
+    position:absolute;font-size:50px;opacity:.15;
+    animation:waterWave 2s ease-in-out infinite;
+  }
+  @keyframes waterWave{50%{transform:translateY(-4px) scaleX(1.08);opacity:.27}}
+
+  .cell.beauty{
+    box-shadow:inset 0 0 18px rgba(255,240,156,.26);
+  }
+  .cell.exit-zone{
+    box-shadow:inset 0 0 16px rgba(147,65,32,.15);
+  }
+
+  .piece{
+    transition:transform .2s cubic-bezier(.2,.9,.2,1.3),box-shadow .18s ease,filter .18s ease;
+  }
+  .piece.human{
+    box-shadow:0 5px 12px rgba(42,30,18,.28),inset 0 0 0 1px rgba(255,255,255,.55);
+  }
+  .piece.ai{
+    box-shadow:0 5px 12px rgba(20,14,10,.42),inset 0 0 0 1px rgba(214,174,106,.14);
+  }
+
+  .d5.selectable{
+    animation:dieChoicePulse .9s ease-in-out infinite alternate;
+  }
+  @keyframes dieChoicePulse{
+    from{filter:drop-shadow(0 6px 5px rgba(55,34,13,.28))}
+    to{filter:drop-shadow(0 0 14px rgba(255,209,92,.72));transform:translateY(-2px)}
+  }
+
+  .message{
+    position:relative;
+    border:1px solid rgba(111,75,34,.14);
+    transition:background .2s ease,transform .2s ease;
+  }
+  .message.reward{
+    background:linear-gradient(90deg,rgba(255,238,160,.66),rgba(255,255,255,.34));
+    transform:scale(1.008);
+  }
+
+  /* ---------- Floating instant feedback ---------- */
+  .fx-layer{
+    position:fixed;inset:0;z-index:50;pointer-events:none;overflow:hidden;
+  }
+  .float-fx{
+    position:absolute;left:50%;top:42%;
+    transform:translate(-50%,-50%);
+    font:900 clamp(27px,5vw,58px)/1 system-ui,sans-serif;
+    letter-spacing:.05em;text-align:center;
+    text-shadow:0 4px 18px rgba(0,0,0,.55);
+    animation:floatReward 1.05s ease-out forwards;
+    white-space:nowrap;
+  }
+  .float-fx.capture{color:#ffd56f}
+  .float-fx.finish{color:#fff0a5}
+  .float-fx.water{color:#bdeef2}
+  .float-fx.bonus{color:#ffe8a1;font-size:clamp(20px,3vw,38px);top:50%}
+  @keyframes floatReward{
+    0%{opacity:0;transform:translate(-50%,-22%) scale(.65)}
+    18%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}
+    72%{opacity:1;transform:translate(-50%,-76%) scale(1)}
+    100%{opacity:0;transform:translate(-50%,-110%) scale(.94)}
+  }
+
+  .screen-flash{
+    position:fixed;inset:0;z-index:49;pointer-events:none;
+    animation:flashOut .34s ease-out forwards;
+  }
+  .screen-flash.gold{background:rgba(255,194,69,.24)}
+  .screen-flash.blue{background:rgba(92,195,219,.22)}
+  @keyframes flashOut{from{opacity:1}to{opacity:0}}
+
+  .spark{
+    position:fixed;z-index:51;width:7px;height:7px;border-radius:50%;
+    background:#ffe7a0;pointer-events:none;
+    box-shadow:0 0 8px rgba(255,220,119,.8);
+    animation:sparkFly .8s ease-out forwards;
+  }
+  @keyframes sparkFly{
+    from{opacity:1;transform:translate(0,0) scale(1)}
+    to{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.25)}
+  }
+
+  .win-card{
+    border:1px solid rgba(255,214,116,.62);
+    box-shadow:0 22px 70px rgba(0,0,0,.48),0 0 40px rgba(236,170,54,.22);
+    animation:winArrival .45s cubic-bezier(.18,.9,.25,1.25);
+  }
+  @keyframes winArrival{
+    from{opacity:0;transform:translateY(18px) scale(.88)}
+    to{opacity:1;transform:none}
+  }
+
+  @media(max-width:560px){
+    .top-actions{flex-direction:column;align-items:flex-end}
+    .sound-btn{font-size:10px;padding:7px 9px}
+  }
+
+</style>
+</head>
+<body>
+<div class="app">
+  <main class="panel game">
+    <div class="topbar">
+      <div>
+        <h1>SENET</h1>
+        <p class="subtitle">Compact Senet · 24 Squares · 2D5 Choice · 1 vs 1</p>
+      </div>
+      <div class="top-actions">
+        <button id="soundBtn" class="sound-btn" type="button" aria-label="Toggle sound">🔊 SOUND ON</button>
+        <div class="badge">2D5 CHOICE</div>
+      </div>
+    </div>
+
+    <div class="status-row">
+      <div id="humanCard" class="player-card active">
+        <div><div class="player-name">PLAYER 1 · Ivory</div><div class="player-sub">Moves first</div></div>
+        <div class="score"><span id="humanOff">0</span>/4</div>
+      </div>
+      <div class="turn-glyph">☥</div>
+      <div id="aiCard" class="player-card">
+        <div><div class="player-name">PLAYER 2 · Ebony</div><div class="player-sub">Local second player</div></div>
+        <div class="score"><span id="aiOff">0</span>/4</div>
+      </div>
+    </div>
+
+    <div class="board-wrap">
+      <div id="board" class="board" aria-label="Senet board"></div>
+    </div>
+
+    <div class="controls">
+      <div class="throw-area">
+        <div class="dice-stage" aria-label="Two five-faced dice">
+          <div id="die1" class="d5"><span id="dieNumber1">?</span></div>
+          <div id="die2" class="d5"><span id="dieNumber2">?</span></div>
+        </div>
+        <div class="roll-info">
+          <div id="rollBig" class="roll-big">—</div>
+          <div id="rollSmall" class="roll-small">Roll two D5 and choose one result</div>
+        </div>
+      </div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button id="throwBtn">ROLL 2D5</button>
+        <button id="resetBtn" class="secondary">NEW GAME</button>
+      </div>
+    </div>
+
+    <div id="message" class="message">Your turn. Throw the sticks.</div>
+  </main>
+
+  <aside class="panel side">
+    <h2>How to Play</h2>
+    <div class="rules">
+      <ol>
+        <li>Each player has <b>4 pieces</b>. Follow squares 1→24 and bear off all four pieces first.</li>
+        <li>On your turn, roll <b>two fair five-faced dice (2D5)</b>. Choose <b>one</b> result to use.</li>
+        <li>If only one rolled value gives a legal move, you must use it. If neither gives a legal move, your turn ends.</li>
+        <li>You get a <b>bonus roll</b> after moving if the chosen value is <b>1</b>, the chosen value is <b>5</b>, or you <b>capture</b> an opponent piece. A 4 gives no bonus.</li>
+        <li>Land on an unprotected opponent piece to <b>swap places</b>. <b>Two adjacent friendly pieces protect each other.</b></li>
+        <li>You must move forward if possible. If there is no legal forward move, move backward by the chosen amount if possible.</li>
+        <li><b>20 · House of Beauty:</b> every piece must land exactly on 20 before it may pass beyond it.</li>
+        <li><b>21 · House of Water:</b> landing here sends the piece back to square 12, or the nearest free square before 12.</li>
+        <li><b>Final Houses are locked:</b> a piece on 22 leaves only with <b>3</b>; on 23 only with <b>2</b>; on 24 only with <b>1</b>.</li>
+        <li>The first player to bear off all four pieces wins.</li>
+      </ol>
+    </div>
+
+    <h3>Special Houses</h3>
+    <div class="legend">
+      <div class="legend-row"><div class="legend-icon">✦</div><div><b>20 · House of Beauty</b><br>Land here exactly before passing it.</div></div>
+      <div class="legend-row"><div class="legend-icon" style="background:#6f9fa1;color:#fff">≋</div><div><b>21 · House of Water</b><br>Return to 12, or nearest free square behind it.</div></div>
+      <div class="legend-row"><div class="legend-icon">Ⅲ</div><div><b>22 · Three Judges</b><br>This piece is locked until you roll exactly 3.</div></div>
+      <div class="legend-row"><div class="legend-icon">Ⅱ</div><div><b>23 · Two Judges</b><br>This piece is locked until you roll exactly 2.</div></div>
+      <div class="legend-row"><div class="legend-icon">Ⅰ</div><div><b>24 · House of Horus</b><br>This piece is locked until you roll exactly 1.</div></div>
+    </div>
+
+    <h3>Game Log</h3>
+    <div id="history" class="history"></div>
+
+    <div class="footnote">Senet's original rulebook did not survive. This compact custom version uses 24 squares, four pieces each, 2D5 choice, adjacency protection, bonus rolls on 1, 5, or capture, and exact 3/2/1 exits from squares 22/23/24.</div>
+  </aside>
+</div>
+
+
+<div id="fxLayer" class="fx-layer" aria-hidden="true"></div>
+<div id="templeGlowA" class="temple-glow glow-a"></div>
+<div id="templeGlowB" class="temple-glow glow-b"></div>
+
+<div id="winOverlay" class="win-overlay">
+  <div class="win-card">
+    <h2 id="winTitle">You Win!</h2>
+    <p id="winText"></p>
+    <button id="againBtn">PLAY AGAIN</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const P1 = "H", P2 = "A";
+
+  const boardEl = document.getElementById("board");
+  const throwBtn = document.getElementById("throwBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const againBtn = document.getElementById("againBtn");
+  const die1El = document.getElementById("die1");
+  const die2El = document.getElementById("die2");
+  const dieNumber1 = document.getElementById("dieNumber1");
+  const dieNumber2 = document.getElementById("dieNumber2");
+  const rollBig = document.getElementById("rollBig");
+  const rollSmall = document.getElementById("rollSmall");
+  const messageEl = document.getElementById("message");
+  const historyEl = document.getElementById("history");
+  const p1Off = document.getElementById("humanOff");
+  const p2Off = document.getElementById("aiOff");
+  const p1Card = document.getElementById("humanCard");
+  const p2Card = document.getElementById("aiCard");
+  const winOverlay = document.getElementById("winOverlay");
+  const winTitle = document.getElementById("winTitle");
+  const winText = document.getElementById("winText");
+  const soundBtn = document.getElementById("soundBtn");
+  const fxLayer = document.getElementById("fxLayer");
+  const boardWrap = document.querySelector(".board-wrap");
+
+  let state;
+
+  // ============================================================
+  // AUDIO + FEEDBACK ENGINE
+  // All audio is synthesized with Web Audio API: no external files.
+  // Browsers require a user gesture before audio can begin.
+  // ============================================================
+  let audioCtx = null;
+  let masterGain = null;
+  let musicGain = null;
+  let sfxGain = null;
+  let soundEnabled = true;
+  let musicRunning = false;
+  let musicTimer = null;
+  let musicStep = 0;
+
+  function ensureAudio(){
+    if(!soundEnabled) return;
+    if(!audioCtx){
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return;
+      audioCtx = new AC();
+
+      masterGain = audioCtx.createGain();
+      musicGain = audioCtx.createGain();
+      sfxGain = audioCtx.createGain();
+
+      masterGain.gain.value = .72;
+      musicGain.gain.value = .115;
+      sfxGain.gain.value = .82;
+
+      musicGain.connect(masterGain);
+      sfxGain.connect(masterGain);
+      masterGain.connect(audioCtx.destination);
+    }
+    if(audioCtx.state === "suspended") audioCtx.resume();
+    if(!musicRunning) startMusic();
+  }
+
+  function tone(freq, duration=.12, gain=.12, type="sine", when=0, target="sfx"){
+    if(!audioCtx || !soundEnabled) return;
+    const bus = target==="music" ? musicGain : sfxGain;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + when);
+    g.gain.setValueAtTime(.0001, audioCtx.currentTime + when);
+    g.gain.exponentialRampToValueAtTime(Math.max(.0002,gain), audioCtx.currentTime + when + .012);
+    g.gain.exponentialRampToValueAtTime(.0001, audioCtx.currentTime + when + duration);
+    osc.connect(g); g.connect(bus);
+    osc.start(audioCtx.currentTime + when);
+    osc.stop(audioCtx.currentTime + when + duration + .03);
+  }
+
+  function sweep(startFreq, endFreq, duration=.28, gain=.15, type="sawtooth"){
+    if(!audioCtx || !soundEnabled) return;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    const t = audioCtx.currentTime;
+    osc.type = type;
+    osc.frequency.setValueAtTime(startFreq,t);
+    osc.frequency.exponentialRampToValueAtTime(endFreq,t+duration);
+    g.gain.setValueAtTime(.0001,t);
+    g.gain.exponentialRampToValueAtTime(gain,t+.018);
+    g.gain.exponentialRampToValueAtTime(.0001,t+duration);
+    osc.connect(g);g.connect(sfxGain);
+    osc.start(t);osc.stop(t+duration+.03);
+  }
+
+  function noiseBurst(duration=.08, gain=.11){
+    if(!audioCtx || !soundEnabled) return;
+    const length = Math.max(1, Math.floor(audioCtx.sampleRate * duration));
+    const buffer = audioCtx.createBuffer(1,length,audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<length;i++) data[i]=(Math.random()*2-1)*(1-i/length);
+    const src = audioCtx.createBufferSource();
+    const filter = audioCtx.createBiquadFilter();
+    const g = audioCtx.createGain();
+    src.buffer=buffer;
+    filter.type="bandpass";
+    filter.frequency.value=900;
+    filter.Q.value=.8;
+    g.gain.value=gain;
+    src.connect(filter);filter.connect(g);g.connect(sfxGain);
+    src.start();
+  }
+
+  const SFX = {
+    roll(){
+      noiseBurst(.10,.13);
+      tone(180,.07,.10,"square",0);
+      tone(260,.06,.08,"square",.07);
+    },
+    choose(){
+      tone(520,.08,.08,"sine");
+      tone(690,.10,.06,"sine",.05);
+    },
+    move(){
+      tone(145,.06,.055,"triangle");
+    },
+    capture(){
+      noiseBurst(.13,.22);
+      sweep(165,80,.20,.16,"sawtooth");
+      tone(740,.10,.11,"square",.10);
+      tone(990,.16,.08,"sine",.18);
+    },
+    bonus(){
+      tone(660,.10,.085,"sine");
+      tone(880,.12,.075,"sine",.08);
+      tone(1120,.18,.06,"sine",.16);
+    },
+    water(){
+      sweep(680,110,.48,.12,"sine");
+      noiseBurst(.30,.065);
+    },
+    finish(){
+      tone(523.25,.16,.10,"sine",0);
+      tone(659.25,.18,.10,"sine",.10);
+      tone(783.99,.24,.11,"sine",.20);
+      tone(1046.5,.34,.085,"sine",.32);
+    },
+    win(){
+      [392,523.25,659.25,783.99,1046.5].forEach((f,i)=>{
+        tone(f,.28,.11,"triangle",i*.12);
+      });
+      tone(196,.75,.06,"sine",0);
+    }
+  };
+
+  function currentTension(){
+    if(!state) return 0;
+    const all = [...state.pieces[P1], ...state.pieces[P2]];
+    const maxPos = Math.max(...all.filter(p=>p.pos<31).map(p=>p.pos),0);
+    const off = all.filter(p=>p.pos===31).length;
+    if(off>=4 || maxPos>=22) return 2;
+    if(off>=2 || maxPos>=18) return 1;
+    return 0;
+  }
+
+  function startMusic(){
+    if(!audioCtx || !soundEnabled || musicRunning) return;
+    musicRunning=true;
+    musicStep=0;
+
+    const loop = ()=>{
+      if(!musicRunning || !soundEnabled || !audioCtx) return;
+
+      const tension = currentTension();
+      const roots = [110,110,98,110,123.47,110,98,82.41];
+      const root = roots[musicStep % roots.length];
+
+      // Low ceremonial pulse
+      tone(root,.30,.045,"triangle",0,"music");
+      if(musicStep % 2===0) tone(root*2,.12,.018,"sine",.03,"music");
+
+      // Sparse upper notes; become more frequent late game.
+      if((tension>=1 && musicStep%2===1) || (tension===0 && musicStep%4===3)){
+        const upper = tension===2 ? root*4 : root*3;
+        tone(upper,.13,tension===2?.026:.017,"sine",.04,"music");
+      }
+
+      // Subtle drum/noise hit.
+      if(musicStep%2===0 && soundEnabled){
+        const old = sfxGain ? sfxGain.gain.value : 0;
+        noiseMusicHit(tension);
+      }
+
+      musicStep++;
+      const delay = tension===2 ? 360 : tension===1 ? 430 : 510;
+      musicTimer=setTimeout(loop,delay);
+    };
+    loop();
+  }
+
+  function noiseMusicHit(tension){
+    if(!audioCtx || !soundEnabled) return;
+    const duration=.055;
+    const length=Math.floor(audioCtx.sampleRate*duration);
+    const buffer=audioCtx.createBuffer(1,length,audioCtx.sampleRate);
+    const data=buffer.getChannelData(0);
+    for(let i=0;i<length;i++) data[i]=(Math.random()*2-1)*(1-i/length);
+    const src=audioCtx.createBufferSource();
+    const filter=audioCtx.createBiquadFilter();
+    const g=audioCtx.createGain();
+    src.buffer=buffer;
+    filter.type="lowpass";
+    filter.frequency.value=tension===2?320:230;
+    g.gain.value=tension===2?.015:.010;
+    src.connect(filter);filter.connect(g);g.connect(musicGain);
+    src.start();
+  }
+
+  function stopMusic(){
+    musicRunning=false;
+    if(musicTimer){clearTimeout(musicTimer);musicTimer=null;}
+  }
+
+  soundBtn.addEventListener("click",()=>{
+    soundEnabled=!soundEnabled;
+    soundBtn.textContent=soundEnabled ? "🔊 SOUND ON" : "🔇 SOUND OFF";
+    soundBtn.classList.toggle("muted",!soundEnabled);
+    if(soundEnabled){
+      ensureAudio();
+      if(masterGain && audioCtx){
+        masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+        masterGain.gain.setTargetAtTime(.72,audioCtx.currentTime,.03);
+      }
+    }else{
+      stopMusic();
+      if(masterGain && audioCtx){
+        masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+        masterGain.gain.setTargetAtTime(.0001,audioCtx.currentTime,.03);
+      }
+    }
+  });
+
+  function wakeSound(){
+    if(!soundEnabled) return;
+    ensureAudio();
+    if(masterGain && audioCtx){
+      masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+      masterGain.gain.setTargetAtTime(.72,audioCtx.currentTime,.03);
+    }
+  }
+
+  function showFx(text,type="capture",sparks=0){
+    const el=document.createElement("div");
+    el.className=`float-fx ${type}`;
+    el.textContent=text;
+    fxLayer.appendChild(el);
+    setTimeout(()=>el.remove(),1100);
+
+    if(sparks>0){
+      const cx=window.innerWidth/2, cy=window.innerHeight*.43;
+      for(let i=0;i<sparks;i++){
+        const s=document.createElement("i");
+        s.className="spark";
+        s.style.left=(cx+(Math.random()*80-40))+"px";
+        s.style.top=(cy+(Math.random()*40-20))+"px";
+        s.style.setProperty("--dx",(Math.random()*240-120)+"px");
+        s.style.setProperty("--dy",(-40-Math.random()*180)+"px");
+        fxLayer.appendChild(s);
+        setTimeout(()=>s.remove(),850);
+      }
+    }
+  }
+
+  function flash(type="gold"){
+    const f=document.createElement("div");
+    f.className=`screen-flash ${type}`;
+    fxLayer.appendChild(f);
+    setTimeout(()=>f.remove(),380);
+  }
+
+  function rewardMessage(){
+    messageEl.classList.add("reward");
+    setTimeout(()=>messageEl.classList.remove("reward"),650);
+  }
+
+  function captureFeedback(){
+    boardWrap.classList.remove("capture-shake");
+    void boardWrap.offsetWidth;
+    boardWrap.classList.add("capture-shake");
+    setTimeout(()=>boardWrap.classList.remove("capture-shake"),380);
+    flash("gold");
+    showFx("CAPTURE!  + BONUS ROLL","capture",18);
+    rewardMessage();
+    SFX.capture();
+  }
+
+  function finishFeedback(){
+    flash("gold");
+    showFx("ESCAPED! ✦","finish",24);
+    rewardMessage();
+    SFX.finish();
+  }
+
+  function waterFeedback(){
+    flash("blue");
+    showFx("HOUSE OF WATER!","water",4);
+    SFX.water();
+  }
+
+
+  function playerName(player){
+    return player === P1 ? "Player 1" : "Player 2";
+  }
+
+  function newGame(){
+    state = {
+      pieces: {
+        H: [1,3,5,7].map((pos,id)=>({id,pos,passedBeauty:false})),
+        A: [2,4,6,8].map((pos,id)=>({id,pos,passedBeauty:false}))
+      },
+      turn: P1,
+      phase: "awaitRoll", // awaitRoll, chooseDie, chooseMove, busy, over
+      rolledValues: null,
+      chosenRoll: null,
+      legal: [],
+      direction: "forward",
+      history: [],
+      gameOver: false,
+      dieOptions: []
+    };
+
+    winOverlay.style.display = "none";
+    resetDiceDisplay();
+    rollBig.textContent = "—";
+    rollSmall.textContent = "Roll two D5 and choose one result";
+
+    addLog("New game. Player 1 moves first.");
+    if(audioCtx && soundEnabled){ stopMusic(); startMusic(); }
+    setMessage("Player 1's turn. Roll 2D5.");
+    render();
+  }
+
+  function visualPositions(){
+    return [...Array(8)].map((_,i)=>i+1)
+      .concat([...Array(8)].map((_,i)=>16-i))
+      .concat([...Array(8)].map((_,i)=>17+i));
+  }
+
+  function buildBoard(){
+    boardEl.innerHTML = "";
+    for(const pos of visualPositions()){
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.dataset.pos = pos;
+
+      if(pos===20) cell.classList.add("special","beauty");
+      if(pos===21) cell.classList.add("special","water");
+      if(pos>=22) cell.classList.add("special","exit-zone");
+
+      const num = document.createElement("span");
+      num.className = "num";
+      num.textContent = pos;
+      cell.appendChild(num);
+
+      if(pos>=20){
+        const symbol = document.createElement("span");
+        symbol.className = "symbol";
+        symbol.textContent =
+          pos===20 ? "✦" :
+          pos===21 ? "≋" :
+          pos===22 ? "Ⅲ" :
+          pos===23 ? "Ⅱ" : "Ⅰ";
+        cell.appendChild(symbol);
+      }
+
+      boardEl.appendChild(cell);
+    }
+  }
+
+  function occupantAt(pos){
+    for(const player of [P1,P2]){
+      const piece = state.pieces[player].find(p=>p.pos===pos);
+      if(piece) return {player,piece};
+    }
+    return null;
+  }
+
+  function isProtected(player,pos){
+    // Two adjacent friendly pieces protect each other.
+    const own = state.pieces[player];
+    return own.some(p => p.pos===pos-1 || p.pos===pos+1);
+  }
+
+  function requiredExitRoll(pos){
+    if(pos===22) return 3;
+    if(pos===23) return 2;
+    if(pos===24) return 1;
+    return null;
+  }
+
+  function destinationFor(player,piece,roll,direction){
+    if(piece.pos===31) return null;
+
+    const exact = requiredExitRoll(piece.pos);
+    if(exact !== null){
+      if(direction==="forward" && roll===exact) return 31;
+      return null;
+    }
+
+    const step = direction==="forward" ? roll : -roll;
+    const dest = piece.pos + step;
+
+    if(direction==="forward"){
+      if(dest>24) return null;
+      if(dest>20 && !piece.passedBeauty) return null;
+    }else{
+      if(dest<1) return null;
+    }
+
+    const occ = occupantAt(dest);
+    if(!occ) return dest;
+    if(occ.player===player) return null;
+    if(isProtected(occ.player,dest)) return null;
+
+    return dest;
+  }
+
+  function legalMovesFor(player,roll){
+    const forward = [];
+
+    for(const piece of state.pieces[player]){
+      if(piece.pos===31) continue;
+      const dest = destinationFor(player,piece,roll,"forward");
+      if(dest!==null){
+        forward.push({pieceId:piece.id,from:piece.pos,to:dest,direction:"forward",roll});
+      }
+    }
+
+    if(forward.length) return {moves:forward,direction:"forward"};
+
+    const backward = [];
+
+    for(const piece of state.pieces[player]){
+      if(piece.pos===31) continue;
+      const dest = destinationFor(player,piece,roll,"backward");
+      if(dest!==null){
+        backward.push({pieceId:piece.id,from:piece.pos,to:dest,direction:"backward",roll});
+      }
+    }
+
+    return {moves:backward,direction:"backward"};
+  }
+
+  function render(){
+    document.querySelectorAll(".cell").forEach(cell=>{
+      cell.querySelectorAll(".piece").forEach(piece=>piece.remove());
+      cell.classList.remove("legal-cell");
+    });
+
+    for(const player of [P1,P2]){
+      for(const piece of state.pieces[player]){
+        if(piece.pos===31) continue;
+
+        const cell = boardEl.querySelector(`[data-pos="${piece.pos}"]`);
+        if(!cell) continue;
+
+        const el = document.createElement("div");
+        el.className = `piece ${player===P1 ? "human" : "ai"}`;
+        el.textContent = player===P1 ? "P1" : "P2";
+        el.title = `${playerName(player)} piece ${piece.id+1}`;
+
+        if(player===state.turn && state.phase==="chooseMove"){
+          const move = state.legal.find(m=>m.pieceId===piece.id);
+          if(move){
+            el.classList.add("legal");
+            cell.classList.add("legal-cell");
+            el.addEventListener("click",()=>makeMove(move));
+          }
+        }
+
+        cell.appendChild(el);
+      }
+    }
+
+    p1Off.textContent = state.pieces[P1].filter(p=>p.pos===31).length;
+    p2Off.textContent = state.pieces[P2].filter(p=>p.pos===31).length;
+
+    p1Card.classList.toggle("active",state.turn===P1 && !state.gameOver);
+    p2Card.classList.toggle("active",state.turn===P2 && !state.gameOver);
+
+    throwBtn.disabled = !(state.phase==="awaitRoll" && !state.gameOver);
+
+    renderDiceInteractivity();
+  }
+
+  function renderDiceInteractivity(){
+    // Fetch the live dice each time and reset click handlers cleanly.
+    // This prevents duplicate die-selection callbacks after many turns.
+    const d1 = document.getElementById("die1");
+    const d2 = document.getElementById("die2");
+    const n1 = document.getElementById("dieNumber1");
+    const n2 = document.getElementById("dieNumber2");
+
+    [d1,d2].forEach(el=>{
+      el.classList.remove("selectable","chosen","disabled");
+      el.onclick = null;
+    });
+
+    setupDieState(d1,d2,n1,n2);
+  }
+
+  function setupDieState(d1, d2, n1, n2){
+    const vals = state.rolledValues;
+
+    if(state.phase==="chooseDie" && vals){
+      const opt1 = state.dieOptions[0];
+      const opt2 = state.dieOptions[1];
+
+      if(opt1.legal) d1.classList.add("selectable"); else d1.classList.add("disabled");
+      if(opt2.legal) d2.classList.add("selectable"); else d2.classList.add("disabled");
+
+      if(opt1.legal) d1.onclick=()=>selectDie(0);
+      if(opt2.legal) d2.onclick=()=>selectDie(1);
+    }
+
+    if(state.phase==="chooseMove" && state.chosenRoll!==null){
+      if(vals[0]===state.chosenRoll) d1.classList.add("chosen");
+      if(vals[1]===state.chosenRoll && (vals[0]!==vals[1] || !d1.classList.contains("chosen"))) d2.classList.add("chosen");
+    }
+  }
+
+  function setMessage(text){
+    messageEl.textContent = text;
+  }
+
+  function addLog(text){
+    state.history.unshift(text);
+    state.history = state.history.slice(0,20);
+    historyEl.innerHTML = state.history.map(x=>`<div>• ${x}</div>`).join("");
+  }
+
+  function resetDiceDisplay(){
+    document.getElementById("dieNumber1").textContent = "?";
+    document.getElementById("dieNumber2").textContent = "?";
+    document.getElementById("die1").classList.remove("selectable","chosen","disabled","rolling");
+    document.getElementById("die2").classList.remove("selectable","chosen","disabled","rolling");
+  }
+
+  function animateDie(el, numEl, finalValue){
+    el.classList.remove("rolling");
+    void el.offsetWidth;
+    el.classList.add("rolling");
+
+    let flashes = 0;
+    const timer = setInterval(()=>{
+      numEl.textContent = Math.floor(Math.random()*5)+1;
+      flashes++;
+      if(flashes>=5){
+        clearInterval(timer);
+        numEl.textContent = finalValue;
+      }
+    },80);
+
+    setTimeout(()=>el.classList.remove("rolling"),540);
+  }
+
+  function roll2D5(){
+    const a = Math.floor(Math.random()*5)+1;
+    const b = Math.floor(Math.random()*5)+1;
+
+    animateDie(document.getElementById("die1"), document.getElementById("dieNumber1"), a);
+    animateDie(document.getElementById("die2"), document.getElementById("dieNumber2"), b);
+
+    rollBig.textContent = `${a} / ${b}`;
+    rollSmall.textContent = "Choose one result to use";
+    return [a,b];
+  }
+
+  throwBtn.addEventListener("click",()=>{
+    if(state.phase!=="awaitRoll" || state.gameOver) return;
+    wakeSound();
+    SFX.roll();
+
+    const who = playerName(state.turn);
+    const values = roll2D5();
+    state.rolledValues = values;
+    state.chosenRoll = null;
+    state.legal = [];
+    state.dieOptions = values.map(v=>{
+      const res = legalMovesFor(state.turn, v);
+      return {value:v, legal:res.moves.length>0, result:res};
+    });
+
+    addLog(`${who} rolled ${values[0]} and ${values[1]}.`);
+
+    const legalCount = state.dieOptions.filter(o=>o.legal).length;
+
+    if(legalCount===0){
+      state.phase = "busy";
+      render();
+      setMessage(`${who} has no legal move with either ${values[0]} or ${values[1]}.`);
+      setTimeout(()=>switchTurn(), 900);
+      return;
+    }
+
+    if(values[0]===values[1]){
+      selectDie(0, true);
+      return;
+    }
+
+    if(legalCount===1){
+      const idx = state.dieOptions[0].legal ? 0 : 1;
+      state.phase = "chooseDie";
+      render();
+      setMessage(`${who} rolled ${values[0]} and ${values[1]}. Only one result is legal, so use ${state.dieOptions[idx].value}.`);
+      setTimeout(()=>selectDie(idx, true), 700);
+      return;
+    }
+
+    state.phase = "chooseDie";
+    render();
+    setMessage(`${who} rolled ${values[0]} and ${values[1]}. Click the die value you want to use.`);
+  });
+
+  function selectDie(index, auto=false){
+    if(state.gameOver || !state.rolledValues) return;
+    const option = state.dieOptions[index];
+    if(!option || !option.legal) return;
+
+    wakeSound();
+    SFX.choose();
+    state.chosenRoll = option.value;
+    state.legal = option.result.moves;
+    state.direction = option.result.direction;
+    state.phase = "chooseMove";
+
+    addLog(`${playerName(state.turn)} chose ${option.value}${auto ? " automatically" : ""}.`);
+
+    rollBig.textContent = `${option.value}`;
+    rollSmall.textContent = `Chosen result · move ${option.value}`;
+    render();
+
+    if(state.direction==="backward"){
+      setMessage(`${playerName(state.turn)} chose ${option.value}. No forward move is available, so choose a highlighted piece to move backward ${option.value}.`);
+    }else{
+      setMessage(`${playerName(state.turn)} chose ${option.value}. Choose a highlighted piece to move.`);
+    }
+  }
+
+  function makeMove(move){
+    if(state.phase!=="chooseMove" || state.gameOver) return;
+
+    const currentPlayer = state.turn;
+    const currentRoll = state.chosenRoll;
+    state.phase = "busy";
+
+    const result = executeMove(currentPlayer, move);
+    if(checkWin(currentPlayer)) return;
+
+    const bonus = currentRoll===1 || currentRoll===5 || result.captured;
+
+    if(bonus){
+      const reasons = [];
+      if(currentRoll===1 || currentRoll===5) reasons.push(`used ${currentRoll}`);
+      if(result.captured) reasons.push("captured an opponent");
+      addLog(`${playerName(currentPlayer)} gets a bonus roll (${reasons.join(" + ")}).`);
+      SFX.bonus();
+      if(!result.captured){
+        showFx("BONUS ROLL!","bonus",10);
+        rewardMessage();
+      }
+
+      state.phase = "awaitRoll";
+      state.rolledValues = null;
+      state.chosenRoll = null;
+      state.legal = [];
+      state.dieOptions = [];
+      resetDiceDisplay();
+      rollBig.textContent = "—";
+      rollSmall.textContent = "Bonus roll · roll two D5";
+      setMessage(`${playerName(currentPlayer)} gets another roll!`);
+      render();
+    }else{
+      render();
+      setTimeout(()=>switchTurn(), 520);
+    }
+  }
+
+  function executeMove(player, move){
+    wakeSound();
+    SFX.move();
+    const piece = state.pieces[player].find(p=>p.id===move.pieceId);
+    const opponent = player===P1 ? P2 : P1;
+    const target = move.to<=24 ? occupantAt(move.to) : null;
+
+    let captured = false;
+    if(target && target.player===opponent){
+      target.piece.pos = move.from;
+      captured = true;
+    }
+
+    piece.pos = move.to;
+    if(piece.pos===20) piece.passedBeauty = true;
+
+    const who = playerName(player);
+
+    if(move.to===31){
+      addLog(`${who} bore off a piece.`);
+      finishFeedback();
+    }else if(captured){
+      addLog(`${who} moved ${move.from}→${move.to}, captured, and swapped the opponent back to ${move.from}.`);
+      captureFeedback();
+    }else{
+      addLog(`${who} moved ${move.from}→${move.to}${move.direction==="backward" ? " backward" : ""}.`);
+    }
+
+    if(piece.pos===21){
+      const targetPos = waterReturnSquare(piece);
+      piece.pos = targetPos;
+      addLog(`${who} entered the House of Water and returned to ${targetPos}.`);
+      waterFeedback();
+    }
+
+    return {captured};
+  }
+
+  function waterReturnSquare(movingPiece){
+    for(let pos=12; pos>=1; pos--){
+      const occ = occupantAt(pos);
+      if(!occ || occ.piece===movingPiece) return pos;
+    }
+    return 1;
+  }
+
+  function switchTurn(){
+    if(state.gameOver) return;
+
+    state.turn = state.turn===P1 ? P2 : P1;
+    state.phase = "awaitRoll";
+    state.rolledValues = null;
+    state.chosenRoll = null;
+    state.legal = [];
+    state.dieOptions = [];
+
+    resetDiceDisplay();
+    rollBig.textContent = "—";
+    rollSmall.textContent = "Roll two D5 and choose one result";
+    setMessage(`${playerName(state.turn)}'s turn. Roll 2D5.`);
+    render();
+  }
+
+  function checkWin(player){
+    const off = state.pieces[player].filter(p=>p.pos===31).length;
+    if(off<4) return false;
+
+    state.gameOver = true;
+    state.phase = "over";
+    render();
+
+    const name = playerName(player);
+    winTitle.textContent = `${name} Wins!`;
+    winText.textContent = `${name} guided all four pieces safely off the compact Senet board first.`;
+    winOverlay.style.display = "flex";
+    wakeSound();
+    SFX.win();
+    flash("gold");
+    showFx(`${name.toUpperCase()} WINS!`,"finish",34);
+    setMessage(`${name} wins the game!`);
+    addLog(`${name} won the game.`);
+    return true;
+  }
+
+  resetBtn.addEventListener("click", newGame);
+  againBtn.addEventListener("click", ()=>{ wakeSound(); newGame(); });
+
+  buildBoard();
+  newGame();
+})();
+</script>
+</body>
+</html>
